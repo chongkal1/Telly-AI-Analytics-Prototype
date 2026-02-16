@@ -114,6 +114,17 @@ export function getChartData(dataKey: string, startDate?: string, endDate?: stri
     case 'aiPageCitations':
       return aiPageCitations;
 
+    case 'capturedLeadsByIndustry': {
+      const capturedStatuses = new Set(['contacted', 'qualified', 'converted']);
+      const capturedIndustryCounts: Record<string, number> = {};
+      leads.filter((l) => capturedStatuses.has(l.status)).forEach((l) => {
+        capturedIndustryCounts[l.industry] = (capturedIndustryCounts[l.industry] || 0) + 1;
+      });
+      return Object.entries(capturedIndustryCounts)
+        .map(([name, value]) => ({ name, value }))
+        .sort((a, b) => b.value - a.value);
+    }
+
     case 'leadsByIndustry': {
       const industryCounts: Record<string, number> = {};
       leads.forEach((l) => { industryCounts[l.industry] = (industryCounts[l.industry] || 0) + 1; });
@@ -252,6 +263,14 @@ export function getMetricValue(
 
     case 'identifiedVisitors':
       return { value: leads.length.toString(), change: 34, previousValue: '90' };
+    case 'organicLeadsCaptured': {
+      const capturedCount = leads.filter((l) => l.status === 'contacted' || l.status === 'qualified' || l.status === 'converted').length;
+      return { value: capturedCount.toString(), change: 28, previousValue: Math.round(capturedCount * 0.78).toString() };
+    }
+    case 'totalPipelineValue': {
+      const totalValue = leads.reduce((s, l) => s + l.value, 0);
+      return { value: new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(totalValue), change: 22, previousValue: new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(Math.round(totalValue * 0.82)) };
+    }
     case 'industryCount': {
       const industries = new Set(leads.map((l) => l.industry));
       return { value: industries.size.toString(), change: null };

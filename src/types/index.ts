@@ -53,31 +53,75 @@ export interface Lead {
   isRepeatVisit: boolean;
 }
 
-export interface ReportMetrics {
+export interface MonthlyReportSnapshot {
   totalClicks: number;
   totalImpressions: number;
   avgCtr: number;
-  avgPosition: number;
-  leadsGenerated: number;
-  estimatedRevenue: number;
-}
-
-export interface Report {
-  id: string;
-  title: string;
-  type: 'weekly' | 'monthly';
-  periodStart: string;
-  periodEnd: string;
-  metrics: ReportMetrics;
-  changes: {
+  identifiedVisitors: number;
+  capturedLeads: number;
+  pipelineValue: number;
+  monthlyCost: number;
+  roas: number;
+  costPerLead: number;
+  aiCitations: number;
+  aiAppearances: number;
+  aiVisibilityScore: number;
+  aiSentiment: number;
+  clusterCount: number;
+  topCluster: string;
+  leadsByStatus: { name: string; value: number }[];
+  leadsByIndustry: { name: string; value: number }[];
+  clusterPerformance: {
+    category: string;
+    pages: number;
     clicks: number;
     impressions: number;
     ctr: number;
-    position: number;
     leads: number;
-    revenue: number;
-  };
-  topPages: string[];
+    growth: number;
+  }[];
+  topLeads: {
+    name: string;
+    company: string;
+    industry: string;
+    value: number;
+    status: string;
+  }[];
+  aiEngineBreakdown: { name: string; value: number }[];
+}
+
+export interface MonthlyReportComparison {
+  clicks: number;
+  impressions: number;
+  ctr: number;
+  visitors: number;
+  leads: number;
+  pipeline: number;
+  roas: number;
+  aiCitations: number;
+  aiVisibility: number;
+}
+
+export interface MonthlyReportNarrative {
+  executiveSummary: string;
+  trafficAnalysis: string;
+  aiVisibilityAnalysis: string;
+  clusterAnalysis: string;
+  leadsAnalysis: string;
+  recommendations: string[];
+}
+
+export interface MonthlyReport {
+  id: string;
+  title: string;
+  periodStart: string;
+  periodEnd: string;
+  periodLabel: string;
+  generatedAt: string;
+  snapshot: MonthlyReportSnapshot;
+  comparison: MonthlyReportComparison;
+  narrative: MonthlyReportNarrative;
+  dailyTraffic: { date: string; clicks: number; impressions: number }[];
 }
 
 export type MessageRole = 'user' | 'assistant';

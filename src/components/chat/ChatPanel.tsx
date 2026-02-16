@@ -71,7 +71,7 @@ export function ChatPanel() {
               </svg>
             </div>
             <h3 className="text-sm font-medium text-gray-900">Start a conversation</h3>
-            <p className="mt-1 text-sm text-gray-500">Ask about traffic, leads, ROI, or content performance.</p>
+            <p className="mt-1 text-sm text-gray-500">Ask about traffic, leads, ROI, or type <span className="font-mono text-emerald-600">/</span> for commands.</p>
           </div>
         )}
         {messages.map((msg) => (

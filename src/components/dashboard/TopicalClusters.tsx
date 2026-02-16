@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { getClusterData, getClusterPages, getClusterInsights, getContentProductionInsights, getContentFunnelData, ClusterPageDetail, ClusterInsight, ContentProductionInsight, ProductionPriority } from '@/data/chart-data';
 import { useDateRange } from '@/hooks/useDateRange';
 import { ContentFunnel } from './traffic/ContentFunnel';
@@ -593,9 +593,34 @@ function ClusterDetail({ category, pages, insights, productionInsight, onBack }:
 
 /* ── Main component ── */
 
+interface NewCluster {
+  name: string;
+  description: string;
+  industry: string;
+  createdAt: string;
+}
+
 export function TopicalClusters() {
   const { startDate, endDate } = useDateRange();
   const [selectedCluster, setSelectedCluster] = useState<string | null>(null);
+  const [newClusters, setNewClusters] = useState<NewCluster[]>([]);
+
+  // Listen for cluster-created events from chat
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail?.name) {
+        setNewClusters((prev) => [...prev, {
+          name: detail.name,
+          description: detail.description,
+          industry: detail.industry,
+          createdAt: new Date().toISOString(),
+        }]);
+      }
+    };
+    window.addEventListener('cluster-created', handler);
+    return () => window.removeEventListener('cluster-created', handler);
+  }, []);
 
   const clusters = useMemo(() => getClusterData(startDate, endDate), [startDate, endDate]);
   const productionInsights = useMemo(
@@ -630,6 +655,36 @@ export function TopicalClusters() {
       <ContentFunnel data={funnelData} />
       <ContentProductionIntelligence insights={productionInsights} onSelect={setSelectedCluster} />
 
+      {/* Newly created clusters */}
+      {newClusters.length > 0 && (
+        <div className="space-y-3">
+          {newClusters.map((cluster, i) => (
+            <div key={i} className="bg-white rounded-lg border border-emerald-200 shadow-sm p-4 border-l-[3px] border-l-emerald-400">
+              <div className="flex items-start justify-between mb-1">
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium rounded-full border bg-emerald-50 text-emerald-700 border-emerald-200">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    New Cluster
+                  </span>
+                  <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-medium rounded-full bg-gray-100 text-gray-600">
+                    {cluster.industry}
+                  </span>
+                </div>
+                <span className="text-[10px] text-gray-400">Just created</span>
+              </div>
+              <h4 className="text-sm font-semibold text-gray-900 mt-2">{cluster.name}</h4>
+              <p className="text-xs text-gray-500 mt-1 leading-relaxed">{cluster.description}</p>
+              <p className="flex items-center gap-1 text-xs text-gray-500 italic mt-2">
+                <svg className="w-3 h-3 text-indigo-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z" />
+                </svg>
+                Agent: Starting content production — drafting first articles
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Industry Content Opportunities */}
       <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
         <div className="px-4 py-3 border-b border-gray-100">
@@ -637,10 +692,16 @@ export function TopicalClusters() {
             <svg className="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5" />
             </svg>
-            <div>
+            <div className="flex-1">
               <h3 className="text-sm font-semibold text-gray-900">Industry Content Opportunities</h3>
-              <p className="text-xs text-gray-500 mt-0.5">Industries visiting your site that need dedicated topical clusters</p>
+              <p className="text-xs text-gray-500 mt-0.5">Based on identified visitors — discover which industries need dedicated topics</p>
             </div>
+            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium rounded-full bg-blue-50 text-blue-600 border border-blue-200">
+              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-1.997M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+              </svg>
+              RB2B Visitor Data
+            </span>
           </div>
         </div>
         <ContentIntelligencePanel />

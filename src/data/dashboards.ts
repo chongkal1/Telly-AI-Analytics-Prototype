@@ -29,23 +29,6 @@ export const dashboards: Dashboard[] = [
     ],
   },
   {
-    id: 'd2',
-    name: 'Leads',
-    widgets: [
-      // Row 1: 4 metric cards
-      { id: 'w42', title: 'Identified Visitors', type: 'metric', colSpan: 3, rowSpan: 1, dataKey: 'identifiedVisitors' },
-      { id: 'w43', title: 'Industries Reached', type: 'metric', colSpan: 3, rowSpan: 1, dataKey: 'industryCount' },
-      { id: 'w44', title: 'Top Industry', type: 'metric', colSpan: 3, rowSpan: 1, dataKey: 'topIndustry' },
-      { id: 'w45', title: 'Content Gaps', type: 'metric', colSpan: 3, rowSpan: 1, dataKey: 'contentGaps' },
-      // Row 2: 3 charts
-      { id: 'w11', title: 'Leads by Status', type: 'pie', colSpan: 4, rowSpan: 2, dataKey: 'leadsByStatus' },
-      { id: 'w46', title: 'Leads by Industry', type: 'pie', colSpan: 4, rowSpan: 2, dataKey: 'leadsByIndustry' },
-      { id: 'w47', title: 'Pipeline by Industry', type: 'bar', colSpan: 4, rowSpan: 2, dataKey: 'industryByValue' },
-      // Row 3: Leads table
-      { id: 'w12', title: 'Recent Leads', type: 'table', colSpan: 12, rowSpan: 2, dataKey: 'recentLeads' },
-    ],
-  },
-  {
     id: 'd3',
     name: 'Content Performance',
     widgets: [

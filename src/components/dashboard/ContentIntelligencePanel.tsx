@@ -7,15 +7,10 @@ import { formatCurrency } from '@/lib/utils';
 function CreateClusterButton({ gap }: { gap: IndustryContentGap }) {
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    const topicNames = gap.suggestedTopics.map((t) => t.title).join(', ');
     window.dispatchEvent(new CustomEvent('create-cluster', {
       detail: {
         industry: gap.industry,
-        coverage: gap.contentCoverage,
-        suggestedTopics: gap.suggestedTopics,
-        pipelineValue: gap.pipelineValue,
-        leadCount: gap.leadCount,
-        message: `I'm planning to create a ${gap.industry} topical cluster focusing on: ${topicNames || 'industry-specific content'}. This industry has ${gap.leadCount} visitors and $${(gap.pipelineValue / 1000).toFixed(0)}K in pipeline value.`,
+        message: `I'm planning to create a ${gap.industry} topical cluster.`,
       },
     }));
   };

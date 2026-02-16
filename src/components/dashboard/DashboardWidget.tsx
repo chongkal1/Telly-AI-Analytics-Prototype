@@ -8,10 +8,7 @@ import { LineChartWidget } from '@/components/charts/LineChartWidget';
 import { BarChartWidget } from '@/components/charts/BarChartWidget';
 import { PieChartWidget } from '@/components/charts/PieChartWidget';
 import { DataTable } from '@/components/charts/DataTable';
-import { StatusBadge } from '@/components/shared/StatusBadge';
-import { formatDate, formatCurrency } from '@/lib/utils';
 import { CHART_COLORS } from '@/lib/constants';
-import { LeadStatus } from '@/types';
 import { AI_ENGINES } from '@/data/ai-analytics';
 
 
@@ -193,44 +190,6 @@ export function DashboardWidget({ widget }: DashboardWidgetProps) {
         <PieChartWidget
           data={data as { name: string; value: number }[]}
           height={200}
-        />
-      )}
-
-      {widget.type === 'table' && widget.dataKey === 'recentLeads' && (
-        <DataTable
-          columns={[
-            { key: 'name', label: 'Name', sortable: true },
-            { key: 'company', label: 'Company', sortable: true },
-            {
-              key: 'industry',
-              label: 'Industry',
-              sortable: true,
-              render: (val) => (
-                <span className="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full bg-gray-100 text-gray-600">
-                  {val as string}
-                </span>
-              ),
-            },
-            {
-              key: 'status',
-              label: 'Status',
-              render: (val) => <StatusBadge status={val as LeadStatus} />,
-            },
-            {
-              key: 'value',
-              label: 'Value',
-              align: 'right',
-              sortable: true,
-              render: (val) => formatCurrency(val as number),
-            },
-            {
-              key: 'createdAt',
-              label: 'Date',
-              sortable: true,
-              render: (val) => formatDate(val as string),
-            },
-          ]}
-          data={data}
         />
       )}
 
