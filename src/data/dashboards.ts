@@ -20,14 +20,12 @@ export const dashboards: Dashboard[] = [
       { id: 'w31', title: 'AI Citations', type: 'metric', colSpan: 2, rowSpan: 1, dataKey: 'aiCitations' },
       { id: 'w32', title: 'AI Appearances', type: 'metric', colSpan: 2, rowSpan: 1, dataKey: 'aiAppearances' },
       { id: 'w33', title: 'AI Share of Voice', type: 'metric', colSpan: 2, rowSpan: 1, dataKey: 'aiShareOfVoice' },
-      { id: 'w34', title: 'AI Sentiment', type: 'metric', colSpan: 2, rowSpan: 1, dataKey: 'aiSentiment' },
-      { id: 'w35', title: 'Avg. AI Position', type: 'metric', colSpan: 2, rowSpan: 1, dataKey: 'aiAvgPosition' },
+      { id: 'w34', title: 'AI Sentiment', type: 'metric', colSpan: 4, rowSpan: 1, dataKey: 'aiSentiment' },
       { id: 'w36', title: 'AI Citations Trend', type: 'line', colSpan: 8, rowSpan: 2, dataKey: 'dailyAITraffic' },
       { id: 'w37', title: 'Citations by AI Engine', type: 'pie', colSpan: 4, rowSpan: 2, dataKey: 'aiEngineBreakdown' },
       { id: 'w38', title: 'AI Visibility by Engine', type: 'line', colSpan: 12, rowSpan: 2, dataKey: 'aiEngineTimeline' },
       { id: 'w39', title: 'Competitor AI Visibility', type: 'bar', colSpan: 6, rowSpan: 2, dataKey: 'aiCompetitorVisibility' },
       { id: 'w40', title: 'Competitor AI Share of Voice', type: 'bar', colSpan: 6, rowSpan: 2, dataKey: 'aiCompetitorSOV' },
-      { id: 'w41', title: 'Top Pages Cited by AI', type: 'table', colSpan: 12, rowSpan: 3, dataKey: 'aiPageCitations' },
     ],
   },
   {
@@ -45,10 +43,6 @@ export const dashboards: Dashboard[] = [
       { id: 'w47', title: 'Pipeline by Industry', type: 'bar', colSpan: 4, rowSpan: 2, dataKey: 'industryByValue' },
       // Row 3: Leads table
       { id: 'w12', title: 'Recent Leads', type: 'table', colSpan: 12, rowSpan: 2, dataKey: 'recentLeads' },
-      // Section divider
-      { id: 'w48', title: 'Content Intelligence', type: 'section', colSpan: 12, rowSpan: 1, dataKey: 'contentIntelligence' },
-      // Row 4: Content Intelligence panel
-      { id: 'w49', title: 'Industry Content Gap Analysis', type: 'table', colSpan: 12, rowSpan: 3, dataKey: 'contentIntelligence' },
     ],
   },
   {

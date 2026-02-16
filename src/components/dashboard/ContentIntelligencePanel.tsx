@@ -4,6 +4,35 @@ import { useState, useMemo } from 'react';
 import { getContentIntelligence, IndustryContentGap } from '@/data/chart-data';
 import { formatCurrency } from '@/lib/utils';
 
+function CreateClusterButton({ gap }: { gap: IndustryContentGap }) {
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const topicNames = gap.suggestedTopics.map((t) => t.title).join(', ');
+    window.dispatchEvent(new CustomEvent('create-cluster', {
+      detail: {
+        industry: gap.industry,
+        coverage: gap.contentCoverage,
+        suggestedTopics: gap.suggestedTopics,
+        pipelineValue: gap.pipelineValue,
+        leadCount: gap.leadCount,
+        message: `I'm planning to create a ${gap.industry} topical cluster focusing on: ${topicNames || 'industry-specific content'}. This industry has ${gap.leadCount} visitors and $${(gap.pipelineValue / 1000).toFixed(0)}K in pipeline value.`,
+      },
+    }));
+  };
+
+  return (
+    <button
+      onClick={handleClick}
+      className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-md hover:bg-emerald-100 transition-colors"
+    >
+      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+      </svg>
+      Create Cluster
+    </button>
+  );
+}
+
 type SortDirection = 'asc' | 'desc';
 
 function SortIcon({ active, direction }: { active: boolean; direction: SortDirection }) {
@@ -120,6 +149,7 @@ function IndustryTable({ data, onSelect }: { data: IndustryContentGap[]; onSelec
             <Th label="Conv. Rate" colKey="conversionRate" align="right" sortKey={sortKey} sortDir={sortDir} onSort={toggle} />
             <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-left">Coverage</th>
             <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-right">Topics</th>
+            <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-center">Action</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-200">
@@ -136,6 +166,9 @@ function IndustryTable({ data, onSelect }: { data: IndustryContentGap[]; onSelec
               <td className="px-4 py-3 text-sm text-gray-700 text-right font-mono whitespace-nowrap">{(row.conversionRate * 100).toFixed(0)}%</td>
               <td className="px-4 py-3 whitespace-nowrap"><CoverageBadge coverage={row.contentCoverage} /></td>
               <td className="px-4 py-3 text-sm text-gray-700 text-right font-mono whitespace-nowrap">{row.suggestedTopics.length}</td>
+              <td className="px-4 py-3 text-center whitespace-nowrap">
+                {row.contentCoverage !== 'strong' && <CreateClusterButton gap={row} />}
+              </td>
             </tr>
           ))}
         </tbody>
@@ -169,6 +202,7 @@ function IndustryDetail({ gap, onBack }: { gap: IndustryContentGap; onBack: () =
       <div className="flex items-center gap-3 mb-4">
         <h2 className="text-base font-semibold text-gray-900">{gap.industry}</h2>
         <CoverageBadge coverage={gap.contentCoverage} />
+        {gap.contentCoverage !== 'strong' && <CreateClusterButton gap={gap} />}
       </div>
 
       {/* Summary cards */}

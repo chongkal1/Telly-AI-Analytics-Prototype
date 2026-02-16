@@ -15,12 +15,20 @@ export function ChatPanel() {
   }, [messages, isTyping]);
 
   useEffect(() => {
-    const handler = (e: Event) => {
+    const discussHandler = (e: Event) => {
       const detail = (e as CustomEvent).detail;
       if (detail?.message) sendMessage(detail.message);
     };
-    window.addEventListener('discuss-cluster', handler);
-    return () => window.removeEventListener('discuss-cluster', handler);
+    const createHandler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail?.message) sendMessage(detail.message);
+    };
+    window.addEventListener('discuss-cluster', discussHandler);
+    window.addEventListener('create-cluster', createHandler);
+    return () => {
+      window.removeEventListener('discuss-cluster', discussHandler);
+      window.removeEventListener('create-cluster', createHandler);
+    };
   }, [sendMessage]);
 
   return (
@@ -67,7 +75,7 @@ export function ChatPanel() {
           </div>
         )}
         {messages.map((msg) => (
-          <ChatMessage key={msg.id} message={msg} />
+          <ChatMessage key={msg.id} message={msg} onAction={sendMessage} />
         ))}
         {isTyping && <TypingIndicator />}
         <div ref={messagesEndRef} />

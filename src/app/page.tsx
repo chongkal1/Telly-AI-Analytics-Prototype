@@ -1,3 +1,4 @@
+// Telly AI Analytics Prototype
 'use client';
 
 import { useState } from 'react';

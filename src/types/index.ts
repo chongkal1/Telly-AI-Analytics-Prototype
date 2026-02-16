@@ -88,12 +88,18 @@ export interface ChartMeta {
   title: string;
 }
 
+export interface MessageAction {
+  label: string;
+  message: string;
+}
+
 export interface Message {
   id: string;
   role: MessageRole;
   content: string;
   timestamp: string;
   chartMeta?: ChartMeta;
+  actions?: MessageAction[];
 }
 
 export interface Conversation {

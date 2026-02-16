@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react';
 import { getClusterData, getClusterPages, getClusterInsights, getContentProductionInsights, getContentFunnelData, ClusterPageDetail, ClusterInsight, ContentProductionInsight, ProductionPriority } from '@/data/chart-data';
 import { useDateRange } from '@/hooks/useDateRange';
 import { ContentFunnel } from './traffic/ContentFunnel';
+import { ContentIntelligencePanel } from './ContentIntelligencePanel';
 
 
 type SortDirection = 'asc' | 'desc';
@@ -628,6 +629,22 @@ export function TopicalClusters() {
     <div className="space-y-4">
       <ContentFunnel data={funnelData} />
       <ContentProductionIntelligence insights={productionInsights} onSelect={setSelectedCluster} />
+
+      {/* Industry Content Opportunities */}
+      <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+        <div className="px-4 py-3 border-b border-gray-100">
+          <div className="flex items-center gap-2">
+            <svg className="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5" />
+            </svg>
+            <div>
+              <h3 className="text-sm font-semibold text-gray-900">Industry Content Opportunities</h3>
+              <p className="text-xs text-gray-500 mt-0.5">Industries visiting your site that need dedicated topical clusters</p>
+            </div>
+          </div>
+        </div>
+        <ContentIntelligencePanel />
+      </div>
     </div>
   );
 }

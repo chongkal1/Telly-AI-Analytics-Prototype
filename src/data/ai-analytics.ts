@@ -23,6 +23,7 @@ export interface AIPageCitation {
   metaAi: number;
   sentiment: number; // 0-100
   avgPosition: number;
+  aiClicks: number; // visits from AI referrals
   change: number; // % change vs previous period
 }
 
@@ -127,11 +128,14 @@ function generatePageCitations(): AIPageCitation[] {
     const copilot = Math.round(base * (0.06 + Math.random() * 0.03));
     const metaAi = Math.max(0, base - chatgpt - perplexity - gemini - claude - copilot);
 
+    const totalCitations = chatgpt + perplexity + gemini + claude + copilot + metaAi;
+    const aiClicks = Math.round(totalCitations * (0.30 + Math.random() * 0.15));
+
     return {
       pageId: p.id,
       title: p.title.length > 50 ? p.title.slice(0, 50) + '...' : p.title,
       url: p.url,
-      totalCitations: chatgpt + perplexity + gemini + claude + copilot + metaAi,
+      totalCitations,
       chatgpt,
       perplexity,
       gemini,
@@ -140,6 +144,7 @@ function generatePageCitations(): AIPageCitation[] {
       metaAi,
       sentiment: Math.round(65 + p.weight * 10 + Math.random() * 8),
       avgPosition: Math.round((1.5 + (1 / p.weight) * 0.8) * 10) / 10,
+      aiClicks,
       change: Math.round((p.weight > 1.5 ? 15 : -5) + (Math.random() * 20 - 10)),
     };
   });

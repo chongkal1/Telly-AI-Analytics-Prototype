@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { PageOverviewData } from '@/data/chart-data';
+import { AIPageCitation } from '@/data/ai-analytics';
 import { TrendIndicator } from '@/components/shared/TrendIndicator';
 
 const PAGE_SIZE = 10;
@@ -21,13 +21,40 @@ function SortIcon({ active, direction }: { active: boolean; direction: SortDirec
   );
 }
 
-interface TopPagesProps {
-  pages: PageOverviewData[];
+function SentimentBadge({ value }: { value: number }) {
+  const color = value >= 80 ? 'text-emerald-600' : value >= 60 ? 'text-amber-600' : 'text-red-600';
+  return <span className={`font-medium text-sm ${color}`}>{value}/100</span>;
 }
 
-export function TopPages({ pages }: TopPagesProps) {
+function DistributionBar({ citations, clicks, maxCitations }: { citations: number; clicks: number; maxCitations: number }) {
+  const citationWidth = maxCitations > 0 ? (citations / maxCitations) * 100 : 0;
+  const clickWidth = maxCitations > 0 ? (clicks / maxCitations) * 100 : 0;
+
+  return (
+    <div className="w-28 space-y-1">
+      <div className="flex items-center gap-1.5">
+        <div className="w-16 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+          <div className="h-full bg-purple-400 rounded-full" style={{ width: `${citationWidth}%` }} />
+        </div>
+        <span className="text-[10px] text-purple-600 tabular-nums">{citations} cit.</span>
+      </div>
+      <div className="flex items-center gap-1.5">
+        <div className="w-16 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+          <div className="h-full bg-blue-400 rounded-full" style={{ width: `${clickWidth}%` }} />
+        </div>
+        <span className="text-[10px] text-blue-600 tabular-nums">{clicks} clicks</span>
+      </div>
+    </div>
+  );
+}
+
+interface AIPageVisibilityProps {
+  data: AIPageCitation[];
+}
+
+export function AIPageVisibility({ data }: AIPageVisibilityProps) {
   const [currentPage, setCurrentPage] = useState(1);
-  const [sortKey, setSortKey] = useState<string>('clicks');
+  const [sortKey, setSortKey] = useState<string>('totalCitations');
   const [sortDir, setSortDir] = useState<SortDirection>('desc');
 
   const toggleSort = (key: string) => {
@@ -41,7 +68,7 @@ export function TopPages({ pages }: TopPagesProps) {
   };
 
   const sorted = useMemo(() => {
-    return [...pages].sort((a, b) => {
+    return [...data].sort((a, b) => {
       const aVal = (a as unknown as Record<string, unknown>)[sortKey];
       const bVal = (b as unknown as Record<string, unknown>)[sortKey];
       let cmp = 0;
@@ -49,24 +76,28 @@ export function TopPages({ pages }: TopPagesProps) {
       else if (typeof aVal === 'number' && typeof bVal === 'number') cmp = aVal - bVal;
       return sortDir === 'asc' ? cmp : -cmp;
     });
-  }, [pages, sortKey, sortDir]);
+  }, [data, sortKey, sortDir]);
+
+  const maxCitations = useMemo(() => {
+    return data.reduce((max, d) => Math.max(max, d.totalCitations), 1);
+  }, [data]);
 
   const totalPages = Math.ceil(sorted.length / PAGE_SIZE);
   const paginated = sorted.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
-  const columns = [
-    { key: 'title', label: 'Page', align: 'left' as const },
-    { key: 'category', label: 'Cluster', align: 'left' as const },
-    { key: 'impressions', label: 'Impressions', align: 'right' as const },
-    { key: 'clicks', label: 'Clicks', align: 'right' as const },
-    { key: 'clicksChange', label: 'Trend', align: 'right' as const },
-    { key: 'ctr', label: 'CTR', align: 'right' as const },
+  const columns: { key: string; label: string; align: 'left' | 'right'; sortable: boolean }[] = [
+    { key: 'title', label: 'Page', align: 'left', sortable: true },
+    { key: 'totalCitations', label: 'Citations', align: 'right', sortable: true },
+    { key: 'aiClicks', label: 'AI Clicks', align: 'right', sortable: true },
+    { key: 'distribution', label: 'Distribution', align: 'left', sortable: false },
+    { key: 'sentiment', label: 'Sentiment', align: 'right', sortable: true },
+    { key: 'change', label: 'Change', align: 'right', sortable: true },
   ];
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
       <div className="px-4 py-3 border-b border-gray-100">
-        <h3 className="text-sm font-semibold text-gray-900">All Pages</h3>
+        <h3 className="text-sm font-semibold text-gray-900">AI Page Visibility</h3>
         <p className="text-xs text-gray-500 mt-0.5">
           {sorted.length} pages &middot; Showing {(currentPage - 1) * PAGE_SIZE + 1}&ndash;{Math.min(currentPage * PAGE_SIZE, sorted.length)}
         </p>
@@ -79,12 +110,12 @@ export function TopPages({ pages }: TopPagesProps) {
               {columns.map((col) => (
                 <th
                   key={col.key}
-                  className={`px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none ${col.align === 'right' ? 'text-right' : 'text-left'}`}
-                  onClick={() => toggleSort(col.key)}
+                  className={`px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider ${col.sortable ? 'cursor-pointer hover:bg-gray-100' : ''} select-none ${col.align === 'right' ? 'text-right' : 'text-left'}`}
+                  onClick={col.sortable ? () => toggleSort(col.key) : undefined}
                 >
                   <span className="inline-flex items-center">
                     {col.label}
-                    <SortIcon active={sortKey === col.key} direction={sortDir} />
+                    {col.sortable && <SortIcon active={sortKey === col.key} direction={sortDir} />}
                   </span>
                 </th>
               ))}
@@ -92,19 +123,19 @@ export function TopPages({ pages }: TopPagesProps) {
           </thead>
           <tbody className="divide-y divide-gray-200">
             {paginated.map((row) => (
-              <tr key={row.id} className="hover:bg-gray-50">
+              <tr key={row.pageId} className="hover:bg-gray-50">
                 <td className="px-3 py-2 text-sm font-medium text-gray-900 max-w-xs truncate">{row.title}</td>
+                <td className="px-3 py-2 text-sm text-gray-700 font-mono text-right">{row.totalCitations}</td>
+                <td className="px-3 py-2 text-sm text-gray-700 font-mono text-right">{row.aiClicks}</td>
                 <td className="px-3 py-2">
-                  <span className="inline-flex items-center px-1.5 py-0.5 text-[10px] font-medium rounded bg-indigo-50 text-indigo-700">
-                    {row.category}
-                  </span>
+                  <DistributionBar citations={row.totalCitations} clicks={row.aiClicks} maxCitations={maxCitations} />
                 </td>
-                <td className="px-3 py-2 text-sm text-gray-700 font-mono text-right">{row.impressions.toLocaleString()}</td>
-                <td className="px-3 py-2 text-sm text-gray-700 font-mono text-right">{row.clicks.toLocaleString()}</td>
                 <td className="px-3 py-2 text-right">
-                  <TrendIndicator change={row.clicksChange} />
+                  <SentimentBadge value={row.sentiment} />
                 </td>
-                <td className="px-3 py-2 text-sm text-gray-700 font-mono text-right">{(row.ctr * 100).toFixed(2)}%</td>
+                <td className="px-3 py-2 text-right">
+                  <TrendIndicator change={row.change} />
+                </td>
               </tr>
             ))}
           </tbody>
@@ -129,7 +160,7 @@ export function TopPages({ pages }: TopPagesProps) {
                 key={p}
                 onClick={() => setCurrentPage(p)}
                 className={`w-7 h-7 text-xs font-medium rounded ${
-                  p === currentPage ? 'bg-indigo-600 text-white' : 'text-gray-600 hover:bg-gray-100'
+                  p === currentPage ? 'bg-purple-600 text-white' : 'text-gray-600 hover:bg-gray-100'
                 }`}
               >
                 {p}

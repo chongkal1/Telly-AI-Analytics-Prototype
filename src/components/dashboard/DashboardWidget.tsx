@@ -9,12 +9,11 @@ import { BarChartWidget } from '@/components/charts/BarChartWidget';
 import { PieChartWidget } from '@/components/charts/PieChartWidget';
 import { DataTable } from '@/components/charts/DataTable';
 import { StatusBadge } from '@/components/shared/StatusBadge';
-import { TrendIndicator } from '@/components/shared/TrendIndicator';
 import { formatDate, formatCurrency } from '@/lib/utils';
 import { CHART_COLORS } from '@/lib/constants';
 import { LeadStatus } from '@/types';
 import { AI_ENGINES } from '@/data/ai-analytics';
-import { ContentIntelligencePanel } from '@/components/dashboard/ContentIntelligencePanel';
+
 
 interface DashboardWidgetProps {
   widget: Widget;
@@ -29,10 +28,6 @@ export function DashboardWidget({ widget }: DashboardWidgetProps) {
       'AI Analytics': {
         accent: 'bg-purple-500', bg: 'bg-purple-50', badge: 'text-purple-600', badgeText: 'AI-Powered',
         description: 'Track how your content appears across ChatGPT, Perplexity, Gemini, Claude, Copilot, and Meta AI',
-      },
-      'Content Intelligence': {
-        accent: 'bg-emerald-500', bg: 'bg-emerald-50', badge: 'text-emerald-600', badgeText: 'RB2B Visitor Data',
-        description: 'Identify content gaps by analyzing which industries visit your site and what content you\'re missing',
       },
     };
     const cfg = sectionConfig[widget.title] || sectionConfig['AI Analytics'];
@@ -239,10 +234,6 @@ export function DashboardWidget({ widget }: DashboardWidgetProps) {
         />
       )}
 
-      {widget.type === 'table' && widget.dataKey === 'contentIntelligence' && (
-        <ContentIntelligencePanel />
-      )}
-
       {widget.type === 'table' && widget.dataKey === 'contentTable' && (
         <DataTable
           columns={[
@@ -269,45 +260,6 @@ export function DashboardWidget({ widget }: DashboardWidgetProps) {
         />
       )}
 
-      {widget.type === 'table' && widget.dataKey === 'aiPageCitations' && (
-        <DataTable
-          columns={[
-            { key: 'title', label: 'Page', sortable: true },
-            { key: 'totalCitations', label: 'Citations', sortable: true, align: 'right' },
-            { key: 'chatgpt', label: 'ChatGPT', sortable: true, align: 'right' },
-            { key: 'perplexity', label: 'Perplexity', sortable: true, align: 'right' },
-            { key: 'gemini', label: 'Gemini', sortable: true, align: 'right' },
-            { key: 'claude', label: 'Claude', sortable: true, align: 'right' },
-            { key: 'copilot', label: 'Copilot', sortable: true, align: 'right' },
-            {
-              key: 'sentiment',
-              label: 'Sentiment',
-              sortable: true,
-              align: 'right',
-              render: (val) => {
-                const v = val as number;
-                const color = v >= 80 ? 'text-emerald-600' : v >= 60 ? 'text-amber-600' : 'text-red-600';
-                return <span className={`font-medium ${color}`}>{v}/100</span>;
-              },
-            },
-            {
-              key: 'avgPosition',
-              label: 'Avg. Pos',
-              sortable: true,
-              align: 'right',
-              render: (val) => (val as number).toFixed(1),
-            },
-            {
-              key: 'change',
-              label: 'Change',
-              sortable: true,
-              align: 'right',
-              render: (val) => <TrendIndicator change={val as number} />,
-            },
-          ]}
-          data={data}
-        />
-      )}
     </div>
   );
 }
