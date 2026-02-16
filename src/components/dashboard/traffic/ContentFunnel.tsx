@@ -64,18 +64,18 @@ function Th({ label, colKey, align, sortKey, sortDir, onSort }: {
 }
 
 const STAGE_COLORS = [
-  { bgHex: '#6366f1', lightBg: '#eef2ff', textHex: '#4338ca', ring: 'ring-indigo-300' },
-  { bgHex: '#3b82f6', lightBg: '#eff6ff', textHex: '#1d4ed8', ring: 'ring-blue-300' },
-  { bgHex: '#10b981', lightBg: '#ecfdf5', textHex: '#047857', ring: 'ring-emerald-300' },
-  { bgHex: '#f59e0b', lightBg: '#fffbeb', textHex: '#b45309', ring: 'ring-amber-300' },
+  { fill: '#e0e7ff', fillSelected: '#c7d2fe', stroke: '#818cf8', labelColor: '#4338ca' },
+  { fill: '#dbeafe', fillSelected: '#bfdbfe', stroke: '#60a5fa', labelColor: '#1d4ed8' },
+  { fill: '#d1fae5', fillSelected: '#a7f3d0', stroke: '#34d399', labelColor: '#047857' },
+  { fill: '#fef3c7', fillSelected: '#fde68a', stroke: '#fbbf24', labelColor: '#92400e' },
 ];
 
 /* ── Priority badge ── */
 
 const PRIORITY_CONFIG: Record<ProductionPriority, { label: string; bg: string; text: string; border: string; dot: string }> = {
-  'double-down': { label: 'Double Down', bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200', dot: 'bg-emerald-500' },
-  'optimize-first': { label: 'Optimize First', bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200', dot: 'bg-amber-500' },
-  'expand': { label: 'Expand', bg: 'bg-indigo-50', text: 'text-indigo-700', border: 'border-indigo-200', dot: 'bg-indigo-500' },
+  'double-down': { label: 'Scale Production', bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200', dot: 'bg-emerald-500' },
+  'optimize-first': { label: 'Update Content', bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200', dot: 'bg-amber-500' },
+  'expand': { label: 'Expand Coverage', bg: 'bg-indigo-50', text: 'text-indigo-700', border: 'border-indigo-200', dot: 'bg-indigo-500' },
   'monitor': { label: 'Monitor', bg: 'bg-gray-50', text: 'text-gray-600', border: 'border-gray-200', dot: 'bg-gray-400' },
 };
 
@@ -200,14 +200,14 @@ interface ContentFunnelProps {
 }
 
 export function ContentFunnel({ data }: ContentFunnelProps) {
-  const [selectedStage, setSelectedStage] = useState<string | null>(null);
+  const [selectedStage, setSelectedStage] = useState<string | null>('Impressions');
 
   const firstCount = data[0]?.count ?? 1;
 
-  // Compute heights for each stage (proportional to count, for the horizontal funnel)
+  // Heights proportional to count
   const stageHeights = data.map((stage, i) => {
     if (i === 0) return 100;
-    return Math.max(18, (stage.count / firstCount) * 100);
+    return Math.max(20, (stage.count / firstCount) * 100);
   });
 
   return (
@@ -217,27 +217,25 @@ export function ContentFunnel({ data }: ContentFunnelProps) {
         <p className="text-xs text-gray-500 mt-0.5">Click a stage to see topical cluster breakdown</p>
       </div>
 
-      {/* Horizontal funnel — SVG with trapezoid segments flowing left to right */}
+      {/* Horizontal funnel — SVG trapezoid segments */}
       <div className="px-4 py-5">
-        <svg viewBox="0 0 800 160" className="w-full" preserveAspectRatio="xMidYMid meet">
+        <svg viewBox="0 0 900 170" className="w-full" preserveAspectRatio="xMidYMid meet">
           {data.map((stage, i) => {
             const isSelected = selectedStage === stage.stage;
             const colors = STAGE_COLORS[i];
 
             const stageCount = data.length;
-            const segmentWidth = 800 / stageCount;
+            const segmentWidth = 900 / stageCount;
             const x = i * segmentWidth;
-            const gap = 3;
+            const gap = 4;
 
-            // Heights for left and right edges of this trapezoid
-            const maxH = 140;
-            const cy = 80; // vertical center
+            const maxH = 120;
+            const cy = 95;
             const leftH = (stageHeights[i] / 100) * maxH;
             const rightH = i < stageCount - 1
               ? (stageHeights[i + 1] / 100) * maxH
               : leftH * 0.7;
 
-            // Trapezoid points
             const x1 = x + (i === 0 ? 0 : gap / 2);
             const x2 = x + segmentWidth - (i === stageCount - 1 ? 0 : gap / 2);
             const topLeft = cy - leftH / 2;
@@ -255,26 +253,28 @@ export function ContentFunnel({ data }: ContentFunnelProps) {
                 role="button"
                 tabIndex={0}
               >
+                {/* Trapezoid shape */}
                 <polygon
                   points={`${x1},${topLeft} ${x2},${topRight} ${x2},${bottomRight} ${x1},${bottomLeft}`}
-                  fill={isSelected ? colors.lightBg : colors.bgHex}
-                  stroke={isSelected ? colors.bgHex : 'none'}
+                  fill={isSelected ? colors.fillSelected : colors.fill}
+                  stroke={isSelected ? colors.stroke : 'none'}
                   strokeWidth={isSelected ? 2 : 0}
+                  rx={4}
                 />
                 {/* Hover overlay */}
                 <polygon
                   points={`${x1},${topLeft} ${x2},${topRight} ${x2},${bottomRight} ${x1},${bottomLeft}`}
-                  fill="white"
+                  fill={isSelected ? 'transparent' : 'white'}
                   fillOpacity={0}
-                  className="hover:fill-opacity-[0.08] transition-all"
+                  className="hover:fill-opacity-10 transition-all"
                 />
                 {/* Stage label */}
                 <text
                   x={x1 + (x2 - x1) / 2}
-                  y={cy - 12}
-                  fill={isSelected ? colors.textHex : '#ffffff'}
-                  fontSize={11}
-                  fontWeight={500}
+                  y={topLeft - 10}
+                  fill={colors.labelColor}
+                  fontSize={12}
+                  fontWeight={600}
                   textAnchor="middle"
                   dominantBaseline="middle"
                 >
@@ -283,8 +283,8 @@ export function ContentFunnel({ data }: ContentFunnelProps) {
                 {/* Count */}
                 <text
                   x={x1 + (x2 - x1) / 2}
-                  y={cy + 6}
-                  fill={isSelected ? '#111827' : '#ffffff'}
+                  y={cy}
+                  fill="#111827"
                   fontSize={20}
                   fontWeight={700}
                   textAnchor="middle"
@@ -293,12 +293,12 @@ export function ContentFunnel({ data }: ContentFunnelProps) {
                 >
                   {formatCount(stage.count)}
                 </text>
-                {/* Conversion rate from previous stage */}
+                {/* Conversion rate */}
                 {i > 0 && (
                   <text
                     x={x1 + (x2 - x1) / 2}
-                    y={cy + 24}
-                    fill={isSelected ? '#6b7280' : 'rgba(255,255,255,0.7)'}
+                    y={cy + 20}
+                    fill="#6b7280"
                     fontSize={10}
                     textAnchor="middle"
                     dominantBaseline="middle"

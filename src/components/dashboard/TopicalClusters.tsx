@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { getClusterData, getClusterPages, getClusterInsights, getContentProductionInsights, ClusterPageDetail, ClusterInsight, ContentProductionInsight, ProductionPriority, AgentStatus } from '@/data/chart-data';
+import { getClusterData, getClusterPages, getClusterInsights, getContentProductionInsights, getContentFunnelData, ClusterPageDetail, ClusterInsight, ContentProductionInsight, ProductionPriority } from '@/data/chart-data';
 import { useDateRange } from '@/hooks/useDateRange';
+import { ContentFunnel } from './traffic/ContentFunnel';
 
 
 type SortDirection = 'asc' | 'desc';
@@ -114,9 +115,9 @@ function StatusBadge({ status }: { status: ClusterPageDetail['status'] }) {
 /* ── Priority badge for production intelligence ── */
 
 const PRIORITY_CONFIG: Record<ProductionPriority, { label: string; bg: string; text: string; border: string; dot: string; borderLeft: string }> = {
-  'double-down': { label: 'Double Down', bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200', dot: 'bg-emerald-500', borderLeft: 'border-l-emerald-400' },
-  'optimize-first': { label: 'Optimize First', bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200', dot: 'bg-amber-500', borderLeft: 'border-l-amber-400' },
-  'expand': { label: 'Expand', bg: 'bg-indigo-50', text: 'text-indigo-700', border: 'border-indigo-200', dot: 'bg-indigo-500', borderLeft: 'border-l-indigo-400' },
+  'double-down': { label: 'Scale Production', bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200', dot: 'bg-emerald-500', borderLeft: 'border-l-emerald-400' },
+  'optimize-first': { label: 'Update Content', bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200', dot: 'bg-amber-500', borderLeft: 'border-l-amber-400' },
+  'expand': { label: 'Expand Coverage', bg: 'bg-indigo-50', text: 'text-indigo-700', border: 'border-indigo-200', dot: 'bg-indigo-500', borderLeft: 'border-l-indigo-400' },
   'monitor': { label: 'Monitor', bg: 'bg-gray-50', text: 'text-gray-600', border: 'border-gray-200', dot: 'bg-gray-400', borderLeft: 'border-l-gray-300' },
 };
 
@@ -125,25 +126,6 @@ function PriorityBadge({ priority }: { priority: ProductionPriority }) {
   return (
     <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium rounded-full border ${c.bg} ${c.text} ${c.border}`}>
       <span className={`w-1.5 h-1.5 rounded-full ${c.dot}`} />
-      {c.label}
-    </span>
-  );
-}
-
-/* ── Agent status badge ── */
-
-const AGENT_STATUS_CONFIG: Record<AgentStatus, { label: string; bg: string; text: string; border: string; dot: string; pulse: boolean }> = {
-  'in-progress': { label: 'In Progress', bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200', dot: 'bg-emerald-500', pulse: true },
-  'needs-review': { label: 'Needs Review', bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200', dot: 'bg-amber-500', pulse: true },
-  'planned': { label: 'Planned', bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200', dot: 'bg-blue-500', pulse: false },
-  'monitoring': { label: 'Monitoring', bg: 'bg-gray-50', text: 'text-gray-600', border: 'border-gray-200', dot: 'bg-gray-400', pulse: false },
-};
-
-function AgentStatusBadge({ status }: { status: AgentStatus }) {
-  const c = AGENT_STATUS_CONFIG[status];
-  return (
-    <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium rounded-full border ${c.bg} ${c.text} ${c.border}`}>
-      <span className={`w-1.5 h-1.5 rounded-full ${c.dot} ${c.pulse ? 'animate-pulse' : ''}`} />
       {c.label}
     </span>
   );
@@ -239,10 +221,7 @@ function ProductionInsightCard({ insight, onSelect }: { insight: ContentProducti
       onClick={() => setIsExpanded(!isExpanded)}
     >
       <div className="flex items-start justify-between mb-2">
-        <div className="flex items-center gap-1.5 flex-wrap">
-          <AgentStatusBadge status={insight.agentStatus} />
-          <PriorityBadge priority={insight.priority} />
-        </div>
+        <PriorityBadge priority={insight.priority} />
         <div className="flex items-center gap-2">
           {growth !== 0 && (
             <span className={`inline-flex items-center gap-0.5 text-xs font-medium ${growth > 0 ? 'text-emerald-600' : 'text-red-600'}`}>
@@ -273,22 +252,7 @@ function ProductionInsightCard({ insight, onSelect }: { insight: ContentProducti
           insight.category
         )}
       </h4>
-      <p className="text-xs text-gray-600">{insight.headline}</p>
       <AgentActivityLine activity={insight.agentActivity} />
-
-      <div className="grid grid-cols-4 gap-2 mt-3">
-        {[
-          { label: 'Pages', value: insight.keyMetrics.pageCount.toString() },
-          { label: 'Clicks', value: insight.keyMetrics.totalClicks.toLocaleString() },
-          { label: 'Leads', value: insight.keyMetrics.leads.toString() },
-          { label: 'CTR', value: `${(insight.keyMetrics.ctr * 100).toFixed(1)}%` },
-        ].map((m) => (
-          <div key={m.label} className="text-center">
-            <div className="text-xs text-gray-400">{m.label}</div>
-            <div className="text-sm font-semibold text-gray-900 font-mono">{m.value}</div>
-          </div>
-        ))}
-      </div>
 
       {isExpanded && (
         <div className="mt-3">
@@ -305,12 +269,6 @@ function ProductionInsightCard({ insight, onSelect }: { insight: ContentProducti
         </div>
       )}
 
-      <div
-        className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 mt-3"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <DiscussInChatButton clusterName={insight.category} />
-      </div>
     </div>
   );
 }
@@ -392,7 +350,6 @@ function ClusterProductionBanner({ insight }: { insight: ContentProductionInsigh
       <div className="flex items-start gap-3">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1 flex-wrap">
-            <AgentStatusBadge status={insight.agentStatus} />
             <PriorityBadge priority={insight.priority} />
             {growth !== 0 && (
               <span className={`inline-flex items-center gap-0.5 text-xs font-medium ${growth > 0 ? 'text-emerald-600' : 'text-red-600'}`}>
@@ -644,6 +601,10 @@ export function TopicalClusters() {
     () => getContentProductionInsights(clusters, startDate, endDate),
     [clusters, startDate, endDate],
   );
+  const funnelData = useMemo(
+    () => getContentFunnelData(startDate, endDate, productionInsights),
+    [startDate, endDate, productionInsights],
+  );
   const clusterPages = useMemo(
     () => (selectedCluster ? getClusterPages(selectedCluster, startDate, endDate) : []),
     [selectedCluster, startDate, endDate],
@@ -664,6 +625,9 @@ export function TopicalClusters() {
   }
 
   return (
-    <ContentProductionIntelligence insights={productionInsights} onSelect={setSelectedCluster} />
+    <div className="space-y-4">
+      <ContentFunnel data={funnelData} />
+      <ContentProductionIntelligence insights={productionInsights} onSelect={setSelectedCluster} />
+    </div>
   );
 }

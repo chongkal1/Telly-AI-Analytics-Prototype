@@ -683,7 +683,7 @@ export function getContentProductionInsights(
 
     if (highVolume && highEfficiency && hasLeads) {
       priority = 'double-down';
-      priorityLabel = 'Double Down';
+      priorityLabel = 'Scale Production';
       agentStatus = 'in-progress';
       agentStatusLabel = 'In Progress';
       agentActivity = `Scaling content production across ${c.pageCount} pages`;
@@ -696,7 +696,7 @@ export function getContentProductionInsights(
       ];
     } else if (highImpressions && (lowCtr || (highVolume && !hasLeads))) {
       priority = 'optimize-first';
-      priorityLabel = 'Optimize First';
+      priorityLabel = 'Update Content';
       agentStatus = 'needs-review';
       agentStatusLabel = 'Needs Review';
       agentActivity = `Auditing titles and CTAs before scaling`;
@@ -718,7 +718,7 @@ export function getContentProductionInsights(
           ];
     } else if (smallCluster && highEfficiency) {
       priority = 'expand';
-      priorityLabel = 'Expand';
+      priorityLabel = 'Expand Coverage';
       agentStatus = 'planned';
       agentStatusLabel = 'Planned';
       agentActivity = `Building out subtopic cluster for ${c.category}`;
@@ -958,6 +958,42 @@ export function getTopMovers(startDate?: string, endDate?: string): { rising: To
     rising: sorted.filter((p) => p.clicksChange > 0).slice(0, 5),
     falling: sorted.filter((p) => p.clicksChange < 0).sort((a, b) => a.clicksChange - b.clicksChange).slice(0, 5),
   };
+}
+
+/* ── All Pages Overview ── */
+
+export interface PageOverviewData {
+  id: string;
+  title: string;
+  url: string;
+  category: string;
+  impressions: number;
+  clicks: number;
+  clicksChange: number;
+  ctr: number;
+}
+
+export function getAllPagesOverview(startDate?: string, endDate?: string): PageOverviewData[] {
+  const categories = Array.from(new Set(pages.map((p) => p.category)));
+  const allPages: PageOverviewData[] = [];
+
+  categories.forEach((cat) => {
+    const clusterPagesData = getClusterPages(cat, startDate, endDate);
+    clusterPagesData.forEach((p) => {
+      allPages.push({
+        id: p.id,
+        title: p.title,
+        url: p.url,
+        category: cat,
+        impressions: p.impressions,
+        clicks: p.clicks,
+        clicksChange: p.clicksChange,
+        ctr: p.ctr,
+      });
+    });
+  });
+
+  return allPages.sort((a, b) => b.clicks - a.clicks);
 }
 
 /* ── Content Freshness ── */
