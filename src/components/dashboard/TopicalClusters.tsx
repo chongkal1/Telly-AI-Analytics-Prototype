@@ -13,14 +13,14 @@ function SortIcon({ active, direction }: { active: boolean; direction: SortDirec
   return (
     <span className="ml-1 inline-flex flex-col">
       <svg
-        className={`h-2 w-2 ${active && direction === 'asc' ? 'text-indigo-600' : 'text-gray-400'}`}
+        className={`h-2 w-2 ${active && direction === 'asc' ? 'text-indigo-600' : 'text-surface-400'}`}
         viewBox="0 0 8 4"
         fill="currentColor"
       >
         <path d="M4 0L8 4H0L4 0Z" />
       </svg>
       <svg
-        className={`h-2 w-2 -mt-0.5 ${active && direction === 'desc' ? 'text-indigo-600' : 'text-gray-400'}`}
+        className={`h-2 w-2 -mt-0.5 ${active && direction === 'desc' ? 'text-indigo-600' : 'text-surface-400'}`}
         viewBox="0 0 8 4"
         fill="currentColor"
       >
@@ -64,12 +64,12 @@ function CoverageBar({ count, total, color, label }: { count: number; total: num
   const pct = total > 0 ? Math.round((count / total) * 100) : 0;
   return (
     <div className="flex items-center gap-2">
-      <span className="text-xs text-gray-500 w-24 shrink-0">{label}</span>
-      <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+      <span className="text-xs text-surface-500 w-24 shrink-0">{label}</span>
+      <div className="flex-1 h-2 bg-surface-100 rounded-full overflow-hidden">
         <div className={`h-full rounded-full ${color}`} style={{ width: `${pct}%` }} />
       </div>
-      <span className="text-xs font-medium text-gray-700 w-16 text-right font-mono">
-        {count}/{total} <span className="text-gray-400">({pct}%)</span>
+      <span className="text-xs font-medium text-surface-700 w-16 text-right font-mono">
+        {count}/{total} <span className="text-surface-400">({pct}%)</span>
       </span>
     </div>
   );
@@ -83,7 +83,7 @@ function Th({ label, colKey, align, sortKey, sortDir, onSort }: {
 }) {
   return (
     <th
-      className={`px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none ${
+      className={`px-4 py-3 text-xs font-medium text-surface-500 uppercase tracking-wider cursor-pointer hover:bg-surface-100 select-none ${
         align === 'right' ? 'text-right' : 'text-left'
       }`}
       onClick={() => onSort(colKey)}
@@ -100,7 +100,7 @@ function Th({ label, colKey, align, sortKey, sortDir, onSort }: {
 
 function StatusBadge({ status }: { status: ClusterPageDetail['status'] }) {
   const config = {
-    performing: { label: 'Performing', bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200', dot: 'bg-emerald-500' },
+    performing: { label: 'Performing', bg: 'bg-[#00C5DF]/10', text: 'text-[#00C5DF]', border: 'border-[#00C5DF]/30', dot: 'bg-[#00C5DF]/100' },
     attention: { label: 'Needs Attention', bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200', dot: 'bg-amber-500' },
     underperforming: { label: 'Underperforming', bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200', dot: 'bg-red-500' },
   }[status];
@@ -116,10 +116,10 @@ function StatusBadge({ status }: { status: ClusterPageDetail['status'] }) {
 /* ── Priority badge for production intelligence ── */
 
 const PRIORITY_CONFIG: Record<ProductionPriority, { label: string; bg: string; text: string; border: string; dot: string; borderLeft: string }> = {
-  'double-down': { label: 'Scale Production', bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200', dot: 'bg-emerald-500', borderLeft: 'border-l-emerald-400' },
+  'double-down': { label: 'Scale Production', bg: 'bg-[#00C5DF]/10', text: 'text-[#00C5DF]', border: 'border-[#00C5DF]/30', dot: 'bg-[#00C5DF]/100', borderLeft: 'border-l-[#00C5DF]' },
   'optimize-first': { label: 'Update Content', bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200', dot: 'bg-amber-500', borderLeft: 'border-l-amber-400' },
   'expand': { label: 'Expand Coverage', bg: 'bg-indigo-50', text: 'text-indigo-700', border: 'border-indigo-200', dot: 'bg-indigo-500', borderLeft: 'border-l-indigo-400' },
-  'monitor': { label: 'Monitor', bg: 'bg-gray-50', text: 'text-gray-600', border: 'border-gray-200', dot: 'bg-gray-400', borderLeft: 'border-l-gray-300' },
+  'monitor': { label: 'Monitor', bg: 'bg-surface-50', text: 'text-surface-600', border: 'border-surface-200', dot: 'bg-surface-400', borderLeft: 'border-l-surface-300' },
 };
 
 function PriorityBadge({ priority }: { priority: ProductionPriority }) {
@@ -136,7 +136,7 @@ function PriorityBadge({ priority }: { priority: ProductionPriority }) {
 
 function AgentActivityLine({ activity }: { activity: string }) {
   return (
-    <p className="flex items-center gap-1 text-xs text-gray-500 italic mt-0.5">
+    <p className="flex items-center gap-1 text-xs text-surface-500 italic mt-0.5">
       <svg className="w-3 h-3 text-indigo-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z" />
       </svg>
@@ -157,12 +157,12 @@ function ActionStatusIcon({ action }: { action: string }) {
   }
   if (action.startsWith('Scheduled:')) {
     return (
-      <svg className="w-3 h-3 text-gray-400 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <svg className="w-3 h-3 text-surface-400 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
       </svg>
     );
   }
-  return <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-1 shrink-0" />;
+  return <span className="w-1.5 h-1.5 rounded-full bg-[#00C5DF] mt-1 shrink-0" />;
 }
 
 /* ── Discuss in Chat button ── */
@@ -177,7 +177,7 @@ function DiscussInChatButton({ clusterName }: { clusterName: string }) {
   return (
     <button
       onClick={handleClick}
-      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-500 border border-gray-200 rounded-md hover:text-emerald-700 hover:border-emerald-300 hover:bg-emerald-50 transition-colors"
+      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-surface-500 border border-surface-200 rounded-md hover:text-[#00C5DF] hover:border-[#00C5DF]/30 hover:bg-[#00C5DF]/10 transition-colors"
     >
       <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
@@ -218,14 +218,14 @@ function ProductionInsightCard({ insight, onSelect }: { insight: ContentProducti
 
   return (
     <div
-      className={`group bg-white rounded-lg border border-gray-200 shadow-sm p-4 border-l-[3px] ${c.borderLeft} cursor-pointer transition-colors hover:border-gray-300`}
+      className={`group bg-white rounded-[14px] border border-surface-200 shadow-card p-4 border-l-[3px] ${c.borderLeft} cursor-pointer transition-colors hover:border-surface-300`}
       onClick={() => setIsExpanded(!isExpanded)}
     >
       <div className="flex items-start justify-between mb-2">
         <PriorityBadge priority={insight.priority} />
         <div className="flex items-center gap-2">
           {growth !== 0 && (
-            <span className={`inline-flex items-center gap-0.5 text-xs font-medium ${growth > 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+            <span className={`inline-flex items-center gap-0.5 text-xs font-medium ${growth > 0 ? 'text-[#00C5DF]' : 'text-red-600'}`}>
               <svg className={`w-3 h-3 ${growth > 0 ? '' : 'rotate-180'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
               </svg>
@@ -233,7 +233,7 @@ function ProductionInsightCard({ insight, onSelect }: { insight: ContentProducti
             </span>
           )}
           <svg
-            className={`w-4 h-4 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+            className={`w-4 h-4 text-surface-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
             fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
           >
             <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
@@ -241,7 +241,7 @@ function ProductionInsightCard({ insight, onSelect }: { insight: ContentProducti
         </div>
       </div>
 
-      <h4 className="text-sm font-semibold text-gray-900 mb-0.5">
+      <h4 className="text-sm font-semibold text-surface-900 mb-0.5">
         {onSelect ? (
           <button
             className="hover:text-indigo-600 hover:underline transition-colors"
@@ -257,11 +257,11 @@ function ProductionInsightCard({ insight, onSelect }: { insight: ContentProducti
 
       {isExpanded && (
         <div className="mt-3">
-          <p className="text-xs text-gray-500 leading-relaxed mb-3">{insight.rationale}</p>
+          <p className="text-xs text-surface-500 leading-relaxed mb-3">{insight.rationale}</p>
 
           <ul className="space-y-1">
             {insight.actions.map((action, i) => (
-              <li key={i} className="flex items-start gap-1.5 text-xs text-gray-600">
+              <li key={i} className="flex items-start gap-1.5 text-xs text-surface-600">
                 <ActionStatusIcon action={action} />
                 {action}
               </li>
@@ -285,25 +285,25 @@ function ContentProductionIntelligence({ insights, onSelect }: { insights: Conte
   const reviewCount = insights.filter((i) => i.agentStatus === 'needs-review').length;
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 shadow-sm mb-4">
+    <div className="bg-white rounded-[14px] border border-surface-200 shadow-card mb-4">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-50 transition-colors"
+        className="w-full flex items-center justify-between p-4 text-left hover:bg-surface-50 transition-colors"
       >
         <div className="flex items-center gap-2">
           <svg className="w-4 h-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z" />
           </svg>
           <div>
-            <h3 className="text-sm font-semibold text-gray-900">Content Production Intelligence</h3>
-            <p className="text-xs text-gray-500 mt-0.5">Autonomous content operations overview</p>
+            <h3 className="text-sm font-semibold text-surface-900">Content Production Intelligence</h3>
+            <p className="text-xs text-surface-500 mt-0.5">Autonomous content operations overview</p>
           </div>
         </div>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
             {activeCount > 0 && (
-              <span className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-700">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="inline-flex items-center gap-1.5 text-xs font-medium text-[#00C5DF]">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#00C5DF]/100 animate-pulse" />
                 {activeCount} active
               </span>
             )}
@@ -316,7 +316,7 @@ function ContentProductionIntelligence({ insights, onSelect }: { insights: Conte
           </div>
           {!isExpanded && <PrioritySummaryStrip insights={insights} />}
           <svg
-            className={`w-4 h-4 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+            className={`w-4 h-4 text-surface-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
             fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
           >
             <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
@@ -347,13 +347,13 @@ function ClusterProductionBanner({ insight }: { insight: ContentProductionInsigh
   const growth = insight.keyMetrics.clusterGrowth;
 
   return (
-    <div className={`bg-white rounded-lg border border-gray-200 shadow-sm p-4 mb-4 border-l-[3px] ${c.borderLeft}`}>
+    <div className={`bg-white rounded-[14px] border border-surface-200 shadow-card p-4 mb-4 border-l-[3px] ${c.borderLeft}`}>
       <div className="flex items-start gap-3">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1 flex-wrap">
             <PriorityBadge priority={insight.priority} />
             {growth !== 0 && (
-              <span className={`inline-flex items-center gap-0.5 text-xs font-medium ${growth > 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+              <span className={`inline-flex items-center gap-0.5 text-xs font-medium ${growth > 0 ? 'text-[#00C5DF]' : 'text-red-600'}`}>
                 <svg className={`w-3 h-3 ${growth > 0 ? '' : 'rotate-180'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
                 </svg>
@@ -361,12 +361,12 @@ function ClusterProductionBanner({ insight }: { insight: ContentProductionInsigh
               </span>
             )}
           </div>
-          <p className="text-sm font-medium text-gray-900 mb-0.5">{insight.headline}</p>
+          <p className="text-sm font-medium text-surface-900 mb-0.5">{insight.headline}</p>
           <AgentActivityLine activity={insight.agentActivity} />
-          <p className="text-xs text-gray-500 leading-relaxed mb-2 mt-1.5">{insight.rationale}</p>
+          <p className="text-xs text-surface-500 leading-relaxed mb-2 mt-1.5">{insight.rationale}</p>
           <ul className="space-y-0.5">
             {insight.actions.map((action, i) => (
-              <li key={i} className="flex items-start gap-1.5 text-xs text-gray-600">
+              <li key={i} className="flex items-start gap-1.5 text-xs text-surface-600">
                 <ActionStatusIcon action={action} />
                 {action}
               </li>
@@ -382,10 +382,10 @@ function ClusterProductionBanner({ insight }: { insight: ContentProductionInsigh
 /* ── Change indicator (trend arrow) ── */
 
 function ChangeIndicator({ value }: { value: number }) {
-  if (value === 0) return <span className="text-xs text-gray-400">—</span>;
+  if (value === 0) return <span className="text-xs text-surface-400">—</span>;
   const isPositive = value > 0;
   return (
-    <span className={`inline-flex items-center gap-0.5 text-xs font-medium ${isPositive ? 'text-emerald-600' : 'text-red-600'}`}>
+    <span className={`inline-flex items-center gap-0.5 text-xs font-medium ${isPositive ? 'text-[#00C5DF]' : 'text-red-600'}`}>
       <svg className={`w-3 h-3 ${isPositive ? '' : 'rotate-180'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
       </svg>
@@ -399,8 +399,8 @@ function ChangeIndicator({ value }: { value: number }) {
 function InsightIcon({ type }: { type: ClusterInsight['type'] }) {
   if (type === 'success') {
     return (
-      <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
-        <svg className="w-4 h-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <div className="w-8 h-8 rounded-full bg-[#00C5DF]/15 flex items-center justify-center shrink-0">
+        <svg className="w-4 h-4 text-[#00C5DF]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
         </svg>
       </div>
@@ -430,26 +430,26 @@ function InsightsPanel({ insights }: { insights: ClusterInsight[] }) {
   if (insights.length === 0) return null;
 
   const borderColor = {
-    success: 'border-l-emerald-400',
+    success: 'border-l-[#00C5DF]',
     warning: 'border-l-amber-400',
     danger: 'border-l-red-400',
   };
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4 mb-4">
+    <div className="bg-white rounded-[14px] border border-surface-200 shadow-card p-4 mb-4">
       <div className="flex items-center gap-2 mb-3">
-        <svg className="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <svg className="w-4 h-4 text-surface-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z" />
         </svg>
-        <h3 className="text-sm font-semibold text-gray-900">Recommendations</h3>
+        <h3 className="text-sm font-semibold text-surface-900">Recommendations</h3>
       </div>
       <div className="space-y-2.5">
         {insights.map((insight, i) => (
-          <div key={i} className={`flex items-start gap-3 p-3 rounded-lg bg-gray-50 border-l-[3px] ${borderColor[insight.type]}`}>
+          <div key={i} className={`flex items-start gap-3 p-3 rounded-lg bg-surface-50 border-l-[3px] ${borderColor[insight.type]}`}>
             <InsightIcon type={insight.type} />
             <div className="min-w-0">
-              <p className="text-sm font-medium text-gray-900">{insight.title}</p>
-              <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{insight.description}</p>
+              <p className="text-sm font-medium text-surface-900">{insight.title}</p>
+              <p className="text-xs text-surface-500 mt-0.5 leading-relaxed">{insight.description}</p>
             </div>
           </div>
         ))}
@@ -467,24 +467,24 @@ function PerformanceSummaryBar({ pages }: { pages: ClusterPageDetail[] }) {
   const total = pages.length;
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4 mb-4">
+    <div className="bg-white rounded-[14px] border border-surface-200 shadow-card p-4 mb-4">
       <div className="flex items-center justify-between mb-2.5">
-        <span className="text-xs font-medium text-gray-500">Performance Distribution</span>
+        <span className="text-xs font-medium text-surface-500">Performance Distribution</span>
         <div className="flex items-center gap-4">
-          <span className="inline-flex items-center gap-1.5 text-xs text-gray-600">
-            <span className="w-2 h-2 rounded-full bg-emerald-500" /> Performing ({performing})
+          <span className="inline-flex items-center gap-1.5 text-xs text-surface-600">
+            <span className="w-2 h-2 rounded-full bg-[#00C5DF]/100" /> Performing ({performing})
           </span>
-          <span className="inline-flex items-center gap-1.5 text-xs text-gray-600">
+          <span className="inline-flex items-center gap-1.5 text-xs text-surface-600">
             <span className="w-2 h-2 rounded-full bg-amber-500" /> Needs Attention ({attention})
           </span>
-          <span className="inline-flex items-center gap-1.5 text-xs text-gray-600">
+          <span className="inline-flex items-center gap-1.5 text-xs text-surface-600">
             <span className="w-2 h-2 rounded-full bg-red-500" /> Underperforming ({underperforming})
           </span>
         </div>
       </div>
-      <div className="flex h-2.5 rounded-full overflow-hidden bg-gray-100 gap-0.5">
+      <div className="flex h-2.5 rounded-full overflow-hidden bg-surface-100 gap-0.5">
         {performing > 0 && (
-          <div className="bg-emerald-500 rounded-full transition-all" style={{ width: `${(performing / total) * 100}%` }} />
+          <div className="bg-[#00C5DF]/100 rounded-full transition-all" style={{ width: `${(performing / total) * 100}%` }} />
         )}
         {attention > 0 && (
           <div className="bg-amber-500 rounded-full transition-all" style={{ width: `${(attention / total) * 100}%` }} />
@@ -521,7 +521,7 @@ function ClusterDetail({ category, pages, insights, productionInsight, onBack }:
     <div>
       <button
         onClick={onBack}
-        className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 mb-4 transition-colors"
+        className="inline-flex items-center gap-1.5 text-sm text-surface-500 hover:text-surface-900 mb-4 transition-colors"
       >
         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
@@ -529,7 +529,7 @@ function ClusterDetail({ category, pages, insights, productionInsight, onBack }:
         All Clusters
       </button>
 
-      <h2 className="text-base font-semibold text-gray-900 mb-4">{category}</h2>
+      <h2 className="text-base font-semibold text-surface-900 mb-4">{category}</h2>
 
       {/* Production intelligence banner */}
       {productionInsight && <ClusterProductionBanner insight={productionInsight} />}
@@ -537,9 +537,9 @@ function ClusterDetail({ category, pages, insights, productionInsight, onBack }:
       {/* Summary cards */}
       <div className="grid grid-cols-5 gap-3 mb-4">
         {stats.map((s) => (
-          <div key={s.label} className="bg-white rounded-lg border border-gray-200 shadow-sm p-3">
-            <dt className="text-xs font-medium text-gray-500">{s.label}</dt>
-            <dd className="mt-1 text-lg font-semibold text-gray-900 font-mono">{s.value}</dd>
+          <div key={s.label} className="bg-white rounded-[14px] border border-surface-200 shadow-card p-3">
+            <dt className="text-xs font-medium text-surface-500">{s.label}</dt>
+            <dd className="mt-1 text-lg font-semibold text-surface-900 font-mono">{s.value}</dd>
           </div>
         ))}
       </div>
@@ -551,15 +551,15 @@ function ClusterDetail({ category, pages, insights, productionInsight, onBack }:
       <PerformanceSummaryBar pages={pages} />
 
       {/* Coverage bars */}
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4 mb-4 space-y-2">
+      <div className="bg-white rounded-[14px] border border-surface-200 shadow-card p-4 mb-4 space-y-2">
         <CoverageBar count={withImpressions} total={pages.length} color="bg-blue-500" label="Impressions" />
         <CoverageBar count={withClicks} total={pages.length} color="bg-indigo-500" label="Clicks" />
       </div>
 
       {/* Pages table */}
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+      <div className="bg-white rounded-[14px] border border-surface-200 shadow-card overflow-x-auto">
+        <table className="min-w-full divide-y divide-surface-200">
+          <thead className="bg-surface-50">
             <tr>
               <Th label="Title" colKey="title" sortKey={sortKey} sortDir={sortDir} onSort={toggle} />
               <Th label="Status" colKey="status" sortKey={sortKey} sortDir={sortDir} onSort={toggle} />
@@ -571,17 +571,17 @@ function ClusterDetail({ category, pages, insights, productionInsight, onBack }:
               <Th label="Leads" colKey="leads" align="right" sortKey={sortKey} sortDir={sortDir} onSort={toggle} />
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200">
+          <tbody className="divide-y divide-surface-200">
             {sorted.map((page) => (
-              <tr key={page.id} className="hover:bg-gray-50">
-                <td className="px-4 py-3 text-sm font-medium text-gray-900 whitespace-nowrap max-w-xs truncate">{page.title}</td>
+              <tr key={page.id} className="hover:bg-surface-50">
+                <td className="px-4 py-3 text-sm font-medium text-surface-900 whitespace-nowrap max-w-xs truncate">{page.title}</td>
                 <td className="px-4 py-3 whitespace-nowrap"><StatusBadge status={page.status} /></td>
-                <td className="px-4 py-3 text-sm text-right font-mono text-gray-700 whitespace-nowrap">{page.impressions.toLocaleString()}</td>
-                <td className="px-4 py-3 text-sm text-right font-mono text-gray-700 whitespace-nowrap">{page.clicks.toLocaleString()}</td>
+                <td className="px-4 py-3 text-sm text-right font-mono text-surface-700 whitespace-nowrap">{page.impressions.toLocaleString()}</td>
+                <td className="px-4 py-3 text-sm text-right font-mono text-surface-700 whitespace-nowrap">{page.clicks.toLocaleString()}</td>
                 <td className="px-4 py-3 text-right whitespace-nowrap"><ChangeIndicator value={page.clicksChange} /></td>
-                <td className="px-4 py-3 text-sm text-right font-mono text-gray-700 whitespace-nowrap">{(page.ctr * 100).toFixed(2)}%</td>
-                <td className="px-4 py-3 text-sm text-right font-mono text-gray-700 whitespace-nowrap">{page.position.toFixed(1)}</td>
-                <td className="px-4 py-3 text-sm text-right font-mono text-gray-700 whitespace-nowrap">{page.leads}</td>
+                <td className="px-4 py-3 text-sm text-right font-mono text-surface-700 whitespace-nowrap">{(page.ctr * 100).toFixed(2)}%</td>
+                <td className="px-4 py-3 text-sm text-right font-mono text-surface-700 whitespace-nowrap">{page.position.toFixed(1)}</td>
+                <td className="px-4 py-3 text-sm text-right font-mono text-surface-700 whitespace-nowrap">{page.leads}</td>
               </tr>
             ))}
           </tbody>
@@ -659,22 +659,22 @@ export function TopicalClusters() {
       {newClusters.length > 0 && (
         <div className="space-y-3">
           {newClusters.map((cluster, i) => (
-            <div key={i} className="bg-white rounded-lg border border-emerald-200 shadow-sm p-4 border-l-[3px] border-l-emerald-400">
+            <div key={i} className="bg-white rounded-lg border border-[#00C5DF]/30 shadow-sm p-4 border-l-[3px] border-l-[#00C5DF]">
               <div className="flex items-start justify-between mb-1">
                 <div className="flex items-center gap-2">
-                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium rounded-full border bg-emerald-50 text-emerald-700 border-emerald-200">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium rounded-full border bg-[#00C5DF]/10 text-[#00C5DF] border-[#00C5DF]/30">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#00C5DF]/100 animate-pulse" />
                     New Cluster
                   </span>
-                  <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-medium rounded-full bg-gray-100 text-gray-600">
+                  <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-medium rounded-full bg-surface-100 text-surface-600">
                     {cluster.industry}
                   </span>
                 </div>
-                <span className="text-[10px] text-gray-400">Just created</span>
+                <span className="text-[10px] text-surface-400">Just created</span>
               </div>
-              <h4 className="text-sm font-semibold text-gray-900 mt-2">{cluster.name}</h4>
-              <p className="text-xs text-gray-500 mt-1 leading-relaxed">{cluster.description}</p>
-              <p className="flex items-center gap-1 text-xs text-gray-500 italic mt-2">
+              <h4 className="text-sm font-semibold text-surface-900 mt-2">{cluster.name}</h4>
+              <p className="text-xs text-surface-500 mt-1 leading-relaxed">{cluster.description}</p>
+              <p className="flex items-center gap-1 text-xs text-surface-500 italic mt-2">
                 <svg className="w-3 h-3 text-indigo-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z" />
                 </svg>
@@ -686,15 +686,15 @@ export function TopicalClusters() {
       )}
 
       {/* Industry Content Opportunities */}
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
-        <div className="px-4 py-3 border-b border-gray-100">
+      <div className="bg-white rounded-[14px] border border-surface-200 shadow-card">
+        <div className="px-4 py-3 border-b border-surface-100">
           <div className="flex items-center gap-2">
-            <svg className="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <svg className="w-4 h-4 text-[#00C5DF]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5" />
             </svg>
             <div className="flex-1">
-              <h3 className="text-sm font-semibold text-gray-900">Industry Content Opportunities</h3>
-              <p className="text-xs text-gray-500 mt-0.5">Based on identified visitors — discover which industries need dedicated topics</p>
+              <h3 className="text-sm font-semibold text-surface-900">Industry Content Opportunities</h3>
+              <p className="text-xs text-surface-500 mt-0.5">Based on identified visitors — discover which industries need dedicated topics</p>
             </div>
             <span className="inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium rounded-full bg-blue-50 text-blue-600 border border-blue-200">
               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

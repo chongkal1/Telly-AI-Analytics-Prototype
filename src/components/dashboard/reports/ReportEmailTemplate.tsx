@@ -14,7 +14,7 @@ function changeLabel(n: number) {
 }
 
 function changeColor(n: number) {
-  return n >= 0 ? '#059669' : '#dc2626';
+  return n >= 0 ? '#00C5DF' : '#dc2626';
 }
 
 export function ReportEmailTemplate({ report }: ReportEmailTemplateProps) {

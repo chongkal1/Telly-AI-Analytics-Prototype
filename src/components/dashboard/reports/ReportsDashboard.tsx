@@ -1,12 +1,18 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { getAllReports, getReport } from '@/data/reports';
 import { ReportList } from './ReportList';
 import { ReportDetail } from './ReportDetail';
 
 export function ReportsDashboard() {
   const [selectedReportId, setSelectedReportId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const report = params.get('report');
+    if (report) setSelectedReportId(report);
+  }, []);
 
   const reports = useMemo(() => getAllReports(), []);
   const selectedReport = useMemo(

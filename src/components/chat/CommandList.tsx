@@ -38,7 +38,7 @@ const COMMAND_CATEGORIES: CommandCategory[] = [
     commands: [
       { command: '/report', description: 'Latest monthly report summary', badge: 'report', icon: '📋', iconBg: 'bg-violet-50' },
       { command: '/report recommendations', description: 'Strategic recommendations', badge: 'strategy', icon: '💡', iconBg: 'bg-yellow-50' },
-      { command: '/summary', description: 'ROAS & ROI overview', badge: 'roi', icon: '💰', iconBg: 'bg-emerald-50' },
+      { command: '/summary', description: 'ROAS & ROI overview', badge: 'roi', icon: '💰', iconBg: 'bg-[#00C5DF]/10' },
       { command: '/compare', description: 'Compare time periods', badge: 'periods', icon: '⚖️', iconBg: 'bg-slate-50' },
     ],
   },
@@ -66,18 +66,18 @@ export function CommandList({ onCommand, filter = '' }: CommandListProps) {
 
   if (filtered.length === 0) {
     return (
-      <div className="bg-white border border-gray-200 rounded-xl shadow-lg mx-3 mb-1 p-4">
-        <p className="text-xs text-gray-400 text-center">No matching commands</p>
+      <div className="bg-white border border-surface-200 rounded-[14px] shadow-lg mx-3 mb-1 p-4">
+        <p className="text-xs text-surface-400 text-center">No matching commands</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl shadow-lg mx-3 mb-1 overflow-hidden">
+    <div className="bg-white border border-surface-200 rounded-[14px] shadow-lg mx-3 mb-1 overflow-hidden">
       <div className="max-h-[340px] overflow-y-auto px-2 py-2">
         {filtered.map((category) => (
           <div key={category.label} className="mb-1.5 last:mb-0">
-            <div className="px-2 py-1.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-gray-400">
+            <div className="px-2 py-1.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-surface-400">
               {category.label}
             </div>
             <div className="space-y-px">
@@ -85,20 +85,20 @@ export function CommandList({ onCommand, filter = '' }: CommandListProps) {
                 <button
                   key={cmd.command}
                   onClick={() => onCommand(cmd.command)}
-                  className="w-full flex items-center gap-2.5 px-2 py-[7px] rounded-lg hover:bg-emerald-50 transition-colors group text-left"
+                  className="w-full flex items-center gap-2.5 px-2 py-[7px] rounded-lg hover:bg-surface-100 transition-colors group text-left"
                 >
                   <span className={`h-7 w-7 rounded-full ${cmd.iconBg} flex items-center justify-center text-sm shrink-0`}>
                     {cmd.icon}
                   </span>
                   <div className="flex-1 min-w-0">
-                    <span className="font-mono text-[0.76rem] text-gray-700 group-hover:text-emerald-700">
-                      <span className="text-emerald-500">/</span>{cmd.command.slice(1)}
+                    <span className="font-mono text-[0.76rem] text-surface-700 group-hover:text-surface-900">
+                      <span className="text-[#00C5DF]">/</span>{cmd.command.slice(1)}
                     </span>
-                    <p className="text-[0.66rem] text-gray-400 leading-tight mt-0.5 truncate">
+                    <p className="text-[0.66rem] text-surface-400 leading-tight mt-0.5 truncate">
                       {cmd.description}
                     </p>
                   </div>
-                  <span className="text-[0.6rem] px-2 py-0.5 rounded-full bg-gray-100 border border-gray-200 text-gray-500 shrink-0">
+                  <span className="text-[0.6rem] px-2 py-0.5 rounded-full bg-surface-100 border border-surface-200 text-surface-500 shrink-0">
                     {cmd.badge}
                   </span>
                 </button>

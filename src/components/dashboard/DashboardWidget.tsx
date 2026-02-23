@@ -34,14 +34,14 @@ export function DashboardWidget({ widget }: DashboardWidgetProps) {
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
             <div className={`w-1 h-5 ${cfg.accent} rounded-full`} />
-            <h2 className="text-base font-semibold text-gray-900">{widget.title}</h2>
+            <h2 className="text-base font-semibold text-surface-900">{widget.title}</h2>
           </div>
-          <div className="flex-1 h-px bg-gray-200" />
+          <div className="flex-1 h-px bg-surface-200" />
           <span className={`text-xs ${cfg.badge} font-medium ${cfg.bg} px-2 py-0.5 rounded-full`}>
             {cfg.badgeText}
           </span>
         </div>
-        <p className="text-xs text-gray-500 mt-1 ml-4">
+        <p className="text-xs text-surface-500 mt-1 ml-4">
           {cfg.description}
         </p>
       </div>
@@ -84,17 +84,17 @@ export function DashboardWidget({ widget }: DashboardWidgetProps) {
     );
 
     return (
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
-        <h3 className="text-sm font-semibold text-gray-900 mb-3">{widget.title}</h3>
+      <div className="bg-white rounded-[14px] border border-surface-200 shadow-card p-4">
+        <h3 className="text-sm font-semibold text-surface-900 mb-3">{widget.title}</h3>
         <LineChartWidget
           data={comparisonData}
           lines={[
             { dataKey: 'clicks', color: CHART_COLORS.indigo, name: 'Clicks' },
-            { dataKey: 'impressions', color: CHART_COLORS.emerald, name: 'Impressions' },
+            { dataKey: 'impressions', color: CHART_COLORS.cyan, name: 'Impressions' },
           ]}
           comparisonLines={[
             { dataKey: 'prev_clicks', color: CHART_COLORS.indigo, name: 'Prev Clicks' },
-            { dataKey: 'prev_impressions', color: CHART_COLORS.emerald, name: 'Prev Impressions' },
+            { dataKey: 'prev_impressions', color: CHART_COLORS.cyan, name: 'Prev Impressions' },
           ]}
           height={200}
         />
@@ -107,8 +107,8 @@ export function DashboardWidget({ widget }: DashboardWidgetProps) {
   // AI Citations Trend — show citations & appearances
   if (widget.type === 'line' && widget.dataKey === 'dailyAITraffic') {
     return (
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
-        <h3 className="text-sm font-semibold text-gray-900 mb-3">{widget.title}</h3>
+      <div className="bg-white rounded-[14px] border border-surface-200 shadow-card p-4">
+        <h3 className="text-sm font-semibold text-surface-900 mb-3">{widget.title}</h3>
         <LineChartWidget
           data={data}
           lines={[
@@ -124,8 +124,8 @@ export function DashboardWidget({ widget }: DashboardWidgetProps) {
   // AI Engine Timeline — one line per AI engine
   if (widget.type === 'line' && widget.dataKey === 'aiEngineTimeline') {
     return (
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
-        <h3 className="text-sm font-semibold text-gray-900 mb-3">{widget.title}</h3>
+      <div className="bg-white rounded-[14px] border border-surface-200 shadow-card p-4">
+        <h3 className="text-sm font-semibold text-surface-900 mb-3">{widget.title}</h3>
         <LineChartWidget
           data={data}
           lines={AI_ENGINES.map((eng) => ({
@@ -140,15 +140,15 @@ export function DashboardWidget({ widget }: DashboardWidgetProps) {
   }
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
-      <h3 className="text-sm font-semibold text-gray-900 mb-3">{widget.title}</h3>
+    <div className="bg-white rounded-[14px] border border-surface-200 shadow-card p-4">
+      <h3 className="text-sm font-semibold text-surface-900 mb-3">{widget.title}</h3>
 
       {widget.type === 'line' && (
         <LineChartWidget
           data={data}
           lines={[
             { dataKey: 'clicks', color: CHART_COLORS.indigo, name: 'Clicks' },
-            { dataKey: 'impressions', color: CHART_COLORS.emerald, name: 'Impressions' },
+            { dataKey: 'impressions', color: CHART_COLORS.cyan, name: 'Impressions' },
           ]}
           height={200}
         />
@@ -173,7 +173,7 @@ export function DashboardWidget({ widget }: DashboardWidgetProps) {
       {widget.type === 'bar' && widget.dataKey === 'industryByValue' && (
         <BarChartWidget
           data={data}
-          bars={[{ dataKey: 'value', color: CHART_COLORS.emerald, name: 'Pipeline Value' }]}
+          bars={[{ dataKey: 'value', color: CHART_COLORS.cyan, name: 'Pipeline Value' }]}
           height={200}
         />
       )}

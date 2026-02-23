@@ -72,7 +72,11 @@ function OrganicTrafficTrend() {
 
 /* ── Main TrafficDashboard ── */
 
-export function TrafficDashboard() {
+interface TrafficDashboardProps {
+  onPageClick?: (pageId: string) => void;
+}
+
+export function TrafficDashboard({ onPageClick }: TrafficDashboardProps) {
   const { startDate, endDate, compareEnabled, compareStartDate, compareEndDate } = useDateRange();
 
   const allPages = useMemo(() => getAllPagesOverview(startDate, endDate), [startDate, endDate]);
@@ -113,7 +117,7 @@ export function TrafficDashboard() {
       <OrganicTrafficTrend />
 
       {/* 5. Top Pages */}
-      <TopPages pages={allPages} />
+      <TopPages pages={allPages} onPageClick={onPageClick} />
 
       {/* 6. Geography */}
       <GeographySection data={geoData} />
@@ -122,7 +126,7 @@ export function TrafficDashboard() {
       <AIAnalyticsSection />
 
       {/* 9. AI Page Visibility */}
-      <AIPageVisibility data={aiPageCitations} />
+      <AIPageVisibility data={aiPageCitations} onPageClick={onPageClick} />
     </div>
   );
 }

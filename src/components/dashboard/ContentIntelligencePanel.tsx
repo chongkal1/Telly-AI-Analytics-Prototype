@@ -18,7 +18,7 @@ function CreateClusterButton({ gap }: { gap: IndustryContentGap }) {
   return (
     <button
       onClick={handleClick}
-      className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-md hover:bg-emerald-100 transition-colors"
+      className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-[#00C5DF] bg-[#00C5DF]/10 border border-[#00C5DF]/30 rounded-md hover:bg-[#00C5DF]/20 transition-colors"
     >
       <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -34,14 +34,14 @@ function SortIcon({ active, direction }: { active: boolean; direction: SortDirec
   return (
     <span className="ml-1 inline-flex flex-col">
       <svg
-        className={`h-2 w-2 ${active && direction === 'asc' ? 'text-emerald-600' : 'text-gray-400'}`}
+        className={`h-2 w-2 ${active && direction === 'asc' ? 'text-[#00C5DF]' : 'text-surface-400'}`}
         viewBox="0 0 8 4"
         fill="currentColor"
       >
         <path d="M4 0L8 4H0L4 0Z" />
       </svg>
       <svg
-        className={`h-2 w-2 -mt-0.5 ${active && direction === 'desc' ? 'text-emerald-600' : 'text-gray-400'}`}
+        className={`h-2 w-2 -mt-0.5 ${active && direction === 'desc' ? 'text-[#00C5DF]' : 'text-surface-400'}`}
         viewBox="0 0 8 4"
         fill="currentColor"
       >
@@ -85,7 +85,7 @@ function Th({ label, colKey, align, sortKey, sortDir, onSort }: {
 }) {
   return (
     <th
-      className={`px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none ${
+      className={`px-4 py-3 text-xs font-medium text-surface-500 uppercase tracking-wider cursor-pointer hover:bg-surface-100 select-none ${
         align === 'right' ? 'text-right' : 'text-left'
       }`}
       onClick={() => onSort(colKey)}
@@ -100,7 +100,7 @@ function Th({ label, colKey, align, sortKey, sortDir, onSort }: {
 
 function CoverageBadge({ coverage }: { coverage: 'strong' | 'moderate' | 'weak' }) {
   const config = {
-    strong: { label: 'Strong', bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200', dot: 'bg-emerald-500' },
+    strong: { label: 'Strong', bg: 'bg-[#00C5DF]/10', text: 'text-[#00C5DF]', border: 'border-[#00C5DF]/30', dot: 'bg-[#00C5DF]' },
     moderate: { label: 'Moderate', bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200', dot: 'bg-amber-500' },
     weak: { label: 'Weak', bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200', dot: 'bg-red-500' },
   }[coverage];
@@ -115,9 +115,9 @@ function CoverageBadge({ coverage }: { coverage: 'strong' | 'moderate' | 'weak' 
 
 function ImpactBadge({ impact }: { impact: 'high' | 'medium' | 'low' }) {
   const config = {
-    high: { label: 'High Impact', bg: 'bg-emerald-50', text: 'text-emerald-700' },
+    high: { label: 'High Impact', bg: 'bg-[#00C5DF]/10', text: 'text-[#00C5DF]' },
     medium: { label: 'Medium Impact', bg: 'bg-amber-50', text: 'text-amber-700' },
-    low: { label: 'Low Impact', bg: 'bg-gray-100', text: 'text-gray-600' },
+    low: { label: 'Low Impact', bg: 'bg-surface-100', text: 'text-surface-600' },
   }[impact];
 
   return (
@@ -134,33 +134,33 @@ function IndustryTable({ data, onSelect }: { data: IndustryContentGap[]; onSelec
 
   return (
     <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
+      <table className="min-w-full divide-y divide-surface-200">
+        <thead className="bg-surface-50">
           <tr>
             <Th label="Industry" colKey="industry" sortKey={sortKey} sortDir={sortDir} onSort={toggle} />
             <Th label="Visitors" colKey="leadCount" align="right" sortKey={sortKey} sortDir={sortDir} onSort={toggle} />
             <Th label="% Share" colKey="leadPercentage" align="right" sortKey={sortKey} sortDir={sortDir} onSort={toggle} />
             <Th label="Pipeline Value" colKey="pipelineValue" align="right" sortKey={sortKey} sortDir={sortDir} onSort={toggle} />
             <Th label="Conv. Rate" colKey="conversionRate" align="right" sortKey={sortKey} sortDir={sortDir} onSort={toggle} />
-            <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-left">Coverage</th>
-            <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-right">Topics</th>
-            <th className="px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-center">Action</th>
+            <th className="px-4 py-3 text-xs font-medium text-surface-500 uppercase tracking-wider text-left">Coverage</th>
+            <th className="px-4 py-3 text-xs font-medium text-surface-500 uppercase tracking-wider text-right">Topics</th>
+            <th className="px-4 py-3 text-xs font-medium text-surface-500 uppercase tracking-wider text-center">Action</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-200">
+        <tbody className="divide-y divide-surface-200">
           {sorted.map((row) => (
             <tr
               key={row.industry}
-              className="hover:bg-emerald-50 cursor-pointer transition-colors"
+              className="hover:bg-surface-100 cursor-pointer transition-colors"
               onClick={() => onSelect(row.industry)}
             >
-              <td className="px-4 py-3 text-sm font-medium text-gray-900 whitespace-nowrap">{row.industry}</td>
-              <td className="px-4 py-3 text-sm text-gray-700 text-right font-mono whitespace-nowrap">{row.leadCount}</td>
-              <td className="px-4 py-3 text-sm text-gray-700 text-right font-mono whitespace-nowrap">{row.leadPercentage}%</td>
-              <td className="px-4 py-3 text-sm text-gray-700 text-right font-mono whitespace-nowrap">{formatCurrency(row.pipelineValue)}</td>
-              <td className="px-4 py-3 text-sm text-gray-700 text-right font-mono whitespace-nowrap">{(row.conversionRate * 100).toFixed(0)}%</td>
+              <td className="px-4 py-3 text-sm font-medium text-surface-900 whitespace-nowrap">{row.industry}</td>
+              <td className="px-4 py-3 text-sm text-surface-700 text-right font-mono whitespace-nowrap">{row.leadCount}</td>
+              <td className="px-4 py-3 text-sm text-surface-700 text-right font-mono whitespace-nowrap">{row.leadPercentage}%</td>
+              <td className="px-4 py-3 text-sm text-surface-700 text-right font-mono whitespace-nowrap">{formatCurrency(row.pipelineValue)}</td>
+              <td className="px-4 py-3 text-sm text-surface-700 text-right font-mono whitespace-nowrap">{(row.conversionRate * 100).toFixed(0)}%</td>
               <td className="px-4 py-3 whitespace-nowrap"><CoverageBadge coverage={row.contentCoverage} /></td>
-              <td className="px-4 py-3 text-sm text-gray-700 text-right font-mono whitespace-nowrap">{row.suggestedTopics.length}</td>
+              <td className="px-4 py-3 text-sm text-surface-700 text-right font-mono whitespace-nowrap">{row.suggestedTopics.length}</td>
               <td className="px-4 py-3 text-center whitespace-nowrap">
                 {row.contentCoverage !== 'strong' && <CreateClusterButton gap={row} />}
               </td>
@@ -186,7 +186,7 @@ function IndustryDetail({ gap, onBack }: { gap: IndustryContentGap; onBack: () =
     <div>
       <button
         onClick={onBack}
-        className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 mb-4 transition-colors"
+        className="inline-flex items-center gap-1.5 text-sm text-surface-500 hover:text-surface-900 mb-4 transition-colors"
       >
         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
@@ -195,7 +195,7 @@ function IndustryDetail({ gap, onBack }: { gap: IndustryContentGap; onBack: () =
       </button>
 
       <div className="flex items-center gap-3 mb-4">
-        <h2 className="text-base font-semibold text-gray-900">{gap.industry}</h2>
+        <h2 className="text-base font-semibold text-surface-900">{gap.industry}</h2>
         <CoverageBadge coverage={gap.contentCoverage} />
         {gap.contentCoverage !== 'strong' && <CreateClusterButton gap={gap} />}
       </div>
@@ -203,20 +203,20 @@ function IndustryDetail({ gap, onBack }: { gap: IndustryContentGap; onBack: () =
       {/* Summary cards */}
       <div className="grid grid-cols-4 gap-3 mb-4">
         {stats.map((s) => (
-          <div key={s.label} className="bg-white rounded-lg border border-gray-200 shadow-sm p-3">
-            <dt className="text-xs font-medium text-gray-500">{s.label}</dt>
-            <dd className="mt-1 text-lg font-semibold text-gray-900 font-mono">{s.value}</dd>
+          <div key={s.label} className="bg-white rounded-[14px] border border-surface-200 shadow-card p-3">
+            <dt className="text-xs font-medium text-surface-500">{s.label}</dt>
+            <dd className="mt-1 text-lg font-semibold text-surface-900 font-mono">{s.value}</dd>
           </div>
         ))}
       </div>
 
       {/* Content Coverage */}
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4 mb-4">
-        <h3 className="text-sm font-semibold text-gray-900 mb-2">Content Coverage</h3>
+      <div className="bg-white rounded-[14px] border border-surface-200 shadow-card p-4 mb-4">
+        <h3 className="text-sm font-semibold text-surface-900 mb-2">Content Coverage</h3>
         {gap.matchingCategories.length > 0 ? (
           <div className="flex flex-wrap gap-2">
             {gap.matchingCategories.map((cat) => (
-              <span key={cat} className="inline-flex items-center px-2.5 py-1 text-xs font-medium rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+              <span key={cat} className="inline-flex items-center px-2.5 py-1 text-xs font-medium rounded-full bg-[#00C5DF]/10 text-[#00C5DF] border border-[#00C5DF]/30">
                 {cat}
               </span>
             ))}
@@ -232,12 +232,12 @@ function IndustryDetail({ gap, onBack }: { gap: IndustryContentGap; onBack: () =
       </div>
 
       {/* Top Pages Visited */}
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4 mb-4">
-        <h3 className="text-sm font-semibold text-gray-900 mb-2">Top Pages Visited</h3>
+      <div className="bg-white rounded-[14px] border border-surface-200 shadow-card p-4 mb-4">
+        <h3 className="text-sm font-semibold text-surface-900 mb-2">Top Pages Visited</h3>
         <div className="space-y-1.5">
           {gap.topPages.map((url) => (
-            <div key={url} className="text-sm text-gray-600 flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-gray-400 shrink-0" />
+            <div key={url} className="text-sm text-surface-600 flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-surface-400 shrink-0" />
               <span className="font-mono text-xs">{url}</span>
             </div>
           ))}
@@ -246,18 +246,18 @@ function IndustryDetail({ gap, onBack }: { gap: IndustryContentGap; onBack: () =
 
       {/* Suggested Topics */}
       {gap.suggestedTopics.length > 0 && (
-        <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
+        <div className="bg-white rounded-[14px] border border-surface-200 shadow-card p-4">
           <div className="flex items-center gap-2 mb-3">
-            <svg className="w-4 h-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <svg className="w-4 h-4 text-[#00C5DF]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z" />
             </svg>
-            <h3 className="text-sm font-semibold text-gray-900">Suggested Topics</h3>
+            <h3 className="text-sm font-semibold text-surface-900">Suggested Topics</h3>
           </div>
           <div className="space-y-3">
             {gap.suggestedTopics.map((topic, i) => (
-              <div key={i} className="p-3 rounded-lg bg-gray-50 border border-gray-200">
+              <div key={i} className="p-3 rounded-lg bg-surface-50 border border-surface-200">
                 <div className="flex items-start justify-between gap-2 mb-1.5">
-                  <h4 className="text-sm font-semibold text-gray-900">{topic.title}</h4>
+                  <h4 className="text-sm font-semibold text-surface-900">{topic.title}</h4>
                   <ImpactBadge impact={topic.estimatedImpact} />
                 </div>
                 <div className="mb-2">
@@ -265,10 +265,10 @@ function IndustryDetail({ gap, onBack }: { gap: IndustryContentGap; onBack: () =
                     {topic.targetCategory}
                   </span>
                 </div>
-                <p className="text-xs text-gray-600 leading-relaxed mb-2">{topic.rationale}</p>
+                <p className="text-xs text-surface-600 leading-relaxed mb-2">{topic.rationale}</p>
                 <div className="flex flex-wrap gap-1.5">
                   {topic.keywords.map((kw) => (
-                    <span key={kw} className="inline-flex items-center px-2 py-0.5 text-xs rounded-full bg-gray-200 text-gray-700">
+                    <span key={kw} className="inline-flex items-center px-2 py-0.5 text-xs rounded-full bg-surface-200 text-surface-700">
                       {kw}
                     </span>
                   ))}

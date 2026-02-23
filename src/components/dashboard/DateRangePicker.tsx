@@ -51,14 +51,14 @@ export function DateRangePicker() {
       {/* Trigger button */}
       <button
         onClick={() => setOpen(!open)}
-        className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 transition-colors"
+        className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-surface-700 bg-white border border-surface-300 rounded-lg shadow-sm hover:bg-surface-50 transition-colors"
       >
-        <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <svg className="w-4 h-4 text-surface-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
         </svg>
         <span>{presetLabel}:</span>
-        <span className="text-gray-500">{rangeLabel}</span>
-        <svg className={`w-3.5 h-3.5 text-gray-400 transition-transform ${open ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <span className="text-surface-500">{rangeLabel}</span>
+        <svg className={`w-3.5 h-3.5 text-surface-400 transition-transform ${open ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
         </svg>
       </button>
@@ -72,10 +72,10 @@ export function DateRangePicker() {
 
       {/* Dropdown */}
       {open && (
-        <div className="absolute z-50 mt-2 left-0 w-72 bg-white rounded-lg shadow-lg border border-gray-200 p-4">
+        <div className="absolute z-50 mt-2 left-0 w-72 bg-white rounded-lg shadow-lg border border-surface-200 p-4">
           {/* Presets */}
           <div className="mb-3">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Period</p>
+            <p className="text-xs font-semibold text-surface-400 uppercase tracking-wide mb-2">Period</p>
             <div className="flex gap-2">
               {PRESETS.map((p) => (
                 <button
@@ -84,7 +84,7 @@ export function DateRangePicker() {
                   className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors ${
                     preset === p.key
                       ? 'bg-indigo-600 text-white'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      : 'bg-surface-100 text-surface-600 hover:bg-surface-200'
                   }`}
                 >
                   {p.label}
@@ -94,21 +94,21 @@ export function DateRangePicker() {
           </div>
 
           {/* Custom range */}
-          <div className="mb-3 border-t border-gray-100 pt-3">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Custom range</p>
+          <div className="mb-3 border-t border-surface-100 pt-3">
+            <p className="text-xs font-semibold text-surface-400 uppercase tracking-wide mb-2">Custom range</p>
             <div className="flex items-center gap-2">
               <input
                 type="date"
                 value={customStart}
                 onChange={(e) => setCustomStart(e.target.value)}
-                className="flex-1 text-xs border border-gray-300 rounded-md px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                className="flex-1 text-xs border border-surface-300 rounded-md px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500"
               />
-              <span className="text-gray-400 text-xs">to</span>
+              <span className="text-surface-400 text-xs">to</span>
               <input
                 type="date"
                 value={customEnd}
                 onChange={(e) => setCustomEnd(e.target.value)}
-                className="flex-1 text-xs border border-gray-300 rounded-md px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                className="flex-1 text-xs border border-surface-300 rounded-md px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500"
               />
             </div>
             <button
@@ -125,15 +125,15 @@ export function DateRangePicker() {
           </div>
 
           {/* Compare toggle */}
-          <div className="border-t border-gray-100 pt-3">
+          <div className="border-t border-surface-100 pt-3">
             <label className="flex items-center justify-between cursor-pointer">
-              <span className="text-xs font-medium text-gray-700">Compare to previous period</span>
+              <span className="text-xs font-medium text-surface-700">Compare to previous period</span>
               <button
                 role="switch"
                 aria-checked={compareEnabled}
                 onClick={() => setCompareEnabled(!compareEnabled)}
                 className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
-                  compareEnabled ? 'bg-indigo-600' : 'bg-gray-200'
+                  compareEnabled ? 'bg-indigo-600' : 'bg-surface-200'
                 }`}
               >
                 <span

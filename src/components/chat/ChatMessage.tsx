@@ -14,7 +14,7 @@ export function ChatMessage({ message, onAction }: ChatMessageProps) {
       <div
         className={cn(
           'h-8 w-8 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-medium',
-          isUser ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-800 text-white'
+          isUser ? 'bg-[#00C5DF]/15 text-[#00C5DF]' : 'bg-surface-800 text-white'
         )}
       >
         {isUser ? 'You' : 'AI'}
@@ -24,13 +24,13 @@ export function ChatMessage({ message, onAction }: ChatMessageProps) {
           className={cn(
             'rounded-lg px-4 py-2.5 text-sm',
             isUser
-              ? 'bg-emerald-600 text-white'
-              : 'bg-white border border-gray-200 text-gray-800'
+              ? 'bg-surface-900 text-white'
+              : 'bg-white border border-surface-200 text-surface-800'
           )}
         >
           <p className="whitespace-pre-wrap leading-relaxed">{message.content}</p>
           {message.chartMeta && (
-            <div className="mt-2 pt-2 border-t border-gray-200/30">
+            <div className="mt-2 pt-2 border-t border-surface-200/30">
               <span className="text-xs opacity-70 flex items-center gap-1">
                 <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -46,7 +46,7 @@ export function ChatMessage({ message, onAction }: ChatMessageProps) {
               <button
                 key={i}
                 onClick={() => onAction(action.message)}
-                className="px-3 py-1.5 text-xs font-medium rounded-full border border-gray-200 bg-white text-gray-700 hover:bg-emerald-50 hover:border-emerald-300 hover:text-emerald-700 transition-colors"
+                className="px-3 py-1.5 text-xs font-medium rounded-full border border-surface-200 bg-white text-surface-700 hover:bg-surface-100 hover:border-surface-300 hover:text-surface-900 transition-colors"
               >
                 {action.label}
               </button>

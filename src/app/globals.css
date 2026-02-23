@@ -3,14 +3,13 @@
 @tailwind utilities;
 
 :root {
-  --color-primary: #059669;
-  --color-primary-hover: #047857;
-  --font-geist-sans: var(--font-geist-sans);
-  --font-geist-mono: var(--font-geist-mono);
+  --color-primary: #00C5DF;
+  --color-primary-hover: #00B0C8;
+  --font-inter: var(--font-inter);
 }
 
 body {
-  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  font-family: var(--font-inter), system-ui, sans-serif;
 }
 
 /* Scrollbar styling */
@@ -24,10 +23,10 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #d1d5db;
+  background: #D4D2CB;
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #9ca3af;
+  background: #AEABA9;
 }

@@ -36,10 +36,10 @@ function useSort<T>(data: T[], defaultKey?: string) {
 function SortIcon({ active, direction }: { active: boolean; direction: SortDirection }) {
   return (
     <span className="ml-1 inline-flex flex-col">
-      <svg className={`h-2 w-2 ${active && direction === 'asc' ? 'text-indigo-600' : 'text-gray-400'}`} viewBox="0 0 8 4" fill="currentColor">
+      <svg className={`h-2 w-2 ${active && direction === 'asc' ? 'text-indigo-600' : 'text-surface-400'}`} viewBox="0 0 8 4" fill="currentColor">
         <path d="M4 0L8 4H0L4 0Z" />
       </svg>
-      <svg className={`h-2 w-2 -mt-0.5 ${active && direction === 'desc' ? 'text-indigo-600' : 'text-gray-400'}`} viewBox="0 0 8 4" fill="currentColor">
+      <svg className={`h-2 w-2 -mt-0.5 ${active && direction === 'desc' ? 'text-indigo-600' : 'text-surface-400'}`} viewBox="0 0 8 4" fill="currentColor">
         <path d="M4 4L0 0H8L4 4Z" />
       </svg>
     </span>
@@ -52,7 +52,7 @@ function Th({ label, colKey, align, sortKey, sortDir, onSort }: {
 }) {
   return (
     <th
-      className={`px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none ${align === 'right' ? 'text-right' : 'text-left'}`}
+      className={`px-3 py-2 text-xs font-medium text-surface-500 uppercase tracking-wider cursor-pointer hover:bg-surface-100 select-none ${align === 'right' ? 'text-right' : 'text-left'}`}
       onClick={() => onSort(colKey)}
     >
       <span className="inline-flex items-center">
@@ -66,17 +66,17 @@ function Th({ label, colKey, align, sortKey, sortDir, onSort }: {
 const STAGE_COLORS = [
   { fill: '#e0e7ff', fillSelected: '#c7d2fe', stroke: '#818cf8', labelColor: '#4338ca' },
   { fill: '#dbeafe', fillSelected: '#bfdbfe', stroke: '#60a5fa', labelColor: '#1d4ed8' },
-  { fill: '#d1fae5', fillSelected: '#a7f3d0', stroke: '#34d399', labelColor: '#047857' },
+  { fill: '#ccf7fa', fillSelected: '#99eff5', stroke: '#00C5DF', labelColor: '#008a9b' },
   { fill: '#fef3c7', fillSelected: '#fde68a', stroke: '#fbbf24', labelColor: '#92400e' },
 ];
 
 /* ── Priority badge ── */
 
 const PRIORITY_CONFIG: Record<ProductionPriority, { label: string; bg: string; text: string; border: string; dot: string }> = {
-  'double-down': { label: 'Scale Production', bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200', dot: 'bg-emerald-500' },
+  'double-down': { label: 'Scale Production', bg: 'bg-[#00C5DF]/10', text: 'text-[#00C5DF]', border: 'border-[#00C5DF]/30', dot: 'bg-[#00C5DF]' },
   'optimize-first': { label: 'Update Content', bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200', dot: 'bg-amber-500' },
   'expand': { label: 'Expand Coverage', bg: 'bg-indigo-50', text: 'text-indigo-700', border: 'border-indigo-200', dot: 'bg-indigo-500' },
-  'monitor': { label: 'Monitor', bg: 'bg-gray-50', text: 'text-gray-600', border: 'border-gray-200', dot: 'bg-gray-400' },
+  'monitor': { label: 'Monitor', bg: 'bg-surface-50', text: 'text-surface-600', border: 'border-surface-200', dot: 'bg-surface-400' },
 };
 
 function PriorityBadge({ priority }: { priority: ProductionPriority }) {
@@ -99,7 +99,7 @@ interface ColumnDef {
 }
 
 const priorityColumn: ColumnDef = {
-  label: 'Priority', colKey: 'priority', render: () => '', renderJsx: (r) => r.priority ? <PriorityBadge priority={r.priority} /> : <span className="text-gray-400">&mdash;</span>,
+  label: 'Priority', colKey: 'priority', render: () => '', renderJsx: (r) => r.priority ? <PriorityBadge priority={r.priority} /> : <span className="text-surface-400">&mdash;</span>,
 };
 
 const STAGE_COLUMNS: Record<string, { columns: ColumnDef[]; defaultSort: string }> = {
@@ -154,8 +154,8 @@ function StageBreakdownTable({ breakdown, stage }: { breakdown: FunnelClusterBre
 
   return (
     <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
+      <table className="min-w-full divide-y divide-surface-200">
+        <thead className="bg-surface-50">
           <tr>
             {config.columns.map((col) => (
               <Th
@@ -170,13 +170,13 @@ function StageBreakdownTable({ breakdown, stage }: { breakdown: FunnelClusterBre
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-200">
+        <tbody className="divide-y divide-surface-200">
           {sorted.map((row) => (
-            <tr key={row.cluster} className="hover:bg-gray-50">
+            <tr key={row.cluster} className="hover:bg-surface-50">
               {config.columns.map((col) => (
                 <td
                   key={col.colKey}
-                  className={`px-3 py-2 text-sm ${col.colKey === 'cluster' ? 'font-medium text-gray-900' : col.renderJsx ? '' : 'text-gray-700 font-mono'} ${col.align === 'right' ? 'text-right' : 'text-left'} whitespace-nowrap`}
+                  className={`px-3 py-2 text-sm ${col.colKey === 'cluster' ? 'font-medium text-surface-900' : col.renderJsx ? '' : 'text-surface-700 font-mono'} ${col.align === 'right' ? 'text-right' : 'text-left'} whitespace-nowrap`}
                 >
                   {col.renderJsx ? col.renderJsx(row) : col.render(row)}
                 </td>
@@ -211,10 +211,10 @@ export function ContentFunnel({ data }: ContentFunnelProps) {
   });
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
-      <div className="px-4 py-3 border-b border-gray-100">
-        <h3 className="text-sm font-semibold text-gray-900">Content Funnel</h3>
-        <p className="text-xs text-gray-500 mt-0.5">Click a stage to see topical cluster breakdown</p>
+    <div className="bg-white rounded-[14px] border border-surface-200 shadow-card">
+      <div className="px-4 py-3 border-b border-surface-100">
+        <h3 className="text-sm font-semibold text-surface-900">Content Funnel</h3>
+        <p className="text-xs text-surface-500 mt-0.5">Click a stage to see topical cluster breakdown</p>
       </div>
 
       {/* Horizontal funnel — SVG trapezoid segments */}
@@ -314,14 +314,14 @@ export function ContentFunnel({ data }: ContentFunnelProps) {
 
       {/* Stage-specific breakdown panel */}
       {selectedStage && (
-        <div className="border-t border-gray-200 px-4 py-3">
+        <div className="border-t border-surface-200 px-4 py-3">
           <div className="flex items-center justify-between mb-3">
-            <h4 className="text-sm font-semibold text-gray-900">
+            <h4 className="text-sm font-semibold text-surface-900">
               {selectedStage} — Topical Cluster Breakdown
             </h4>
             <button
               onClick={() => setSelectedStage(null)}
-              className="text-xs text-gray-500 hover:text-gray-700"
+              className="text-xs text-surface-500 hover:text-surface-700"
             >
               Close
             </button>

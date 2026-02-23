@@ -36,16 +36,16 @@ const trendConfig: Record<TrendType, { icon: React.ReactNode; className: string 
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
       </svg>
     ),
-    className: 'text-gray-500',
+    className: 'text-surface-500',
   },
-  'no-data': { icon: null, className: 'text-gray-400' },
+  'no-data': { icon: null, className: 'text-surface-400' },
 };
 
 export function TrendIndicator({ change, invertChange }: TrendIndicatorProps) {
   const trend = getTrend(change, invertChange);
   const config = trendConfig[trend];
 
-  if (change === null) return <span className="text-xs text-gray-400">—</span>;
+  if (change === null) return <span className="text-xs text-surface-400">—</span>;
 
   return (
     <span className={`inline-flex items-center gap-0.5 text-xs font-medium ${config.className}`}>

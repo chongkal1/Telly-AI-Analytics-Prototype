@@ -27,21 +27,21 @@ function FunnelBars({ organic, cta, leads }: { organic: number; cta: number; lea
   const bars = [
     { label: 'Organic', value: organic, color: '#4f46e5', width: 100 },
     { label: 'CTA Clicks', value: cta, color: '#6366f1', width: (cta / max) * 100 },
-    { label: 'Leads', value: leads, color: '#10b981', width: (leads / max) * 100 },
+    { label: 'Leads', value: leads, color: '#00C5DF', width: (leads / max) * 100 },
   ];
 
   return (
     <div className="space-y-1.5 mt-2">
       {bars.map((b) => (
         <div key={b.label} className="flex items-center gap-2">
-          <span className="text-[9px] text-gray-400 w-12 text-right shrink-0">{b.label}</span>
-          <div className="flex-1 bg-gray-100 rounded-full h-2 overflow-hidden">
+          <span className="text-[9px] text-surface-400 w-12 text-right shrink-0">{b.label}</span>
+          <div className="flex-1 bg-surface-100 rounded-full h-2 overflow-hidden">
             <div
               className="h-full rounded-full transition-all duration-500"
               style={{ width: `${Math.max(b.width, 1)}%`, backgroundColor: b.color }}
             />
           </div>
-          <span className="text-[9px] font-mono text-gray-500 w-10 shrink-0">{b.value.toLocaleString()}</span>
+          <span className="text-[9px] font-mono text-surface-500 w-10 shrink-0">{b.value.toLocaleString()}</span>
         </div>
       ))}
     </div>
@@ -82,10 +82,10 @@ export function CTAPerformanceCard() {
   const maxLpClicks = topLPs.length > 0 ? topLPs[0].clicks : 1;
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-      <div className="px-3 py-2 border-b border-gray-100 flex items-center justify-between">
-        <h3 className="text-xs font-semibold text-gray-700">Content CTA Performance</h3>
-        <span className="text-[10px] text-gray-400">Blog CTAs → Landing Pages</span>
+    <div className="bg-white rounded-[14px] border border-surface-200 shadow-card overflow-hidden">
+      <div className="px-3 py-2 border-b border-surface-100 flex items-center justify-between">
+        <h3 className="text-xs font-semibold text-surface-700">Content CTA Performance</h3>
+        <span className="text-[10px] text-surface-400">Blog CTAs → Landing Pages</span>
       </div>
 
       <div className="grid grid-cols-12 gap-4 p-3" style={{ minHeight: 170 }}>
@@ -94,13 +94,13 @@ export function CTAPerformanceCard() {
           {/* CTA Clicks */}
           <div>
             <div className="flex items-center gap-1.5">
-              <span className="text-xs text-gray-500">CTA Clicks</span>
+              <span className="text-xs text-surface-500">CTA Clicks</span>
               {metrics.ctaClicksChange !== null && (
                 <TrendIndicator change={metrics.ctaClicksChange} />
               )}
             </div>
             <div className="flex items-end gap-2">
-              <span className="text-xl font-semibold text-gray-900 font-mono">
+              <span className="text-xl font-semibold text-surface-900 font-mono">
                 {metrics.totalCtaClicks.toLocaleString()}
               </span>
               <div className="w-16 shrink-0 mb-0.5">
@@ -112,7 +112,7 @@ export function CTAPerformanceCard() {
           {/* CTA Rate */}
           <div className="mt-1">
             <div className="flex items-center gap-1.5">
-              <span className="text-xs text-gray-500">CTA Rate</span>
+              <span className="text-xs text-surface-500">CTA Rate</span>
               {metrics.ctaRateChange !== null && (
                 <TrendIndicator change={metrics.ctaRateChange} />
               )}
@@ -124,9 +124,9 @@ export function CTAPerformanceCard() {
 
           {/* Click→Lead */}
           <div className="mt-1">
-            <span className="text-xs text-gray-500">Click→Lead</span>
+            <span className="text-xs text-surface-500">Click→Lead</span>
             <div>
-              <span className="text-sm font-semibold text-emerald-600 font-mono">
+              <span className="text-sm font-semibold text-[#00C5DF] font-mono">
                 {(funnel.leadConvRate * 100).toFixed(1)}%
               </span>
             </div>
@@ -138,23 +138,23 @@ export function CTAPerformanceCard() {
 
         {/* Middle: Top Blog Articles by CTA Clicks */}
         <div className="col-span-5">
-          <h4 className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-2">
+          <h4 className="text-[10px] font-semibold text-surface-500 uppercase tracking-wide mb-2">
             Top Articles by CTA Clicks
           </h4>
-          <div className="divide-y divide-gray-50">
+          <div className="divide-y divide-surface-50">
             {topArticles.map((article, idx) => {
               const title = pageLookup[article.pageId] || article.pageId;
               const truncated = title.length > 45 ? title.slice(0, 45) + '...' : title;
               return (
                 <div key={article.pageId} className="flex items-center justify-between py-1.5">
                   <div className="flex items-center gap-2 min-w-0">
-                    <span className="text-[10px] font-mono text-gray-300 w-3 shrink-0">{idx + 1}</span>
-                    <span className="text-xs text-gray-700 truncate" title={title}>
+                    <span className="text-[10px] font-mono text-surface-300 w-3 shrink-0">{idx + 1}</span>
+                    <span className="text-xs text-surface-700 truncate" title={title}>
                       {truncated}
                     </span>
                   </div>
                   <div className="flex items-center gap-3 shrink-0 ml-2">
-                    <span className="text-xs font-mono font-medium text-gray-900">
+                    <span className="text-xs font-mono font-medium text-surface-900">
                       {article.ctaClicks.toLocaleString()}
                     </span>
                     <span className="text-[10px] font-mono text-amber-600">
@@ -169,24 +169,24 @@ export function CTAPerformanceCard() {
 
         {/* Right: Landing Page Destinations */}
         <div className="col-span-4">
-          <h4 className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-2">
+          <h4 className="text-[10px] font-semibold text-surface-500 uppercase tracking-wide mb-2">
             Landing Page Destinations
           </h4>
           <div className="space-y-2">
             {topLPs.map((lp) => (
               <div key={lp.id}>
                 <div className="flex items-center justify-between mb-0.5">
-                  <span className="text-xs text-gray-700">{lp.title}</span>
+                  <span className="text-xs text-surface-700">{lp.title}</span>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-mono font-medium text-gray-900">
+                    <span className="text-xs font-mono font-medium text-surface-900">
                       {lp.clicks.toLocaleString()}
                     </span>
-                    <span className="text-[10px] font-mono text-gray-400">
+                    <span className="text-[10px] font-mono text-surface-400">
                       {(lp.share * 100).toFixed(0)}%
                     </span>
                   </div>
                 </div>
-                <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
+                <div className="w-full bg-surface-100 rounded-full h-1.5 overflow-hidden">
                   <div
                     className="h-full rounded-full bg-indigo-500 transition-all duration-500"
                     style={{ width: `${(lp.clicks / maxLpClicks) * 100}%` }}

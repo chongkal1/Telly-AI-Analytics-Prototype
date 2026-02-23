@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AreaChart, Area, ResponsiveContainer, XAxis, YAxis, Tooltip, PieChart, Pie, Cell } from 'recharts';
 import { MonthlyReport } from '@/types';
 import { TrendIndicator } from '@/components/shared/TrendIndicator';
@@ -21,9 +21,9 @@ const fmtPct = (n: number) => `${(n * 100).toFixed(1)}%`;
 
 function KpiCard({ label, value, change }: { label: string; value: string; change?: number }) {
   return (
-    <div className="bg-gray-50 rounded-lg p-3">
-      <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-0.5">{label}</p>
-      <p className="text-xl font-bold text-gray-900 font-mono">{value}</p>
+    <div className="bg-surface-50 rounded-lg p-3">
+      <p className="text-[10px] text-surface-400 uppercase tracking-wider mb-0.5">{label}</p>
+      <p className="text-xl font-bold text-surface-900 font-mono">{value}</p>
       {change !== undefined && (
         <div className="mt-1">
           <TrendIndicator change={change} />
@@ -34,14 +34,21 @@ function KpiCard({ label, value, change }: { label: string; value: string; chang
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  Converted: '#059669',
-  Qualified: '#10b981',
-  Contacted: '#6ee7b7',
-  New: '#a7f3d0',
+  Converted: '#00C5DF',
+  Qualified: '#33D4EB',
+  Contacted: '#80E3F3',
+  New: '#B3EEF7',
 };
 
 export function ReportDetail({ report, onBack }: ReportDetailProps) {
   const [showEmail, setShowEmail] = useState(false);
+  const [fullPage, setFullPage] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('fullpage') === '1') setFullPage(true);
+  }, []);
+
   const { snapshot: s, comparison: c, narrative: n } = report;
 
   const totalStatusLeads = s.leadsByStatus.reduce((sum, d) => sum + d.value, 0);
@@ -51,7 +58,7 @@ export function ReportDetail({ report, onBack }: ReportDetailProps) {
       <div className="max-w-[900px] mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <button onClick={onBack} className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900 transition-colors">
+          <button onClick={onBack} className="flex items-center gap-1 text-sm text-surface-500 hover:text-surface-900 transition-colors">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
             </svg>
@@ -69,10 +76,10 @@ export function ReportDetail({ report, onBack }: ReportDetailProps) {
         </div>
 
         {/* Title block */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-          <p className="text-xs text-gray-400 font-medium uppercase tracking-wider mb-1">{report.periodLabel}</p>
-          <h2 className="text-xl font-bold text-gray-900 mb-1">{report.title}</h2>
-          <p className="text-xs text-gray-400">
+        <div className="bg-white rounded-[14px] border border-surface-200 shadow-card p-6">
+          <p className="text-xs text-surface-400 font-medium uppercase tracking-wider mb-1">{report.periodLabel}</p>
+          <h2 className="text-xl font-bold text-surface-900 mb-1">{report.title}</h2>
+          <p className="text-xs text-surface-400">
             Generated {new Date(report.generatedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
             {' '}| Period: {new Date(report.periodStart).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
             {' '}&ndash; {new Date(report.periodEnd).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
@@ -165,25 +172,25 @@ export function ReportDetail({ report, onBack }: ReportDetailProps) {
           <div className="overflow-x-auto mb-5">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-100">
-                  <th className="text-left py-2 pr-4 text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Cluster</th>
-                  <th className="text-right py-2 px-2 text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Pages</th>
-                  <th className="text-right py-2 px-2 text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Clicks</th>
-                  <th className="text-right py-2 px-2 text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Impr.</th>
-                  <th className="text-right py-2 px-2 text-[10px] font-semibold text-gray-400 uppercase tracking-wider">CTR</th>
-                  <th className="text-right py-2 px-2 text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Leads</th>
-                  <th className="text-right py-2 pl-2 text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Growth</th>
+                <tr className="border-b border-surface-100">
+                  <th className="text-left py-2 pr-4 text-[10px] font-semibold text-surface-400 uppercase tracking-wider">Cluster</th>
+                  <th className="text-right py-2 px-2 text-[10px] font-semibold text-surface-400 uppercase tracking-wider">Pages</th>
+                  <th className="text-right py-2 px-2 text-[10px] font-semibold text-surface-400 uppercase tracking-wider">Clicks</th>
+                  <th className="text-right py-2 px-2 text-[10px] font-semibold text-surface-400 uppercase tracking-wider">Impr.</th>
+                  <th className="text-right py-2 px-2 text-[10px] font-semibold text-surface-400 uppercase tracking-wider">CTR</th>
+                  <th className="text-right py-2 px-2 text-[10px] font-semibold text-surface-400 uppercase tracking-wider">Leads</th>
+                  <th className="text-right py-2 pl-2 text-[10px] font-semibold text-surface-400 uppercase tracking-wider">Growth</th>
                 </tr>
               </thead>
               <tbody>
                 {s.clusterPerformance.map((cluster) => (
-                  <tr key={cluster.category} className="border-b border-gray-50 last:border-0">
-                    <td className="py-2.5 pr-4 font-medium text-gray-900">{cluster.category}</td>
-                    <td className="py-2.5 px-2 text-right text-gray-600 font-mono">{cluster.pages}</td>
-                    <td className="py-2.5 px-2 text-right text-gray-900 font-mono">{fmt(cluster.clicks)}</td>
-                    <td className="py-2.5 px-2 text-right text-gray-600 font-mono">{fmt(cluster.impressions)}</td>
-                    <td className="py-2.5 px-2 text-right text-gray-600 font-mono">{fmtPct(cluster.ctr)}</td>
-                    <td className="py-2.5 px-2 text-right text-gray-900 font-mono">{cluster.leads}</td>
+                  <tr key={cluster.category} className="border-b border-surface-50 last:border-0">
+                    <td className="py-2.5 pr-4 font-medium text-surface-900">{cluster.category}</td>
+                    <td className="py-2.5 px-2 text-right text-surface-600 font-mono">{cluster.pages}</td>
+                    <td className="py-2.5 px-2 text-right text-surface-900 font-mono">{fmt(cluster.clicks)}</td>
+                    <td className="py-2.5 px-2 text-right text-surface-600 font-mono">{fmt(cluster.impressions)}</td>
+                    <td className="py-2.5 px-2 text-right text-surface-600 font-mono">{fmtPct(cluster.ctr)}</td>
+                    <td className="py-2.5 px-2 text-right text-surface-900 font-mono">{cluster.leads}</td>
                     <td className="py-2.5 pl-2 text-right">
                       <TrendIndicator change={cluster.growth} />
                     </td>
@@ -206,7 +213,7 @@ export function ReportDetail({ report, onBack }: ReportDetailProps) {
 
           {/* Lead status bar */}
           <div className="mb-5">
-            <p className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold mb-2">Leads by Status</p>
+            <p className="text-[10px] text-surface-400 uppercase tracking-wider font-semibold mb-2">Leads by Status</p>
             <div className="flex h-5 rounded-full overflow-hidden">
               {s.leadsByStatus.map((seg) => (
                 <div
@@ -223,7 +230,7 @@ export function ReportDetail({ report, onBack }: ReportDetailProps) {
               {s.leadsByStatus.map((seg) => (
                 <div key={seg.name} className="flex items-center gap-1.5">
                   <div className="w-2 h-2 rounded-full" style={{ backgroundColor: STATUS_COLORS[seg.name] || '#d1d5db' }} />
-                  <span className="text-[10px] text-gray-500">{seg.name} ({seg.value})</span>
+                  <span className="text-[10px] text-surface-500">{seg.name} ({seg.value})</span>
                 </div>
               ))}
             </div>
@@ -231,20 +238,20 @@ export function ReportDetail({ report, onBack }: ReportDetailProps) {
 
           {/* Industry breakdown */}
           <div className="mb-5">
-            <p className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold mb-2">Leads by Industry</p>
+            <p className="text-[10px] text-surface-400 uppercase tracking-wider font-semibold mb-2">Leads by Industry</p>
             <div className="space-y-1.5">
               {s.leadsByIndustry.map((ind) => {
                 const maxVal = Math.max(...s.leadsByIndustry.map((d) => d.value));
                 return (
                   <div key={ind.name} className="flex items-center gap-3">
-                    <span className="text-xs text-gray-600 w-24 shrink-0">{ind.name}</span>
-                    <div className="flex-1 bg-gray-100 rounded-full h-4 overflow-hidden">
+                    <span className="text-xs text-surface-600 w-24 shrink-0">{ind.name}</span>
+                    <div className="flex-1 bg-surface-100 rounded-full h-4 overflow-hidden">
                       <div
                         className="h-full rounded-full bg-indigo-400 transition-all duration-500"
                         style={{ width: `${(ind.value / maxVal) * 100}%` }}
                       />
                     </div>
-                    <span className="text-xs font-mono text-gray-900 w-6 text-right">{ind.value}</span>
+                    <span className="text-xs font-mono text-surface-900 w-6 text-right">{ind.value}</span>
                   </div>
                 );
               })}
@@ -253,30 +260,30 @@ export function ReportDetail({ report, onBack }: ReportDetailProps) {
 
           {/* Top leads table */}
           <div className="mb-5">
-            <p className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold mb-2">Notable Leads</p>
+            <p className="text-[10px] text-surface-400 uppercase tracking-wider font-semibold mb-2">Notable Leads</p>
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-100">
-                  <th className="text-left py-2 text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Name</th>
-                  <th className="text-left py-2 text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Company</th>
-                  <th className="text-left py-2 text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Industry</th>
-                  <th className="text-right py-2 text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Value</th>
-                  <th className="text-right py-2 text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Status</th>
+                <tr className="border-b border-surface-100">
+                  <th className="text-left py-2 text-[10px] font-semibold text-surface-400 uppercase tracking-wider">Name</th>
+                  <th className="text-left py-2 text-[10px] font-semibold text-surface-400 uppercase tracking-wider">Company</th>
+                  <th className="text-left py-2 text-[10px] font-semibold text-surface-400 uppercase tracking-wider">Industry</th>
+                  <th className="text-right py-2 text-[10px] font-semibold text-surface-400 uppercase tracking-wider">Value</th>
+                  <th className="text-right py-2 text-[10px] font-semibold text-surface-400 uppercase tracking-wider">Status</th>
                 </tr>
               </thead>
               <tbody>
                 {s.topLeads.map((lead) => (
-                  <tr key={lead.name} className="border-b border-gray-50 last:border-0">
-                    <td className="py-2 text-gray-900 font-medium">{lead.name}</td>
-                    <td className="py-2 text-gray-600">{lead.company}</td>
-                    <td className="py-2 text-gray-600">{lead.industry}</td>
-                    <td className="py-2 text-right font-mono text-gray-900">{fmtUsd(lead.value)}</td>
+                  <tr key={lead.name} className="border-b border-surface-50 last:border-0">
+                    <td className="py-2 text-surface-900 font-medium">{lead.name}</td>
+                    <td className="py-2 text-surface-600">{lead.company}</td>
+                    <td className="py-2 text-surface-600">{lead.industry}</td>
+                    <td className="py-2 text-right font-mono text-surface-900">{fmtUsd(lead.value)}</td>
                     <td className="py-2 text-right">
                       <span className={`inline-block text-[10px] font-medium px-2 py-0.5 rounded-full ${
                         lead.status === 'converted' ? 'bg-green-100 text-green-700' :
                         lead.status === 'qualified' ? 'bg-blue-100 text-blue-700' :
                         lead.status === 'contacted' ? 'bg-yellow-100 text-yellow-700' :
-                        'bg-gray-100 text-gray-600'
+                        'bg-surface-100 text-surface-600'
                       }`}>
                         {lead.status.charAt(0).toUpperCase() + lead.status.slice(1)}
                       </span>
@@ -301,7 +308,7 @@ export function ReportDetail({ report, onBack }: ReportDetailProps) {
 
           {/* ROAS ratio bar */}
           <div className="mb-2">
-            <div className="relative h-6 rounded-full overflow-hidden bg-gray-100">
+            <div className="relative h-6 rounded-full overflow-hidden bg-surface-100">
               <div
                 className="absolute inset-y-0 left-0 rounded-full"
                 style={{
@@ -310,14 +317,14 @@ export function ReportDetail({ report, onBack }: ReportDetailProps) {
                 }}
               />
               <div
-                className="absolute inset-y-0 left-0 rounded-l-full bg-gray-300"
+                className="absolute inset-y-0 left-0 rounded-l-full bg-surface-300"
                 style={{
                   width: `${Math.max((s.monthlyCost / (s.pipelineValue + s.monthlyCost)) * 100, 1)}%`,
                 }}
               />
             </div>
             <div className="flex justify-between mt-2">
-              <span className="text-[10px] font-mono text-gray-400">Cost: {fmtUsd(s.monthlyCost)}</span>
+              <span className="text-[10px] font-mono text-surface-400">Cost: {fmtUsd(s.monthlyCost)}</span>
               <span className="text-[10px] font-mono text-indigo-400">Pipeline: {fmtUsd(s.pipelineValue)}</span>
             </div>
           </div>
@@ -327,7 +334,7 @@ export function ReportDetail({ report, onBack }: ReportDetailProps) {
         <ReportSection title="Strategic Recommendations">
           <ul className="space-y-3">
             {n.recommendations.map((rec, i) => (
-              <li key={i} className="flex gap-3 text-sm text-gray-700">
+              <li key={i} className="flex gap-3 text-sm text-surface-700">
                 <span className="shrink-0 w-5 h-5 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-[10px] font-bold mt-0.5">
                   {i + 1}
                 </span>
@@ -345,13 +352,27 @@ export function ReportDetail({ report, onBack }: ReportDetailProps) {
             className="bg-white rounded-xl shadow-2xl w-[700px] max-h-[90vh] overflow-y-auto m-4"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between p-4 border-b border-gray-200 sticky top-0 bg-white rounded-t-xl z-10">
-              <h3 className="text-sm font-semibold text-gray-900">Email Preview</h3>
-              <button onClick={() => setShowEmail(false)} className="text-gray-400 hover:text-gray-600 transition-colors">
+            <div className="flex items-center justify-between p-4 border-b border-surface-200 sticky top-0 bg-white rounded-t-xl z-10">
+              <h3 className="text-sm font-semibold text-surface-900">Email Preview</h3>
+              <button onClick={() => setShowEmail(false)} className="text-surface-400 hover:text-surface-600 transition-colors">
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
+            </div>
+            <div className="p-6">
+              <ReportEmailTemplate report={report} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Full-page email render for Figma capture (no modal overlay) */}
+      {fullPage && (
+        <div className="mt-6">
+          <div className="bg-white rounded-xl shadow-2xl w-[700px] mx-auto">
+            <div className="flex items-center justify-between p-4 border-b border-surface-200 bg-white rounded-t-xl">
+              <h3 className="text-sm font-semibold text-surface-900">Email Preview</h3>
             </div>
             <div className="p-6">
               <ReportEmailTemplate report={report} />

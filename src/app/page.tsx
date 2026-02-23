@@ -1,7 +1,7 @@
 // Telly AI Analytics Prototype
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { ChatPanel } from '@/components/chat/ChatPanel';
 import { DateRangePicker } from '@/components/dashboard/DateRangePicker';
@@ -11,6 +11,7 @@ import { DashboardSummary } from '@/components/dashboard/DashboardSummary';
 import { TrafficDashboard } from '@/components/dashboard/TrafficDashboard';
 import { LeadsDashboard } from '@/components/dashboard/LeadsDashboard';
 import { ReportsDashboard } from '@/components/dashboard/reports/ReportsDashboard';
+import { ArticleDetail } from '@/components/article/ArticleDetail';
 import { DateRangeProvider } from '@/hooks/useDateRange';
 
 const tabs = [
@@ -32,38 +33,56 @@ const tabTitles: Record<string, string> = {
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [selectedArticleId, setSelectedArticleId] = useState<string | null>(null);
+  const [fullPage, setFullPage] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const tab = params.get('tab');
+    if (tab && tabs.some(t => t.id === tab)) setActiveTab(tab);
+    const article = params.get('article');
+    if (article) setSelectedArticleId(article);
+    if (params.get('fullpage') === '1') setFullPage(true);
+  }, []);
 
   return (
     <DateRangeProvider>
-      <div className="h-screen flex">
+      <div className={fullPage ? 'flex' : 'h-screen flex'}>
         {/* Icon sidebar */}
         <Sidebar />
 
         {/* Chat panel */}
-        <div className="w-[380px] shrink-0 border-r border-gray-200 bg-white flex flex-col min-h-0">
+        <div className={`w-[380px] shrink-0 border-r border-surface-200 bg-white flex flex-col ${fullPage ? '' : 'min-h-0'}`}>
           <ChatPanel />
         </div>
 
         {/* Main dashboard */}
-        <div className="flex-1 min-w-0 min-h-0 overflow-y-auto bg-gray-50">
-          <div className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h1 className="text-lg font-semibold text-gray-900">{tabTitles[activeTab]}</h1>
-              {activeTab !== 'reports' && <DateRangePicker />}
+        <div className={`flex-1 min-w-0 bg-surface-50 ${fullPage ? '' : 'min-h-0 overflow-y-auto'}`}>
+          {selectedArticleId ? (
+            <ArticleDetail
+              articleId={selectedArticleId}
+              onBack={() => setSelectedArticleId(null)}
+            />
+          ) : (
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h1 className="text-lg font-semibold text-surface-900">{tabTitles[activeTab]}</h1>
+                {activeTab !== 'reports' && <DateRangePicker />}
+              </div>
+              <DashboardTabs activeTab={activeTab} onTabChange={setActiveTab} tabs={tabs} />
+              {activeTab === 'dashboard' ? (
+                <DashboardSummary onNavigate={setActiveTab} />
+              ) : activeTab === 'traffic' ? (
+                <TrafficDashboard onPageClick={setSelectedArticleId} />
+              ) : activeTab === 'clusters' ? (
+                <TopicalClusters />
+              ) : activeTab === 'leads' ? (
+                <LeadsDashboard />
+              ) : activeTab === 'reports' ? (
+                <ReportsDashboard />
+              ) : null}
             </div>
-            <DashboardTabs activeTab={activeTab} onTabChange={setActiveTab} tabs={tabs} />
-            {activeTab === 'dashboard' ? (
-              <DashboardSummary onNavigate={setActiveTab} />
-            ) : activeTab === 'traffic' ? (
-              <TrafficDashboard />
-            ) : activeTab === 'clusters' ? (
-              <TopicalClusters />
-            ) : activeTab === 'leads' ? (
-              <LeadsDashboard />
-            ) : activeTab === 'reports' ? (
-              <ReportsDashboard />
-            ) : null}
-          </div>
+          )}
         </div>
       </div>
     </DateRangeProvider>

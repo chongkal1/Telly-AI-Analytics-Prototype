@@ -11,6 +11,7 @@ interface ChatInputProps {
 export function ChatInput({ onSend, disabled }: ChatInputProps) {
   const [value, setValue] = useState('');
   const [showCommands, setShowCommands] = useState(false);
+
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -60,10 +61,10 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="flex items-center gap-2 px-4 py-3 border-t border-gray-200 bg-white">
+      <form onSubmit={handleSubmit} className="flex items-center gap-2 px-4 py-3 border-t border-surface-200 bg-white">
         <button
           type="button"
-          className="h-9 w-9 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 flex items-center justify-center transition-colors shrink-0"
+          className="h-9 w-9 rounded-full text-surface-400 hover:text-surface-600 hover:bg-surface-100 flex items-center justify-center transition-colors shrink-0"
           title="Attach file"
         >
           <svg className="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -77,12 +78,12 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
           onChange={(e) => setValue(e.target.value)}
           placeholder="Ask about your content performance..."
           disabled={disabled}
-          className="flex-1 px-4 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent disabled:opacity-50 placeholder:text-gray-400"
+          className="flex-1 px-4 py-2.5 text-sm bg-surface-50 border border-surface-200 rounded-full focus:outline-none focus:ring-2 focus:ring-[#00C5DF] focus:border-transparent disabled:opacity-50 placeholder:text-surface-400"
         />
         <button
           type="submit"
           disabled={disabled || !value.trim()}
-          className="h-9 w-9 rounded-full bg-emerald-600 text-white flex items-center justify-center hover:bg-emerald-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors shrink-0"
+          className="h-9 w-9 rounded-full bg-surface-900 text-white flex items-center justify-center hover:bg-surface-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors shrink-0"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />

@@ -5,7 +5,7 @@ const statusConfig: Record<LeadStatus, { label: string; bgColor: string; textCol
   contacted: { label: 'Contacted', bgColor: 'bg-yellow-100', textColor: 'text-yellow-800', dotColor: 'bg-yellow-400' },
   qualified: { label: 'Qualified', bgColor: 'bg-purple-100', textColor: 'text-purple-800', dotColor: 'bg-purple-400' },
   converted: { label: 'Converted', bgColor: 'bg-green-100', textColor: 'text-green-800', dotColor: 'bg-green-400' },
-  lost: { label: 'Lost', bgColor: 'bg-gray-100', textColor: 'text-gray-800', dotColor: 'bg-gray-400' },
+  lost: { label: 'Lost', bgColor: 'bg-surface-100', textColor: 'text-surface-800', dotColor: 'bg-surface-400' },
 };
 
 interface StatusBadgeProps {

@@ -45,10 +45,10 @@ function useSort<T>(data: T[], defaultKey?: string) {
 function SortIcon({ active, direction }: { active: boolean; direction: SortDirection }) {
   return (
     <span className="ml-1 inline-flex flex-col">
-      <svg className={`h-2 w-2 ${active && direction === 'asc' ? 'text-indigo-600' : 'text-gray-400'}`} viewBox="0 0 8 4" fill="currentColor">
+      <svg className={`h-2 w-2 ${active && direction === 'asc' ? 'text-indigo-600' : 'text-surface-400'}`} viewBox="0 0 8 4" fill="currentColor">
         <path d="M4 0L8 4H0L4 0Z" />
       </svg>
-      <svg className={`h-2 w-2 -mt-0.5 ${active && direction === 'desc' ? 'text-indigo-600' : 'text-gray-400'}`} viewBox="0 0 8 4" fill="currentColor">
+      <svg className={`h-2 w-2 -mt-0.5 ${active && direction === 'desc' ? 'text-indigo-600' : 'text-surface-400'}`} viewBox="0 0 8 4" fill="currentColor">
         <path d="M4 4L0 0H8L4 4Z" />
       </svg>
     </span>
@@ -61,7 +61,7 @@ function Th({ label, colKey, align, sortKey, sortDir, onSort }: {
 }) {
   return (
     <th
-      className={`px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none ${align === 'right' ? 'text-right' : 'text-left'}`}
+      className={`px-3 py-2 text-xs font-medium text-surface-500 uppercase tracking-wider cursor-pointer hover:bg-surface-100 select-none ${align === 'right' ? 'text-right' : 'text-left'}`}
       onClick={() => onSort(colKey)}
     >
       <span className="inline-flex items-center">
@@ -153,7 +153,7 @@ const WorldMap = memo(function WorldMap({ data }: { data: GeoTrafficEntry[] }) {
       {/* Tooltip */}
       {hoveredEntry && (
         <div
-          className="absolute pointer-events-none bg-gray-900 text-white rounded-lg px-3 py-2 text-xs shadow-lg z-10"
+          className="absolute pointer-events-none bg-surface-900 text-white rounded-lg px-3 py-2 text-xs shadow-lg z-10"
           style={{
             left: tooltipPos.x,
             top: tooltipPos.y,
@@ -161,21 +161,21 @@ const WorldMap = memo(function WorldMap({ data }: { data: GeoTrafficEntry[] }) {
           }}
         >
           <p className="font-semibold">{hoveredEntry.country}</p>
-          <p className="text-gray-300">{hoveredEntry.sessions.toLocaleString()} sessions</p>
-          <p className="text-gray-300">{hoveredEntry.clicks.toLocaleString()} clicks</p>
-          <p className="text-gray-300">{hoveredEntry.leads} leads</p>
+          <p className="text-surface-300">{hoveredEntry.sessions.toLocaleString()} sessions</p>
+          <p className="text-surface-300">{hoveredEntry.clicks.toLocaleString()} clicks</p>
+          <p className="text-surface-300">{hoveredEntry.leads} leads</p>
         </div>
       )}
 
       {/* Legend */}
       <div className="absolute bottom-2 left-2 flex items-center gap-1.5">
-        <span className="text-[10px] text-gray-400">Low</span>
+        <span className="text-[10px] text-surface-400">Low</span>
         <div className="flex h-2 rounded-full overflow-hidden">
           {[0.2, 0.4, 0.6, 0.8, 1.0].map((op) => (
             <div key={op} className="w-4 h-full" style={{ backgroundColor: '#4f46e5', opacity: op }} />
           ))}
         </div>
-        <span className="text-[10px] text-gray-400">High</span>
+        <span className="text-[10px] text-surface-400">High</span>
       </div>
     </div>
   );
@@ -191,13 +191,13 @@ export function GeographySection({ data }: GeographySectionProps) {
   const { sorted, sortKey, sortDir, toggle } = useSort(data, 'sessions');
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
-      <div className="px-4 py-3 border-b border-gray-100">
-        <h3 className="text-sm font-semibold text-gray-900">Geography</h3>
-        <p className="text-xs text-gray-500 mt-0.5">Traffic distribution by country</p>
+    <div className="bg-white rounded-[14px] border border-surface-200 shadow-card">
+      <div className="px-4 py-3 border-b border-surface-100">
+        <h3 className="text-sm font-semibold text-surface-900">Geography</h3>
+        <p className="text-xs text-surface-500 mt-0.5">Traffic distribution by country</p>
       </div>
 
-      <div className="grid grid-cols-12 divide-x divide-gray-200">
+      <div className="grid grid-cols-12 divide-x divide-surface-200">
         {/* Map */}
         <div className="col-span-7 p-4">
           <WorldMap data={data} />
@@ -205,8 +205,8 @@ export function GeographySection({ data }: GeographySectionProps) {
 
         {/* Table */}
         <div className="col-span-5 overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-surface-200">
+            <thead className="bg-surface-50">
               <tr>
                 <Th label="Country" colKey="country" sortKey={sortKey} sortDir={sortDir} onSort={toggle} />
                 <Th label="Sessions" colKey="sessions" align="right" sortKey={sortKey} sortDir={sortDir} onSort={toggle} />
@@ -216,15 +216,15 @@ export function GeographySection({ data }: GeographySectionProps) {
                 <Th label="%" colKey="percentageOfTotal" align="right" sortKey={sortKey} sortDir={sortDir} onSort={toggle} />
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-surface-200">
               {sorted.map((entry) => (
-                <tr key={entry.countryCode} className="hover:bg-gray-50">
-                  <td className="px-3 py-2 text-sm font-medium text-gray-900 whitespace-nowrap">{entry.country}</td>
-                  <td className="px-3 py-2 text-sm text-gray-700 text-right font-mono">{entry.sessions.toLocaleString()}</td>
-                  <td className="px-3 py-2 text-sm text-gray-700 text-right font-mono">{entry.clicks.toLocaleString()}</td>
-                  <td className="px-3 py-2 text-sm text-gray-700 text-right font-mono">{entry.leads}</td>
-                  <td className="px-3 py-2 text-sm text-gray-700 text-right font-mono">{entry.conversionRate.toFixed(1)}%</td>
-                  <td className="px-3 py-2 text-sm text-gray-700 text-right font-mono">{entry.percentageOfTotal}%</td>
+                <tr key={entry.countryCode} className="hover:bg-surface-50">
+                  <td className="px-3 py-2 text-sm font-medium text-surface-900 whitespace-nowrap">{entry.country}</td>
+                  <td className="px-3 py-2 text-sm text-surface-700 text-right font-mono">{entry.sessions.toLocaleString()}</td>
+                  <td className="px-3 py-2 text-sm text-surface-700 text-right font-mono">{entry.clicks.toLocaleString()}</td>
+                  <td className="px-3 py-2 text-sm text-surface-700 text-right font-mono">{entry.leads}</td>
+                  <td className="px-3 py-2 text-sm text-surface-700 text-right font-mono">{entry.conversionRate.toFixed(1)}%</td>
+                  <td className="px-3 py-2 text-sm text-surface-700 text-right font-mono">{entry.percentageOfTotal}%</td>
                 </tr>
               ))}
             </tbody>

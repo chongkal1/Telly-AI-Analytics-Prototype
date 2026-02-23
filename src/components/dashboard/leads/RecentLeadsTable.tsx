@@ -12,10 +12,10 @@ type SortDirection = 'asc' | 'desc';
 function SortIcon({ active, direction }: { active: boolean; direction: SortDirection }) {
   return (
     <span className="ml-1 inline-flex flex-col">
-      <svg className={`h-2 w-2 ${active && direction === 'asc' ? 'text-indigo-600' : 'text-gray-400'}`} viewBox="0 0 8 4" fill="currentColor">
+      <svg className={`h-2 w-2 ${active && direction === 'asc' ? 'text-indigo-600' : 'text-surface-400'}`} viewBox="0 0 8 4" fill="currentColor">
         <path d="M4 0L8 4H0L4 0Z" />
       </svg>
-      <svg className={`h-2 w-2 -mt-0.5 ${active && direction === 'desc' ? 'text-indigo-600' : 'text-gray-400'}`} viewBox="0 0 8 4" fill="currentColor">
+      <svg className={`h-2 w-2 -mt-0.5 ${active && direction === 'desc' ? 'text-indigo-600' : 'text-surface-400'}`} viewBox="0 0 8 4" fill="currentColor">
         <path d="M4 4L0 0H8L4 4Z" />
       </svg>
     </span>
@@ -65,22 +65,22 @@ export function RecentLeadsTable({ leads }: RecentLeadsTableProps) {
   ];
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
-      <div className="px-4 py-3 border-b border-gray-100">
-        <h3 className="text-sm font-semibold text-gray-900">Recent Leads</h3>
-        <p className="text-xs text-gray-500 mt-0.5">
+    <div className="bg-white rounded-[14px] border border-surface-200 shadow-card">
+      <div className="px-4 py-3 border-b border-surface-100">
+        <h3 className="text-sm font-semibold text-surface-900">Recent Leads</h3>
+        <p className="text-xs text-surface-500 mt-0.5">
           {sorted.length} captured leads &middot; Showing {(currentPage - 1) * PAGE_SIZE + 1}&ndash;{Math.min(currentPage * PAGE_SIZE, sorted.length)}
         </p>
       </div>
 
       <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+        <table className="min-w-full divide-y divide-surface-200">
+          <thead className="bg-surface-50">
             <tr>
               {columns.map((col) => (
                 <th
                   key={col.key}
-                  className={`px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none ${col.align === 'right' ? 'text-right' : 'text-left'}`}
+                  className={`px-3 py-2 text-xs font-medium text-surface-500 uppercase tracking-wider cursor-pointer hover:bg-surface-100 select-none ${col.align === 'right' ? 'text-right' : 'text-left'}`}
                   onClick={() => toggleSort(col.key)}
                 >
                   <span className="inline-flex items-center">
@@ -91,11 +91,11 @@ export function RecentLeadsTable({ leads }: RecentLeadsTableProps) {
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200">
+          <tbody className="divide-y divide-surface-200">
             {paginated.map((row) => (
-              <tr key={row.id} className="hover:bg-gray-50">
-                <td className="px-3 py-2 text-sm font-medium text-gray-900 whitespace-nowrap">{row.name}</td>
-                <td className="px-3 py-2 text-sm text-gray-700 whitespace-nowrap">{row.company}</td>
+              <tr key={row.id} className="hover:bg-surface-50">
+                <td className="px-3 py-2 text-sm font-medium text-surface-900 whitespace-nowrap">{row.name}</td>
+                <td className="px-3 py-2 text-sm text-surface-700 whitespace-nowrap">{row.company}</td>
                 <td className="px-3 py-2">
                   <span className="inline-flex items-center px-1.5 py-0.5 text-[10px] font-medium rounded bg-indigo-50 text-indigo-700">
                     {row.industry}
@@ -104,8 +104,8 @@ export function RecentLeadsTable({ leads }: RecentLeadsTableProps) {
                 <td className="px-3 py-2">
                   <StatusBadge status={row.status as LeadStatus} />
                 </td>
-                <td className="px-3 py-2 text-sm text-gray-700 font-mono text-right">{formatCurrency(row.value)}</td>
-                <td className="px-3 py-2 text-sm text-gray-500 whitespace-nowrap">{formatDate(row.createdAt)}</td>
+                <td className="px-3 py-2 text-sm text-surface-700 font-mono text-right">{formatCurrency(row.value)}</td>
+                <td className="px-3 py-2 text-sm text-surface-500 whitespace-nowrap">{formatDate(row.createdAt)}</td>
               </tr>
             ))}
           </tbody>
@@ -113,15 +113,15 @@ export function RecentLeadsTable({ leads }: RecentLeadsTableProps) {
       </div>
 
       {totalPages > 1 && (
-        <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200">
-          <span className="text-xs text-gray-500">
+        <div className="flex items-center justify-between px-4 py-3 border-t border-surface-200">
+          <span className="text-xs text-surface-500">
             Page {currentPage} of {totalPages}
           </span>
           <div className="flex items-center gap-1">
             <button
               onClick={() => setCurrentPage(currentPage - 1)}
               disabled={currentPage <= 1}
-              className="px-2 py-1 text-xs font-medium text-gray-600 hover:bg-gray-100 rounded disabled:opacity-40 disabled:cursor-not-allowed"
+              className="px-2 py-1 text-xs font-medium text-surface-600 hover:bg-surface-100 rounded disabled:opacity-40 disabled:cursor-not-allowed"
             >
               &larr; Prev
             </button>
@@ -130,7 +130,7 @@ export function RecentLeadsTable({ leads }: RecentLeadsTableProps) {
                 key={p}
                 onClick={() => setCurrentPage(p)}
                 className={`w-7 h-7 text-xs font-medium rounded ${
-                  p === currentPage ? 'bg-indigo-600 text-white' : 'text-gray-600 hover:bg-gray-100'
+                  p === currentPage ? 'bg-indigo-600 text-white' : 'text-surface-600 hover:bg-surface-100'
                 }`}
               >
                 {p}
@@ -139,7 +139,7 @@ export function RecentLeadsTable({ leads }: RecentLeadsTableProps) {
             <button
               onClick={() => setCurrentPage(currentPage + 1)}
               disabled={currentPage >= totalPages}
-              className="px-2 py-1 text-xs font-medium text-gray-600 hover:bg-gray-100 rounded disabled:opacity-40 disabled:cursor-not-allowed"
+              className="px-2 py-1 text-xs font-medium text-surface-600 hover:bg-surface-100 rounded disabled:opacity-40 disabled:cursor-not-allowed"
             >
               Next &rarr;
             </button>

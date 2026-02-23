@@ -23,14 +23,14 @@ function SortIcon({ active, direction }: { active: boolean; direction: SortDirec
   return (
     <span className="ml-1 inline-flex flex-col">
       <svg
-        className={`h-2 w-2 ${active && direction === 'asc' ? 'text-indigo-600' : 'text-gray-400'}`}
+        className={`h-2 w-2 ${active && direction === 'asc' ? 'text-indigo-600' : 'text-surface-400'}`}
         viewBox="0 0 8 4"
         fill="currentColor"
       >
         <path d="M4 0L8 4H0L4 0Z" />
       </svg>
       <svg
-        className={`h-2 w-2 -mt-0.5 ${active && direction === 'desc' ? 'text-indigo-600' : 'text-gray-400'}`}
+        className={`h-2 w-2 -mt-0.5 ${active && direction === 'desc' ? 'text-indigo-600' : 'text-surface-400'}`}
         viewBox="0 0 8 4"
         fill="currentColor"
       >
@@ -69,17 +69,17 @@ export function DataTable({ columns, data, onRowClick }: DataTableProps) {
   }, [data, sortColumn, sortDirection]);
 
   return (
-    <div className="bg-white shadow-sm rounded-lg border border-gray-200 overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
+    <div className="bg-white shadow-card rounded-[14px] border border-surface-200 overflow-x-auto">
+      <table className="min-w-full divide-y divide-surface-200">
+        <thead className="bg-surface-50">
           <tr>
             {columns.map((col) => (
               <th
                 key={col.key}
                 scope="col"
-                className={`px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider ${
+                className={`px-4 py-3 text-xs font-medium text-surface-500 uppercase tracking-wider ${
                   col.align === 'right' ? 'text-right' : 'text-left'
-                } ${col.sortable ? 'cursor-pointer hover:bg-gray-100 select-none' : ''}`}
+                } ${col.sortable ? 'cursor-pointer hover:bg-surface-100 select-none' : ''}`}
                 onClick={col.sortable ? () => handleSort(col.key) : undefined}
               >
                 <span className="inline-flex items-center">
@@ -90,17 +90,17 @@ export function DataTable({ columns, data, onRowClick }: DataTableProps) {
             ))}
           </tr>
         </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
+        <tbody className="bg-white divide-y divide-surface-200">
           {sortedData.map((row, i) => (
             <tr
               key={(row.id as string) || i}
-              className={onRowClick ? 'hover:bg-gray-50 cursor-pointer' : 'hover:bg-gray-50'}
+              className={onRowClick ? 'hover:bg-surface-50 cursor-pointer' : 'hover:bg-surface-50'}
               onClick={onRowClick ? () => onRowClick(row) : undefined}
             >
               {columns.map((col) => (
                 <td
                   key={col.key}
-                  className={`px-4 py-3 text-sm text-gray-700 whitespace-nowrap ${
+                  className={`px-4 py-3 text-sm text-surface-700 whitespace-nowrap ${
                     col.align === 'right' ? 'text-right font-mono' : ''
                   }`}
                 >

@@ -71,9 +71,9 @@ export function Sidebar() {
   const [active, setActive] = useState('research');
 
   return (
-    <div className="w-[60px] bg-[#0a0a0a] flex flex-col items-center py-4 shrink-0 border-r border-gray-800">
+    <div className="w-[60px] bg-[#0a0a0a] flex flex-col items-center py-4 shrink-0 border-r border-surface-800">
       {/* Logo */}
-      <div className="h-9 w-9 rounded-xl bg-emerald-600 flex items-center justify-center mb-6 cursor-pointer hover:bg-emerald-500 transition-colors">
+      <div className="h-9 w-9 rounded-xl bg-[#00C5DF] flex items-center justify-center mb-6 cursor-pointer hover:bg-[#00B0C8] transition-colors">
         <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
           <path d="M13 3L4 14h7l-2 7 9-11h-7l2-7z" />
         </svg>
@@ -88,7 +88,7 @@ export function Sidebar() {
             className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${
               active === item.id
                 ? 'bg-white/10 text-white'
-                : 'text-gray-500 hover:text-gray-300 hover:bg-white/5'
+                : 'text-surface-500 hover:text-surface-300 hover:bg-white/5'
             }`}
             title={item.label}
           >
@@ -99,7 +99,7 @@ export function Sidebar() {
 
       {/* Bottom settings icon */}
       <button
-        className="w-10 h-10 rounded-lg flex items-center justify-center text-gray-500 hover:text-gray-300 hover:bg-white/5 transition-colors"
+        className="w-10 h-10 rounded-lg flex items-center justify-center text-surface-500 hover:text-surface-300 hover:bg-white/5 transition-colors"
         title="Settings"
       >
         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>

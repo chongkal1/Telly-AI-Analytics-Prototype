@@ -37,13 +37,13 @@ function groupByCluster(items: typeof leads): { name: string; value: number }[] 
 
 function SegmentedToggle({ value, onChange }: { value: GroupMode; onChange: (v: GroupMode) => void }) {
   return (
-    <div className="inline-flex rounded-md border border-gray-200 bg-gray-50 p-0.5 text-xs">
+    <div className="inline-flex rounded-md border border-surface-200 bg-surface-50 p-0.5 text-xs">
       <button
         onClick={() => onChange('industry')}
         className={`px-2.5 py-1 rounded transition-colors ${
           value === 'industry'
-            ? 'bg-white text-gray-900 shadow-sm font-medium'
-            : 'text-gray-500 hover:text-gray-700'
+            ? 'bg-white text-surface-900 shadow-sm font-medium'
+            : 'text-surface-500 hover:text-surface-700'
         }`}
       >
         By Industry
@@ -52,8 +52,8 @@ function SegmentedToggle({ value, onChange }: { value: GroupMode; onChange: (v: 
         onClick={() => onChange('cluster')}
         className={`px-2.5 py-1 rounded transition-colors ${
           value === 'cluster'
-            ? 'bg-white text-gray-900 shadow-sm font-medium'
-            : 'text-gray-500 hover:text-gray-700'
+            ? 'bg-white text-surface-900 shadow-sm font-medium'
+            : 'text-surface-500 hover:text-surface-700'
         }`}
       >
         By Topic
@@ -130,16 +130,16 @@ export function LeadsDashboard() {
           gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
         }}
       >
-        <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
+        <div className="bg-white rounded-[14px] border border-surface-200 shadow-card p-4">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-semibold text-gray-900">{visitorsLabel}</h3>
+            <h3 className="text-sm font-semibold text-surface-900">{visitorsLabel}</h3>
             <SegmentedToggle value={visitorsGroupMode} onChange={setVisitorsGroupMode} />
           </div>
           <PieChartWidget data={visitorsData} height={240} />
         </div>
-        <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
+        <div className="bg-white rounded-[14px] border border-surface-200 shadow-card p-4">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-semibold text-gray-900">{leadsLabel}</h3>
+            <h3 className="text-sm font-semibold text-surface-900">{leadsLabel}</h3>
             <SegmentedToggle value={leadsGroupMode} onChange={setLeadsGroupMode} />
           </div>
           <PieChartWidget data={leadsData} height={240} />

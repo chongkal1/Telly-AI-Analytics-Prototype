@@ -990,15 +990,24 @@ export interface PageOverviewData {
   clicks: number;
   clicksChange: number;
   ctr: number;
+  leads: number;
+  ctaClicks: number;
 }
 
 export function getAllPagesOverview(startDate?: string, endDate?: string): PageOverviewData[] {
   const categories = Array.from(new Set(pages.map((p) => p.category)));
   const allPages: PageOverviewData[] = [];
 
+  // Count leads per page URL
+  const leadsPerUrl: Record<string, number> = {};
+  leads.forEach((l) => {
+    leadsPerUrl[l.sourceUrl] = (leadsPerUrl[l.sourceUrl] || 0) + 1;
+  });
+
   categories.forEach((cat) => {
     const clusterPagesData = getClusterPages(cat, startDate, endDate);
     clusterPagesData.forEach((p) => {
+      const ctaData = pageCtaClicks[p.id];
       allPages.push({
         id: p.id,
         title: p.title,
@@ -1008,6 +1017,8 @@ export function getAllPagesOverview(startDate?: string, endDate?: string): PageO
         clicks: p.clicks,
         clicksChange: p.clicksChange,
         ctr: p.ctr,
+        leads: leadsPerUrl[p.url] ?? 0,
+        ctaClicks: ctaData?.totalCtaClicks ?? 0,
       });
     });
   });
