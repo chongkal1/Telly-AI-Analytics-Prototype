@@ -466,7 +466,7 @@ export function DashboardSummary({ onNavigate }: DashboardSummaryProps) {
         insights={productionInsights}
         goal={agentGoal}
         activityFeed={activityFeed}
-        onSelect={onNavigate ? (_category: string) => onNavigate('clusters') : undefined}
+        onSelect={onNavigate ? () => onNavigate('clusters') : undefined}
       />
     </div>
   );

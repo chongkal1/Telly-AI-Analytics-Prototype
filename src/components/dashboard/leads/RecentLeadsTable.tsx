@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import { Lead, LeadStatus } from '@/types';
 import { StatusBadge } from '@/components/shared/StatusBadge';
-import { formatDate, formatCurrency } from '@/lib/utils';
+import { formatDate } from '@/lib/utils';
 
 const PAGE_SIZE = 10;
 

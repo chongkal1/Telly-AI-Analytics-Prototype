@@ -21,11 +21,6 @@ function SortIcon({ active, direction }: { active: boolean; direction: SortDirec
   );
 }
 
-function SentimentBadge({ value }: { value: number }) {
-  const color = value >= 80 ? 'text-[#00C5DF]' : value >= 60 ? 'text-amber-600' : 'text-red-600';
-  return <span className={`font-medium text-sm ${color}`}>{value}/100</span>;
-}
-
 function DistributionBar({ citations, clicks, maxCitations }: { citations: number; clicks: number; maxCitations: number }) {
   const citationWidth = maxCitations > 0 ? (citations / maxCitations) * 100 : 0;
   const clickWidth = maxCitations > 0 ? (clicks / maxCitations) * 100 : 0;

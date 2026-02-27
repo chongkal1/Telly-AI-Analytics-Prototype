@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { getClusterData, getClusterPages, getClusterInsights, getContentProductionInsights, getContentFunnelData, getAllPagesOverview, ClusterPageDetail, ClusterInsight, ContentProductionInsight, ProductionPriority } from '@/data/chart-data';
+import { getClusterData, getClusterPages, getClusterInsights, getContentProductionInsights, getContentFunnelData, getAllPagesOverview, ClusterPageDetail, ClusterInsight, ContentProductionInsight } from '@/data/chart-data';
 import { useDateRange } from '@/hooks/useDateRange';
 import { ContentFunnel } from './traffic/ContentFunnel';
 import { ContentIntelligencePanel } from './ContentIntelligencePanel';
