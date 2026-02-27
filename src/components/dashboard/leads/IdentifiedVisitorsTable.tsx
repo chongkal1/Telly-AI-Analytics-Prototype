@@ -21,6 +21,14 @@ function SortIcon({ active, direction }: { active: boolean; direction: SortDirec
   );
 }
 
+function LinkedInIcon() {
+  return (
+    <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+    </svg>
+  );
+}
+
 interface IdentifiedVisitorsTableProps {
   visitors: Lead[];
 }
@@ -56,6 +64,8 @@ export function IdentifiedVisitorsTable({ visitors }: IdentifiedVisitorsTablePro
 
   const columns: { key: string; label: string; align: 'left' | 'right' }[] = [
     { key: 'name', label: 'Name', align: 'left' },
+    { key: 'email', label: 'Email', align: 'left' },
+    { key: 'linkedinUrl', label: 'LinkedIn', align: 'left' },
     { key: 'company', label: 'Company', align: 'left' },
     { key: 'industry', label: 'Industry', align: 'left' },
     { key: 'title', label: 'Title', align: 'left' },
@@ -63,13 +73,52 @@ export function IdentifiedVisitorsTable({ visitors }: IdentifiedVisitorsTablePro
     { key: 'createdAt', label: 'Date', align: 'left' },
   ];
 
+  const handleExportCSV = () => {
+    const headers = ['Name', 'Email', 'LinkedIn', 'Company', 'Industry', 'Title', 'Source Page', 'Date'];
+    const rows = sorted.map((r) => [r.name, r.email, r.linkedinUrl, r.company, r.industry, r.title, r.sourceUrl, formatDate(r.createdAt)]);
+    const csv = [headers, ...rows].map((r) => r.map((c) => `"${c}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'identified-visitors.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleSendToCRM = () => {
+    alert(`${sorted.length} visitors queued for CRM sync. This is a prototype — no data was sent.`);
+  };
+
   return (
     <div className="bg-white rounded-[14px] border border-surface-200 shadow-card">
-      <div className="px-4 py-3 border-b border-surface-100">
-        <h3 className="text-sm font-semibold text-surface-900">Identified Visitors</h3>
-        <p className="text-xs text-surface-500 mt-0.5">
-          {sorted.length} visitors via RB2B &middot; Showing {(currentPage - 1) * PAGE_SIZE + 1}&ndash;{Math.min(currentPage * PAGE_SIZE, sorted.length)}
-        </p>
+      <div className="px-4 py-3 border-b border-surface-100 flex items-center justify-between">
+        <div>
+          <h3 className="text-sm font-semibold text-surface-900">Identified Visitors</h3>
+          <p className="text-xs text-surface-500 mt-0.5">
+            {sorted.length} visitors via RB2B &middot; Showing {(currentPage - 1) * PAGE_SIZE + 1}&ndash;{Math.min(currentPage * PAGE_SIZE, sorted.length)}
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleExportCSV}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-surface-700 bg-white border border-surface-300 rounded-lg hover:bg-surface-50 transition-colors"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+            </svg>
+            Export CSV
+          </button>
+          <button
+            onClick={handleSendToCRM}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+            </svg>
+            Send to CRM
+          </button>
+        </div>
       </div>
 
       <div className="overflow-x-auto">
@@ -94,6 +143,24 @@ export function IdentifiedVisitorsTable({ visitors }: IdentifiedVisitorsTablePro
             {paginated.map((row) => (
               <tr key={row.id} className="hover:bg-surface-50">
                 <td className="px-3 py-2 text-sm font-medium text-surface-900 whitespace-nowrap">{row.name}</td>
+                <td className="px-3 py-2 text-sm text-surface-600 whitespace-nowrap max-w-[200px] truncate">
+                  <a href={`mailto:${row.email}`} className="hover:text-indigo-600 hover:underline transition-colors">
+                    {row.email}
+                  </a>
+                </td>
+                <td className="px-3 py-2">
+                  {row.linkedinUrl && (
+                    <a
+                      href={row.linkedinUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-[#0A66C2] hover:text-[#004182] transition-colors"
+                    >
+                      <LinkedInIcon />
+                      <span className="text-xs">Profile</span>
+                    </a>
+                  )}
+                </td>
                 <td className="px-3 py-2 text-sm text-surface-700 whitespace-nowrap">{row.company}</td>
                 <td className="px-3 py-2">
                   <span className="inline-flex items-center px-1.5 py-0.5 text-[10px] font-medium rounded bg-indigo-50 text-indigo-700">

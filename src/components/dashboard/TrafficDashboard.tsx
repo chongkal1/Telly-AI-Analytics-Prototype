@@ -46,7 +46,7 @@ function AIAnalyticsSection() {
         <div
           key={widget.id}
           style={{ gridColumn: `span ${Math.min(widget.colSpan, 12)}` }}
-          className="min-w-0"
+          className="min-w-0 [&>*]:h-full"
         >
           <DashboardWidget widget={widget} />
         </div>

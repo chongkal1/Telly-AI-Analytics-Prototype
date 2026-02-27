@@ -1,7 +1,7 @@
 import { dailyTraffic, getPageMetrics } from './traffic';
 import { pages } from './pages';
 import { leads } from './leads';
-import { DailyTraffic, Lead } from '@/types';
+import { DailyTraffic, Lead, AgentGoal, AgentActivityEntry } from '@/types';
 import {
   dailyAITraffic,
   aiPageCitations,
@@ -557,6 +557,41 @@ export function getComparisonChartData(
   return merged;
 }
 
+export function getAIEngineComparisonData(
+  startDate: string,
+  endDate: string,
+  compareStartDate: string,
+  compareEndDate: string,
+) {
+  const currentRaw = getChartData('aiEngineTimeline', startDate, endDate) as Record<string, unknown>[];
+  const previousRaw = getChartData('aiEngineTimeline', compareStartDate, compareEndDate) as Record<string, unknown>[];
+
+  const maxLen = Math.max(currentRaw.length, previousRaw.length);
+  const merged = [];
+
+  for (let i = 0; i < maxLen; i++) {
+    const cur = currentRaw[i] ?? {};
+    const prev = previousRaw[i] ?? {};
+    merged.push({
+      date: (cur.date as string) || '',
+      ChatGPT: cur.ChatGPT ?? null,
+      Perplexity: cur.Perplexity ?? null,
+      Gemini: cur.Gemini ?? null,
+      Claude: cur.Claude ?? null,
+      Copilot: cur.Copilot ?? null,
+      'Meta AI': cur['Meta AI'] ?? null,
+      prev_ChatGPT: prev.ChatGPT ?? null,
+      prev_Perplexity: prev.Perplexity ?? null,
+      prev_Gemini: prev.Gemini ?? null,
+      prev_Claude: prev.Claude ?? null,
+      prev_Copilot: prev.Copilot ?? null,
+      'prev_Meta AI': prev['Meta AI'] ?? null,
+    });
+  }
+
+  return merged;
+}
+
 /* ── Content Intelligence ── */
 
 export interface ContentSuggestion {
@@ -621,7 +656,7 @@ const INDUSTRY_SUGGESTIONS: Record<string, ContentSuggestion[]> = {
 
 /* ── Content Production Intelligence ── */
 
-export type ProductionPriority = 'double-down' | 'optimize-first' | 'expand' | 'monitor';
+export type ProductionPriority = 'double-down' | 'optimize-first' | 'delete-merge' | 'monitor';
 
 export type AgentStatus = 'in-progress' | 'planned' | 'monitoring' | 'needs-review';
 
@@ -656,8 +691,8 @@ function median(values: number[]): number {
 
 const PRIORITY_ORDER: Record<ProductionPriority, number> = {
   'double-down': 0,
-  'expand': 1,
-  'optimize-first': 2,
+  'optimize-first': 1,
+  'delete-merge': 2,
   'monitor': 3,
 };
 
@@ -705,7 +740,7 @@ export function getContentProductionInsights(
       priorityLabel = 'Scale Production';
       agentStatus = 'in-progress';
       agentStatusLabel = 'In Progress';
-      agentActivity = `Scaling content production across ${c.pageCount} pages`;
+      agentActivity = `Creating new content to cover more keywords across ${c.pageCount} pages`;
       headline = `Scaling ${c.category} — high-volume production underway`;
       rationale = `This cluster drives ${c.totalClicks.toLocaleString()} clicks across ${c.pageCount} pages with ${c.leads} leads. High volume and strong per-page efficiency support automated scaling of content production.`;
       actions = [
@@ -735,31 +770,44 @@ export function getContentProductionInsights(
             `Planned: Create a gated resource (checklist, template) specific to ${c.category}`,
             `Setting up retargeting audiences from this cluster's traffic`,
           ];
-    } else if (smallCluster && highEfficiency) {
-      priority = 'expand';
-      priorityLabel = 'Expand Coverage';
-      agentStatus = 'planned';
-      agentStatusLabel = 'Planned';
-      agentActivity = `Building out subtopic cluster for ${c.category}`;
-      headline = `Expanding ${c.category} coverage — building out subtopic cluster`;
-      rationale = `Only ${c.pageCount} page${c.pageCount > 1 ? 's' : ''} but averaging ${c.avgClicksPerPage.toLocaleString()} clicks per page. This cluster punches above its weight and is queued for content expansion.`;
+    } else if (c.pageCount >= 3 && (highImpressions || hasLeads)) {
+      priority = 'optimize-first';
+      priorityLabel = 'Update Content';
+      agentStatus = 'in-progress';
+      agentStatusLabel = 'In Progress';
+      agentActivity = `Refreshing and optimizing ${c.pageCount} existing pages`;
+      headline = `Updating ${c.category} content — refreshing existing pages`;
+      rationale = `This cluster has ${c.pageCount} pages with ${c.totalImpressions.toLocaleString()} impressions and ${c.leads} leads. Updating existing content with fresh data, improved CTAs, and better keyword targeting before scaling.`;
       actions = [
-        `Planned: Research 5–10 subtopics in ${c.category} to build out a full content cluster`,
-        `Planned: Create a pillar page that links to all pages in this cluster`,
-        `Planned: Target long-tail keywords related to existing high-performing pages`,
+        `Refreshing outdated content with latest data and statistics`,
+        `Optimizing meta titles and descriptions for better CTR`,
+        `Planned: Add internal links and updated CTAs to boost conversions`,
       ];
-    } else {
+    } else if (smallCluster && highEfficiency) {
       priority = 'monitor';
       priorityLabel = 'Monitor';
       agentStatus = 'monitoring';
       agentStatusLabel = 'Monitoring';
-      agentActivity = `Passively tracking performance metrics`;
-      headline = `Monitoring ${c.category} — no active changes`;
-      rationale = `This cluster shows ${c.totalClicks.toLocaleString()} clicks across ${c.pageCount} pages with limited efficiency. Resources allocated to higher-performing clusters; revisiting if metrics improve.`;
+      agentActivity = `Collecting data and tracking performance`;
+      headline = `Monitoring ${c.category} — collecting performance data`;
+      rationale = `Only ${c.pageCount} page${c.pageCount > 1 ? 's' : ''} but averaging ${c.avgClicksPerPage.toLocaleString()} clicks per page. Agent is passively collecting data before deciding next steps.`;
       actions = [
-        `Consolidating underperforming pages and merging thin content`,
-        `Updating existing pages with fresh data and keywords`,
+        `Tracking keyword rankings and traffic trends`,
+        `Monitoring competitor content in this space`,
         `Scheduled: 90-day performance review`,
+      ];
+    } else {
+      priority = 'delete-merge';
+      priorityLabel = 'Delete & Merge';
+      agentStatus = 'needs-review';
+      agentStatusLabel = 'Needs Review';
+      agentActivity = `Identifying non-performing pages to delete or merge`;
+      headline = `Cleaning up ${c.category} — removing non-performing content`;
+      rationale = `This cluster shows ${c.totalClicks.toLocaleString()} clicks across ${c.pageCount} pages with low efficiency. Non-performing pages dilute authority — consolidating or removing them will improve overall cluster quality.`;
+      actions = [
+        `Identifying thin and duplicate content for removal`,
+        `Merging underperforming pages into stronger pillar content`,
+        `Planned: Redirect removed URLs to consolidated pages`,
       ];
     }
 
@@ -854,6 +902,8 @@ export interface FunnelStageData {
   stage: string;
   count: number;
   percentage: number;
+  change: number | null;
+  prevCount: number | null;
   clusterBreakdown: FunnelClusterBreakdown[];
 }
 
@@ -874,6 +924,21 @@ export function getContentFunnelData(startDate?: string, endDate?: string, produ
     leadsPerUrl[l.sourceUrl] = (leadsPerUrl[l.sourceUrl] || 0) + 1;
   });
 
+  // Compute previous period date range (same length as current)
+  let prevStartDate: string | undefined;
+  let prevEndDate: string | undefined;
+  if (startDate && endDate) {
+    const s = new Date(startDate);
+    const e = new Date(endDate);
+    const days = Math.round((e.getTime() - s.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+    const pe = new Date(s);
+    pe.setDate(pe.getDate() - 1);
+    const ps = new Date(pe);
+    ps.setDate(ps.getDate() - days + 1);
+    prevStartDate = ps.toISOString().split('T')[0];
+    prevEndDate = pe.toISOString().split('T')[0];
+  }
+
   // Compute metrics for each page (including CTA clicks)
   const pageData = pages.map((p) => {
     const m = getPageMetrics(p.id, startDate, endDate);
@@ -887,10 +952,33 @@ export function getContentFunnelData(startDate?: string, endDate?: string, produ
     };
   });
 
+  // Compute previous period metrics
+  const prevPageData = pages.map((p) => {
+    const m = getPageMetrics(p.id, prevStartDate, prevEndDate);
+    const ctaData = pageCtaClicks[p.id];
+    const ctaBase = ctaData?.totalCtaClicks ?? 0;
+    const leadsBase = leadsPerUrl[p.url] ?? 0;
+    return {
+      clicks: m.current.clicks,
+      impressions: m.current.impressions,
+      ctaClicks: Math.round(ctaBase * 0.82),
+      leads: Math.round(leadsBase * 0.78),
+    };
+  });
+
   const totalImpressions = pageData.reduce((s, p) => s + p.impressions, 0) * SCALE_FACTOR;
   const totalClicks = pageData.reduce((s, p) => s + p.clicks, 0) * SCALE_FACTOR;
   const totalCtaClicks = pageData.reduce((s, p) => s + p.ctaClicks, 0) * SCALE_FACTOR;
   const totalLeads = pageData.reduce((s, p) => s + p.leads, 0) * SCALE_FACTOR;
+
+  const prevTotalImpressions = prevPageData.reduce((s, p) => s + p.impressions, 0) * SCALE_FACTOR;
+  const prevTotalClicks = prevPageData.reduce((s, p) => s + p.clicks, 0) * SCALE_FACTOR;
+  const prevTotalCtaClicks = prevPageData.reduce((s, p) => s + p.ctaClicks, 0) * SCALE_FACTOR;
+  const prevTotalLeads = prevPageData.reduce((s, p) => s + p.leads, 0) * SCALE_FACTOR;
+
+  function pctChange(cur: number, prev: number): number | null {
+    return prev > 0 ? Math.round(((cur - prev) / prev) * 100) : null;
+  }
 
   function buildBreakdown(pagesInStage: typeof pageData): FunnelClusterBreakdown[] {
     const byCluster: Record<string, { count: number; clicks: number; impressions: number; ctaClicks: number; leads: number }> = {};
@@ -935,10 +1023,10 @@ export function getContentFunnelData(startDate?: string, endDate?: string, produ
   const withLeads = pageData.filter((p) => p.leads > 0);
 
   return [
-    { stage: 'Impressions', count: totalImpressions, percentage: 100, clusterBreakdown: buildBreakdown(withImpressions) },
-    { stage: 'Clicks', count: totalClicks, percentage: totalImpressions > 0 ? Math.round((totalClicks / totalImpressions) * 1000) / 10 : 0, clusterBreakdown: buildBreakdown(withClicks) },
-    { stage: 'CTA Clicks', count: totalCtaClicks, percentage: totalClicks > 0 ? Math.round((totalCtaClicks / totalClicks) * 1000) / 10 : 0, clusterBreakdown: buildBreakdown(withCtaClicks) },
-    { stage: 'Captured Leads', count: totalLeads, percentage: totalCtaClicks > 0 ? Math.round((totalLeads / totalCtaClicks) * 10000) / 100 : 0, clusterBreakdown: buildBreakdown(withLeads) },
+    { stage: 'Impressions', count: totalImpressions, percentage: 100, change: pctChange(totalImpressions, prevTotalImpressions), prevCount: prevTotalImpressions, clusterBreakdown: buildBreakdown(withImpressions) },
+    { stage: 'Clicks', count: totalClicks, percentage: totalImpressions > 0 ? Math.round((totalClicks / totalImpressions) * 1000) / 10 : 0, change: pctChange(totalClicks, prevTotalClicks), prevCount: prevTotalClicks, clusterBreakdown: buildBreakdown(withClicks) },
+    { stage: 'CTA Clicks', count: totalCtaClicks, percentage: totalClicks > 0 ? Math.round((totalCtaClicks / totalClicks) * 1000) / 10 : 0, change: pctChange(totalCtaClicks, prevTotalCtaClicks), prevCount: prevTotalCtaClicks, clusterBreakdown: buildBreakdown(withCtaClicks) },
+    { stage: 'Captured Leads', count: totalLeads, percentage: totalCtaClicks > 0 ? Math.round((totalLeads / totalCtaClicks) * 10000) / 100 : 0, change: pctChange(totalLeads, prevTotalLeads), prevCount: prevTotalLeads, clusterBreakdown: buildBreakdown(withLeads) },
   ];
 }
 
@@ -1068,4 +1156,33 @@ export function getContentFreshnessData(startDate?: string, endDate?: string): C
     ...data,
     clicksPercentage: totalClicks > 0 ? Math.round((data.totalClicks / totalClicks) * 1000) / 10 : 0,
   }));
+}
+
+/* ── Agent Goal & Activity Feed ── */
+
+export function getAgentGoalData(): AgentGoal {
+  return {
+    label: 'Lead Generation',
+    targetMetric: 'Target: 50 qualified leads / month',
+    current: 34,
+    target: 50,
+    stats: [
+      { label: 'Leads This Month', value: '34', change: 21 },
+      { label: 'Conversion Rate', value: '4.2%', change: 8 },
+      { label: 'Content Pieces Active', value: '80', change: 12 },
+    ],
+    clustersManaged: 8,
+    uptimeHours: 672,
+  };
+}
+
+export function getAgentActivityFeed(): AgentActivityEntry[] {
+  return [
+    { id: 'a1', timestamp: '2026-02-26T14:58:00Z', relativeTime: '2 min ago', action: "Published 'B2B Lead Scoring Guide'", cluster: 'AI & Automation', type: 'publish' },
+    { id: 'a2', timestamp: '2026-02-26T14:52:00Z', relativeTime: '8 min ago', action: 'Identified 3 new keyword opportunities', cluster: 'Technical SEO', type: 'research' },
+    { id: 'a3', timestamp: '2026-02-26T14:45:00Z', relativeTime: '15 min ago', action: 'Updated meta descriptions for 4 pages', cluster: 'SEO', type: 'optimize' },
+    { id: 'a4', timestamp: '2026-02-26T14:00:00Z', relativeTime: '1 hr ago', action: 'Created content brief for new article', cluster: 'Case Studies', type: 'create' },
+    { id: 'a5', timestamp: '2026-02-26T13:30:00Z', relativeTime: '1.5 hrs ago', action: 'Analyzed competitor ranking changes', cluster: 'Content Marketing', type: 'analyze' },
+    { id: 'a6', timestamp: '2026-02-26T12:00:00Z', relativeTime: '3 hrs ago', action: 'Published cluster performance report', cluster: 'Analytics', type: 'publish' },
+  ];
 }

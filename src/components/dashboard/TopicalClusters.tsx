@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { getClusterData, getClusterPages, getClusterInsights, getContentProductionInsights, getContentFunnelData, ClusterPageDetail, ClusterInsight, ContentProductionInsight, ProductionPriority } from '@/data/chart-data';
+import { getClusterData, getClusterPages, getClusterInsights, getContentProductionInsights, getContentFunnelData, getAllPagesOverview, ClusterPageDetail, ClusterInsight, ContentProductionInsight, ProductionPriority } from '@/data/chart-data';
 import { useDateRange } from '@/hooks/useDateRange';
 import { ContentFunnel } from './traffic/ContentFunnel';
 import { ContentIntelligencePanel } from './ContentIntelligencePanel';
+import { PRIORITY_CONFIG, PriorityBadge, AgentActivityLine } from './AgentMissionControl';
 
 
 type SortDirection = 'asc' | 'desc';
@@ -113,37 +114,7 @@ function StatusBadge({ status }: { status: ClusterPageDetail['status'] }) {
   );
 }
 
-/* ── Priority badge for production intelligence ── */
-
-const PRIORITY_CONFIG: Record<ProductionPriority, { label: string; bg: string; text: string; border: string; dot: string; borderLeft: string }> = {
-  'double-down': { label: 'Scale Production', bg: 'bg-[#00C5DF]/10', text: 'text-[#00C5DF]', border: 'border-[#00C5DF]/30', dot: 'bg-[#00C5DF]/100', borderLeft: 'border-l-[#00C5DF]' },
-  'optimize-first': { label: 'Update Content', bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200', dot: 'bg-amber-500', borderLeft: 'border-l-amber-400' },
-  'expand': { label: 'Expand Coverage', bg: 'bg-indigo-50', text: 'text-indigo-700', border: 'border-indigo-200', dot: 'bg-indigo-500', borderLeft: 'border-l-indigo-400' },
-  'monitor': { label: 'Monitor', bg: 'bg-surface-50', text: 'text-surface-600', border: 'border-surface-200', dot: 'bg-surface-400', borderLeft: 'border-l-surface-300' },
-};
-
-function PriorityBadge({ priority }: { priority: ProductionPriority }) {
-  const c = PRIORITY_CONFIG[priority];
-  return (
-    <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium rounded-full border ${c.bg} ${c.text} ${c.border}`}>
-      <span className={`w-1.5 h-1.5 rounded-full ${c.dot}`} />
-      {c.label}
-    </span>
-  );
-}
-
-/* ── Agent activity line ── */
-
-function AgentActivityLine({ activity }: { activity: string }) {
-  return (
-    <p className="flex items-center gap-1 text-xs text-surface-500 italic mt-0.5">
-      <svg className="w-3 h-3 text-indigo-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z" />
-      </svg>
-      Agent: {activity}
-    </p>
-  );
-}
+/* ── Re-exported from AgentMissionControl.tsx: PRIORITY_CONFIG, PriorityBadge, AgentActivityLine ── */
 
 /* ── Action status icon ── */
 
@@ -187,158 +158,7 @@ function DiscussInChatButton({ clusterName }: { clusterName: string }) {
   );
 }
 
-/* ── Priority summary strip ── */
-
-function PrioritySummaryStrip({ insights }: { insights: ContentProductionInsight[] }) {
-  const counts: Record<ProductionPriority, number> = { 'double-down': 0, 'optimize-first': 0, 'expand': 0, 'monitor': 0 };
-  insights.forEach((i) => { counts[i.priority] += 1; });
-
-  const order: ProductionPriority[] = ['double-down', 'expand', 'optimize-first', 'monitor'];
-  return (
-    <div className="flex items-center gap-2 flex-wrap">
-      {order.map((p) => counts[p] > 0 && (
-        <span
-          key={p}
-          className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full border ${PRIORITY_CONFIG[p].bg} ${PRIORITY_CONFIG[p].text} ${PRIORITY_CONFIG[p].border}`}
-        >
-          <span className={`w-1.5 h-1.5 rounded-full ${PRIORITY_CONFIG[p].dot}`} />
-          {counts[p]} {PRIORITY_CONFIG[p].label}
-        </span>
-      ))}
-    </div>
-  );
-}
-
-/* ── Production insight card ── */
-
-function ProductionInsightCard({ insight, onSelect }: { insight: ContentProductionInsight; onSelect?: (category: string) => void }) {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const c = PRIORITY_CONFIG[insight.priority];
-  const growth = insight.keyMetrics.clusterGrowth;
-
-  return (
-    <div
-      className={`group bg-white rounded-[14px] border border-surface-200 shadow-card p-4 border-l-[3px] ${c.borderLeft} cursor-pointer transition-colors hover:border-surface-300`}
-      onClick={() => setIsExpanded(!isExpanded)}
-    >
-      <div className="flex items-start justify-between mb-2">
-        <PriorityBadge priority={insight.priority} />
-        <div className="flex items-center gap-2">
-          {growth !== 0 && (
-            <span className={`inline-flex items-center gap-0.5 text-xs font-medium ${growth > 0 ? 'text-[#00C5DF]' : 'text-red-600'}`}>
-              <svg className={`w-3 h-3 ${growth > 0 ? '' : 'rotate-180'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
-              </svg>
-              {Math.abs(growth)}%
-            </span>
-          )}
-          <svg
-            className={`w-4 h-4 text-surface-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
-            fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-          </svg>
-        </div>
-      </div>
-
-      <h4 className="text-sm font-semibold text-surface-900 mb-0.5">
-        {onSelect ? (
-          <button
-            className="hover:text-indigo-600 hover:underline transition-colors"
-            onClick={(e) => { e.stopPropagation(); onSelect(insight.category); }}
-          >
-            {insight.category}
-          </button>
-        ) : (
-          insight.category
-        )}
-      </h4>
-      <AgentActivityLine activity={insight.agentActivity} />
-
-      {isExpanded && (
-        <div className="mt-3">
-          <p className="text-xs text-surface-500 leading-relaxed mb-3">{insight.rationale}</p>
-
-          <ul className="space-y-1">
-            {insight.actions.map((action, i) => (
-              <li key={i} className="flex items-start gap-1.5 text-xs text-surface-600">
-                <ActionStatusIcon action={action} />
-                {action}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-    </div>
-  );
-}
-
-/* ── Content Production Intelligence section ── */
-
-function ContentProductionIntelligence({ insights, onSelect }: { insights: ContentProductionInsight[]; onSelect?: (category: string) => void }) {
-  const [isExpanded, setIsExpanded] = useState(true);
-
-  if (insights.length === 0) return null;
-
-  const activeCount = insights.filter((i) => i.agentStatus === 'in-progress').length;
-  const reviewCount = insights.filter((i) => i.agentStatus === 'needs-review').length;
-
-  return (
-    <div className="bg-white rounded-[14px] border border-surface-200 shadow-card mb-4">
-      <button
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between p-4 text-left hover:bg-surface-50 transition-colors"
-      >
-        <div className="flex items-center gap-2">
-          <svg className="w-4 h-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z" />
-          </svg>
-          <div>
-            <h3 className="text-sm font-semibold text-surface-900">Content Production Intelligence</h3>
-            <p className="text-xs text-surface-500 mt-0.5">Autonomous content operations overview</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2">
-            {activeCount > 0 && (
-              <span className="inline-flex items-center gap-1.5 text-xs font-medium text-[#00C5DF]">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#00C5DF]/100 animate-pulse" />
-                {activeCount} active
-              </span>
-            )}
-            {reviewCount > 0 && (
-              <span className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-700">
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-                {reviewCount} needs review
-              </span>
-            )}
-          </div>
-          {!isExpanded && <PrioritySummaryStrip insights={insights} />}
-          <svg
-            className={`w-4 h-4 text-surface-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
-            fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-          </svg>
-        </div>
-      </button>
-
-      {isExpanded && (
-        <div className="px-4 pb-4">
-          <div className="mb-3">
-            <PrioritySummaryStrip insights={insights} />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            {insights.map((insight) => (
-              <ProductionInsightCard key={insight.category} insight={insight} onSelect={onSelect} />
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
+/* ── (AgentMissionControl components imported from ./AgentMissionControl) ── */
 
 /* ── Cluster production banner (for drill-down) ── */
 
@@ -601,7 +421,7 @@ interface NewCluster {
 }
 
 export function TopicalClusters() {
-  const { startDate, endDate } = useDateRange();
+  const { startDate, endDate, compareEnabled } = useDateRange();
   const [selectedCluster, setSelectedCluster] = useState<string | null>(null);
   const [newClusters, setNewClusters] = useState<NewCluster[]>([]);
 
@@ -631,6 +451,10 @@ export function TopicalClusters() {
     () => getContentFunnelData(startDate, endDate, productionInsights),
     [startDate, endDate, productionInsights],
   );
+  const allPages = useMemo(
+    () => getAllPagesOverview(startDate, endDate),
+    [startDate, endDate],
+  );
   const clusterPages = useMemo(
     () => (selectedCluster ? getClusterPages(selectedCluster, startDate, endDate) : []),
     [selectedCluster, startDate, endDate],
@@ -652,8 +476,7 @@ export function TopicalClusters() {
 
   return (
     <div className="space-y-4">
-      <ContentFunnel data={funnelData} />
-      <ContentProductionIntelligence insights={productionInsights} onSelect={setSelectedCluster} />
+      <ContentFunnel data={funnelData} articles={allPages} compareEnabled={compareEnabled} />
 
       {/* Newly created clusters */}
       {newClusters.length > 0 && (

@@ -57,10 +57,10 @@ export function RecentLeadsTable({ leads }: RecentLeadsTableProps) {
 
   const columns: { key: string; label: string; align: 'left' | 'right' }[] = [
     { key: 'name', label: 'Name', align: 'left' },
+    { key: 'email', label: 'Email', align: 'left' },
     { key: 'company', label: 'Company', align: 'left' },
     { key: 'industry', label: 'Industry', align: 'left' },
     { key: 'status', label: 'Status', align: 'left' },
-    { key: 'value', label: 'Value', align: 'right' },
     { key: 'createdAt', label: 'Date', align: 'left' },
   ];
 
@@ -95,6 +95,9 @@ export function RecentLeadsTable({ leads }: RecentLeadsTableProps) {
             {paginated.map((row) => (
               <tr key={row.id} className="hover:bg-surface-50">
                 <td className="px-3 py-2 text-sm font-medium text-surface-900 whitespace-nowrap">{row.name}</td>
+                <td className="px-3 py-2 text-sm text-surface-600 whitespace-nowrap max-w-[200px] truncate">
+                  <a href={`mailto:${row.email}`} className="hover:text-indigo-600 hover:underline transition-colors">{row.email}</a>
+                </td>
                 <td className="px-3 py-2 text-sm text-surface-700 whitespace-nowrap">{row.company}</td>
                 <td className="px-3 py-2">
                   <span className="inline-flex items-center px-1.5 py-0.5 text-[10px] font-medium rounded bg-indigo-50 text-indigo-700">
@@ -104,7 +107,6 @@ export function RecentLeadsTable({ leads }: RecentLeadsTableProps) {
                 <td className="px-3 py-2">
                   <StatusBadge status={row.status as LeadStatus} />
                 </td>
-                <td className="px-3 py-2 text-sm text-surface-700 font-mono text-right">{formatCurrency(row.value)}</td>
                 <td className="px-3 py-2 text-sm text-surface-500 whitespace-nowrap">{formatDate(row.createdAt)}</td>
               </tr>
             ))}

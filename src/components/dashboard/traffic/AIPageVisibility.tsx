@@ -92,7 +92,6 @@ export function AIPageVisibility({ data, onPageClick }: AIPageVisibilityProps) {
     { key: 'aiClicks', label: 'AI Clicks', align: 'right', sortable: true },
     { key: 'leads', label: 'Leads', align: 'right', sortable: true },
     { key: 'distribution', label: 'Distribution', align: 'left', sortable: false },
-    { key: 'sentiment', label: 'Sentiment', align: 'right', sortable: true },
     { key: 'change', label: 'Change', align: 'right', sortable: true },
   ];
 
@@ -143,9 +142,6 @@ export function AIPageVisibility({ data, onPageClick }: AIPageVisibilityProps) {
                 <td className="px-3 py-2 text-sm text-surface-700 font-mono text-right">{row.leads}</td>
                 <td className="px-3 py-2">
                   <DistributionBar citations={row.totalCitations} clicks={row.aiClicks} maxCitations={maxCitations} />
-                </td>
-                <td className="px-3 py-2 text-right">
-                  <SentimentBadge value={row.sentiment} />
                 </td>
                 <td className="px-3 py-2 text-right">
                   <TrendIndicator change={row.change} />

@@ -1,7 +1,7 @@
 'use client';
 
 import { Widget } from '@/types';
-import { getChartData, getMetricValue, getComparisonChartData } from '@/data/chart-data';
+import { getChartData, getMetricValue, getComparisonChartData, getAIEngineComparisonData } from '@/data/chart-data';
 import { useDateRange } from '@/hooks/useDateRange';
 import { MetricCard } from '@/components/shared/MetricCard';
 import { LineChartWidget } from '@/components/charts/LineChartWidget';
@@ -69,6 +69,7 @@ export function DashboardWidget({ widget }: DashboardWidgetProps) {
         showComparison={compareEnabled}
         invertChange={widget.dataKey === 'aiAvgPosition'}
         accent={isAIMetric ? 'ai' : undefined}
+        size={isAIMetric && widget.colSpan >= 4 ? 'hero' : 'default'}
       />
     );
   }
@@ -121,18 +122,27 @@ export function DashboardWidget({ widget }: DashboardWidgetProps) {
     );
   }
 
-  // AI Engine Timeline — one line per AI engine
+  // AI Engine Timeline — one line per AI engine, with optional comparison
   if (widget.type === 'line' && widget.dataKey === 'aiEngineTimeline') {
+    const chartDataFinal = compareEnabled
+      ? getAIEngineComparisonData(startDate, endDate, compareStartDate, compareEndDate)
+      : data;
+
     return (
       <div className="bg-white rounded-[14px] border border-surface-200 shadow-card p-4">
         <h3 className="text-sm font-semibold text-surface-900 mb-3">{widget.title}</h3>
         <LineChartWidget
-          data={data}
+          data={chartDataFinal}
           lines={AI_ENGINES.map((eng) => ({
             dataKey: eng.name,
             color: eng.color,
             name: eng.name,
           }))}
+          comparisonLines={compareEnabled ? AI_ENGINES.map((eng) => ({
+            dataKey: `prev_${eng.name}`,
+            color: eng.color,
+            name: `Prev ${eng.name}`,
+          })) : undefined}
           height={240}
         />
       </div>

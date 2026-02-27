@@ -166,6 +166,25 @@ export interface DailyCtaClicks {
   byLandingPage: Record<string, number>;
 }
 
+export interface AgentGoal {
+  label: string;
+  targetMetric: string;
+  current: number;
+  target: number;
+  stats: { label: string; value: string; change?: number }[];
+  clustersManaged: number;
+  uptimeHours: number;
+}
+
+export interface AgentActivityEntry {
+  id: string;
+  timestamp: string;
+  relativeTime: string;
+  action: string;
+  cluster: string;
+  type: 'publish' | 'optimize' | 'research' | 'create' | 'update' | 'analyze';
+}
+
 export type WidgetType = 'metric' | 'line' | 'bar' | 'pie' | 'table' | 'section';
 
 export interface Widget {

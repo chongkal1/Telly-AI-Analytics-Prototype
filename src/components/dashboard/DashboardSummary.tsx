@@ -3,12 +3,13 @@
 import { useMemo } from 'react';
 import { AreaChart, Area, ResponsiveContainer } from 'recharts';
 import { useDateRange } from '@/hooks/useDateRange';
-import { getChartData, getMetricValue } from '@/data/chart-data';
+import { getChartData, getMetricValue, getClusterData, getContentProductionInsights, getAgentGoalData, getAgentActivityFeed } from '@/data/chart-data';
 import { leads } from '@/data/leads';
 import { filterAITrafficByDate, dailyAITraffic, getAIMetrics, AI_ENGINES } from '@/data/ai-analytics';
 import { CHART_COLORS } from '@/lib/constants';
 import { TrendIndicator } from '@/components/shared/TrendIndicator';
 import { DailyTraffic } from '@/types';
+import { AgentMissionControl } from './AgentMissionControl';
 
 /* ── Navigation arrow icon ── */
 
@@ -22,10 +23,11 @@ function NavArrow() {
 
 /* ── Primary metric card (hero size, with chart content slot) ── */
 
-function PrimaryCard({ label, value, change, subtitle, accentColor, chartContent, onClick, tabLabel }: {
+function PrimaryCard({ label, value, change, previousValue, subtitle, accentColor, chartContent, onClick, tabLabel }: {
   label: string;
   value: string;
   change?: number | null;
+  previousValue?: string;
   subtitle?: string;
   accentColor: string;
   chartContent?: React.ReactNode;
@@ -65,8 +67,11 @@ function PrimaryCard({ label, value, change, subtitle, accentColor, chartContent
             <p className="text-xs text-surface-400 mt-1 font-mono">{subtitle}</p>
           )}
           {change !== undefined && change !== null && (
-            <div className="mt-2">
+            <div className="mt-2 flex items-center gap-2">
               <TrendIndicator change={change} />
+              {previousValue && (
+                <span className="text-xs text-surface-400">vs {previousValue}</span>
+              )}
             </div>
           )}
         </div>
@@ -84,10 +89,11 @@ function PrimaryCard({ label, value, change, subtitle, accentColor, chartContent
 
 /* ── Secondary metric card (compact, with full-bleed background chart) ── */
 
-function SecondaryCard({ label, value, change, chartContent, onClick, tabLabel }: {
+function SecondaryCard({ label, value, change, previousValue, chartContent, onClick, tabLabel }: {
   label: string;
   value: string;
   change?: number | null;
+  previousValue?: string;
   chartContent?: React.ReactNode;
   onClick?: () => void;
   tabLabel?: string;
@@ -123,8 +129,11 @@ function SecondaryCard({ label, value, change, chartContent, onClick, tabLabel }
 
         <p className="text-xl font-semibold text-surface-900 font-mono">{value}</p>
         {change !== undefined && change !== null && (
-          <div className="mt-1">
+          <div className="mt-1 flex items-center gap-2">
             <TrendIndicator change={change} />
+            {previousValue && (
+              <span className="text-xs text-surface-400">vs {previousValue}</span>
+            )}
           </div>
         )}
       </div>
@@ -150,7 +159,7 @@ interface DashboardSummaryProps {
 }
 
 export function DashboardSummary({ onNavigate }: DashboardSummaryProps) {
-  const { startDate, endDate, compareStartDate, compareEndDate } = useDateRange();
+  const { startDate, endDate, compareEnabled, compareStartDate, compareEndDate } = useDateRange();
 
   const trafficData = useMemo(
     () => getChartData('dailyTraffic', startDate, endDate) as DailyTraffic[],
@@ -158,18 +167,37 @@ export function DashboardSummary({ onNavigate }: DashboardSummaryProps) {
   );
 
   const clicksMetric = useMemo(
-    () => getMetricValue('totalClicks', startDate, endDate, compareStartDate, compareEndDate),
-    [startDate, endDate, compareStartDate, compareEndDate],
+    () => getMetricValue('totalClicks', startDate, endDate,
+      compareEnabled ? compareStartDate : undefined,
+      compareEnabled ? compareEndDate : undefined),
+    [startDate, endDate, compareEnabled, compareStartDate, compareEndDate],
   );
   const impressionsMetric = useMemo(
-    () => getMetricValue('totalImpressions', startDate, endDate, compareStartDate, compareEndDate),
-    [startDate, endDate, compareStartDate, compareEndDate],
+    () => getMetricValue('totalImpressions', startDate, endDate,
+      compareEnabled ? compareStartDate : undefined,
+      compareEnabled ? compareEndDate : undefined),
+    [startDate, endDate, compareEnabled, compareStartDate, compareEndDate],
   );
 
   const aiMetrics = useMemo(() => getAIMetrics(startDate, endDate), [startDate, endDate]);
   const aiTrafficData = useMemo(
     () => filterAITrafficByDate(dailyAITraffic, startDate, endDate),
     [startDate, endDate],
+  );
+
+  const clusters = useMemo(() => getClusterData(startDate, endDate), [startDate, endDate]);
+  const productionInsights = useMemo(
+    () => getContentProductionInsights(clusters, startDate, endDate),
+    [clusters, startDate, endDate],
+  );
+  const agentGoal = useMemo(() => getAgentGoalData(), []);
+  const activityFeed = useMemo(() => getAgentActivityFeed(), []);
+
+  const leadsMetric = useMemo(
+    () => getMetricValue('leadsGenerated', startDate, endDate,
+      compareEnabled ? compareStartDate : undefined,
+      compareEnabled ? compareEndDate : undefined),
+    [startDate, endDate, compareEnabled, compareStartDate, compareEndDate],
   );
 
   const organicLeads = useMemo(() => leads.filter((l) => l.status !== 'lost'), []);
@@ -180,6 +208,7 @@ export function DashboardSummary({ onNavigate }: DashboardSummaryProps) {
   const prevPipelineValue = Math.round(totalLeadValue * 0.75);
   const prevRoas = Math.round(prevPipelineValue / TELY_MONTHLY_COST);
   const roasChange = prevRoas > 0 ? Math.round(((roas - prevRoas) / prevRoas) * 100) : null;
+  const pipelineChange = prevPipelineValue > 0 ? Math.round(((totalLeadValue - prevPipelineValue) / prevPipelineValue) * 100) : null;
 
   /* ── Data prep: lead status counts ── */
   const leadStatusCounts = useMemo(() => {
@@ -371,7 +400,8 @@ export function DashboardSummary({ onNavigate }: DashboardSummaryProps) {
         <PrimaryCard
           label="ROAS"
           value={`${roas}x`}
-          change={roasChange}
+          change={compareEnabled ? roasChange : null}
+          previousValue={compareEnabled ? `${prevRoas}x` : undefined}
           subtitle={`$${(totalLeadValue / 1000).toFixed(0)}K pipeline / $${(TELY_MONTHLY_COST / 1000).toFixed(0)}K cost`}
           accentColor="#4f46e5"
           chartContent={roasChart}
@@ -379,7 +409,8 @@ export function DashboardSummary({ onNavigate }: DashboardSummaryProps) {
         <PrimaryCard
           label="Organic Leads"
           value={organicLeads.length.toString()}
-          change={40}
+          change={compareEnabled ? leadsMetric.change : null}
+          previousValue={compareEnabled ? leadsMetric.previousValue : undefined}
           accentColor="#00C5DF"
           chartContent={leadsChart}
           onClick={onNavigate ? () => onNavigate('leads') : undefined}
@@ -388,7 +419,8 @@ export function DashboardSummary({ onNavigate }: DashboardSummaryProps) {
         <PrimaryCard
           label="Pipeline Value"
           value={`$${Math.round(totalLeadValue / 1000)}K`}
-          change={25}
+          change={compareEnabled ? pipelineChange : null}
+          previousValue={compareEnabled ? `$${Math.round(prevPipelineValue / 1000)}K` : undefined}
           accentColor="#f59e0b"
           chartContent={pipelineChart}
           onClick={onNavigate ? () => onNavigate('leads') : undefined}
@@ -402,7 +434,8 @@ export function DashboardSummary({ onNavigate }: DashboardSummaryProps) {
         <SecondaryCard
           label="Organic Clicks"
           value={clicksMetric.value}
-          change={clicksMetric.change}
+          change={compareEnabled ? clicksMetric.change : null}
+          previousValue={compareEnabled ? clicksMetric.previousValue : undefined}
           chartContent={clicksChart}
           onClick={onNavigate ? () => onNavigate('traffic') : undefined}
           tabLabel="Traffic"
@@ -410,7 +443,8 @@ export function DashboardSummary({ onNavigate }: DashboardSummaryProps) {
         <SecondaryCard
           label="Impressions"
           value={impressionsMetric.value}
-          change={impressionsMetric.change}
+          change={compareEnabled ? impressionsMetric.change : null}
+          previousValue={compareEnabled ? impressionsMetric.previousValue : undefined}
           chartContent={impressionsChart}
           onClick={onNavigate ? () => onNavigate('traffic') : undefined}
           tabLabel="Traffic"
@@ -418,12 +452,22 @@ export function DashboardSummary({ onNavigate }: DashboardSummaryProps) {
         <SecondaryCard
           label="AI Citations"
           value={aiMetrics.totalCitations.toLocaleString()}
-          change={aiMetrics.citationsChange}
+          change={compareEnabled ? aiMetrics.citationsChange : null}
+          previousValue={compareEnabled ? aiMetrics.previousCitations.toLocaleString() : undefined}
           chartContent={aiCitationsChart}
           onClick={onNavigate ? () => onNavigate('traffic') : undefined}
           tabLabel="Traffic"
         />
       </div>
+
+      {/* Agent Mission Control */}
+      <SectionLabel>Agent Operations</SectionLabel>
+      <AgentMissionControl
+        insights={productionInsights}
+        goal={agentGoal}
+        activityFeed={activityFeed}
+        onSelect={onNavigate ? (_category: string) => onNavigate('clusters') : undefined}
+      />
     </div>
   );
 }
