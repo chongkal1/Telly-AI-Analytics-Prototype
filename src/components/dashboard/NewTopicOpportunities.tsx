@@ -15,7 +15,7 @@ export function NewTopicOpportunities({ excludeIndustries }: { excludeIndustries
   const [activeTab, setActiveTab] = useState('competitor-gaps');
   const [competitorCount, setCompetitorCount] = useState(() => getCompetitorGapTopics().length);
   const industryCount = getContentIntelligence().filter(
-    (g) => !excludeIndustries?.has(g.industry)
+    (g) => g.contentCoverage !== 'strong' && !excludeIndustries?.has(g.industry)
   ).length;
 
   const tabs: TabConfig[] = [

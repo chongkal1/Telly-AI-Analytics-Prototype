@@ -16,6 +16,8 @@ import { DateRangeProvider } from '@/hooks/useDateRange';
 import { MaturityStageProvider } from '@/hooks/useMaturityStage';
 import { DealSizeProvider } from '@/hooks/useDealSize';
 import { MaturityStageSwitcher } from '@/components/dashboard/MaturityStageSwitcher';
+import { ConversationPage } from '@/components/dashboard/leads/ConversationPage';
+import { Lead } from '@/types';
 
 const tabs = [
   { id: 'dashboard', label: 'Dashboard' },
@@ -37,6 +39,7 @@ const tabTitles: Record<string, string> = {
 export default function Home() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [selectedArticleId, setSelectedArticleId] = useState<string | null>(null);
+  const [conversationLead, setConversationLead] = useState<Lead | null>(null);
   const [fullPage, setFullPage] = useState(false);
 
   useEffect(() => {
@@ -56,42 +59,51 @@ export default function Home() {
         {/* Icon sidebar */}
         <Sidebar />
 
-        {/* Chat panel */}
-        <div className={`w-[380px] shrink-0 border-r border-surface-200 bg-white flex flex-col ${fullPage ? '' : 'min-h-0'}`}>
-          <ChatPanel />
-        </div>
-
-        {/* Main dashboard */}
-        <div className={`flex-1 min-w-0 bg-surface-50 ${fullPage ? '' : 'min-h-0 overflow-y-auto'}`}>
-          {selectedArticleId ? (
-            <ArticleDetail
-              articleId={selectedArticleId}
-              onBack={() => setSelectedArticleId(null)}
-            />
-          ) : (
-            <div className="p-6">
-              {activeTab === 'dashboard' && <MaturityStageSwitcher />}
-              <div className="flex items-center justify-between mb-4">
-                <h1 className="text-lg font-semibold text-surface-900">{tabTitles[activeTab]}</h1>
-                <div className="flex items-center gap-4">
-                  {activeTab !== 'reports' && <DateRangePicker />}
-                </div>
-              </div>
-              <DashboardTabs activeTab={activeTab} onTabChange={setActiveTab} tabs={tabs} />
-              {activeTab === 'dashboard' ? (
-                <DashboardSummary onNavigate={setActiveTab} />
-              ) : activeTab === 'traffic' ? (
-                <TrafficDashboard onPageClick={setSelectedArticleId} />
-              ) : activeTab === 'clusters' ? (
-                <TopicalClusters />
-              ) : activeTab === 'leads' ? (
-                <LeadsDashboard />
-              ) : activeTab === 'reports' ? (
-                <ReportsDashboard />
-              ) : null}
+        {conversationLead ? (
+          /* Full-width conversation page (replaces chat + dashboard) */
+          <div className={`flex-1 min-w-0 bg-surface-50 ${fullPage ? '' : 'min-h-0'}`}>
+            <ConversationPage lead={conversationLead} onBack={() => setConversationLead(null)} />
+          </div>
+        ) : (
+          <>
+            {/* Chat panel */}
+            <div className={`w-[380px] shrink-0 border-r border-surface-200 bg-white flex flex-col ${fullPage ? '' : 'min-h-0'}`}>
+              <ChatPanel />
             </div>
-          )}
-        </div>
+
+            {/* Main dashboard */}
+            <div className={`flex-1 min-w-0 bg-surface-50 ${fullPage ? '' : 'min-h-0 overflow-y-auto'}`}>
+              {selectedArticleId ? (
+                <ArticleDetail
+                  articleId={selectedArticleId}
+                  onBack={() => setSelectedArticleId(null)}
+                />
+              ) : (
+                <div className="p-6">
+                  {activeTab === 'dashboard' && <MaturityStageSwitcher />}
+                  <div className="flex items-center justify-between mb-4">
+                    <h1 className="text-lg font-semibold text-surface-900">{tabTitles[activeTab]}</h1>
+                    <div className="flex items-center gap-4">
+                      {activeTab !== 'reports' && <DateRangePicker />}
+                    </div>
+                  </div>
+                  <DashboardTabs activeTab={activeTab} onTabChange={setActiveTab} tabs={tabs} />
+                  {activeTab === 'dashboard' ? (
+                    <DashboardSummary onNavigate={setActiveTab} />
+                  ) : activeTab === 'traffic' ? (
+                    <TrafficDashboard onPageClick={setSelectedArticleId} />
+                  ) : activeTab === 'clusters' ? (
+                    <TopicalClusters />
+                  ) : activeTab === 'leads' ? (
+                    <LeadsDashboard onOpenConversation={setConversationLead} />
+                  ) : activeTab === 'reports' ? (
+                    <ReportsDashboard />
+                  ) : null}
+                </div>
+              )}
+            </div>
+          </>
+        )}
       </div>
     </DateRangeProvider>
     </DealSizeProvider>

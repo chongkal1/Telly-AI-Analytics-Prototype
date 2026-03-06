@@ -2,13 +2,13 @@
 
 import { useMemo, useState, useRef, useEffect } from 'react';
 import { leads } from '@/data/leads';
+import { Lead } from '@/types';
 import { pages } from '@/data/pages';
 import { useDateRange } from '@/hooks/useDateRange';
 import { getMetricValue, getChartData } from '@/data/chart-data';
 import { MetricCard } from '@/components/shared/MetricCard';
 import { PieChartWidget } from '@/components/charts/PieChartWidget';
 import { IdentifiedVisitorsTable } from './leads/IdentifiedVisitorsTable';
-import { RecentLeadsTable } from './leads/RecentLeadsTable';
 import { TrendIndicator } from '@/components/shared/TrendIndicator';
 import { CrmConnectModal, CrmManageModal, CrmInfo } from './leads/CrmIntegrationModal';
 
@@ -186,7 +186,7 @@ function SegmentedToggle({ value, onChange }: { value: GroupMode; onChange: (v: 
   );
 }
 
-export function LeadsDashboard() {
+export function LeadsDashboard({ onOpenConversation }: { onOpenConversation?: (lead: Lead) => void }) {
   const { startDate, endDate, compareEnabled, compareStartDate, compareEndDate } = useDateRange();
   const [visitorsGroupMode, setVisitorsGroupMode] = useState<GroupMode>('industry');
   const [leadsGroupMode, setLeadsGroupMode] = useState<GroupMode>('industry');
@@ -293,20 +293,13 @@ export function LeadsDashboard() {
         </div>
       </div>
 
-      {/* Row 3: Identified Visitors table */}
+      {/* Unified leads table */}
       <IdentifiedVisitorsTable
         visitors={leads}
         connectedCrm={connectedCrm}
         onConnectCrm={() => setShowConnectModal(true)}
         onManageCrm={() => setShowManageModal(true)}
-      />
-
-      {/* Row 4: Recent Leads table */}
-      <RecentLeadsTable
-        leads={capturedLeads}
-        connectedCrm={connectedCrm}
-        onConnectCrm={() => setShowConnectModal(true)}
-        onManageCrm={() => setShowManageModal(true)}
+        onOpenConversation={onOpenConversation}
       />
 
       {/* CRM Modals */}

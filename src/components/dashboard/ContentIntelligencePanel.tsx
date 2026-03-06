@@ -282,7 +282,7 @@ export function ContentIntelligencePanel({ excludeIndustries }: { excludeIndustr
   const [selectedIndustry, setSelectedIndustry] = useState<string | null>(null);
   const allData = useMemo(() => getContentIntelligence(), []);
   const data = useMemo(
-    () => excludeIndustries ? allData.filter((d) => !excludeIndustries.has(d.industry)) : allData,
+    () => allData.filter((d) => d.contentCoverage !== 'strong' && !excludeIndustries?.has(d.industry)),
     [allData, excludeIndustries],
   );
 

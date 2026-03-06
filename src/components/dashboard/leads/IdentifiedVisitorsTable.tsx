@@ -1,13 +1,37 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { Lead } from '@/types';
+import { Lead, LeadStatus } from '@/types';
 import { formatDate } from '@/lib/utils';
 import { CrmInfo } from './CrmIntegrationModal';
 
 const PAGE_SIZE = 10;
 
 type SortDirection = 'asc' | 'desc';
+type StatusFilter = 'all' | 'identified' | 'contacted' | 'captured';
+
+/** Map raw lead statuses to the 3 display statuses */
+function getDisplayStatus(status: LeadStatus): 'identified' | 'contacted' | 'captured' {
+  if (status === 'contacted') return 'contacted';
+  if (status === 'captured') return 'captured';
+  return 'identified'; // new, identified, qualified, converted → identified
+}
+
+const STATUS_CONFIG: Record<string, { label: string; dot: string; bg: string; text: string }> = {
+  identified: { label: 'Identified', dot: 'bg-[#00C5DF]', bg: 'bg-cyan-50', text: 'text-cyan-700' },
+  contacted: { label: 'Contacted', dot: 'bg-amber-500', bg: 'bg-amber-50', text: 'text-amber-700' },
+  captured: { label: 'Captured', dot: 'bg-emerald-500', bg: 'bg-emerald-50', text: 'text-emerald-700' },
+};
+
+function StatusBadgeInline({ status }: { status: string }) {
+  const cfg = STATUS_CONFIG[status] ?? STATUS_CONFIG.identified;
+  return (
+    <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 text-[10px] font-medium rounded-full ${cfg.bg} ${cfg.text}`}>
+      <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
+      {cfg.label}
+    </span>
+  );
+}
 
 function SortIcon({ active, direction }: { active: boolean; direction: SortDirection }) {
   return (
@@ -35,12 +59,14 @@ interface IdentifiedVisitorsTableProps {
   connectedCrm: CrmInfo | null;
   onConnectCrm: () => void;
   onManageCrm: () => void;
+  onOpenConversation?: (lead: Lead) => void;
 }
 
-export function IdentifiedVisitorsTable({ visitors, connectedCrm, onConnectCrm, onManageCrm }: IdentifiedVisitorsTableProps) {
+export function IdentifiedVisitorsTable({ visitors, connectedCrm, onConnectCrm, onManageCrm, onOpenConversation }: IdentifiedVisitorsTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [sortKey, setSortKey] = useState<string>('createdAt');
   const [sortDir, setSortDir] = useState<SortDirection>('desc');
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
 
   const toggleSort = (key: string) => {
     if (sortKey === key) {
@@ -52,8 +78,20 @@ export function IdentifiedVisitorsTable({ visitors, connectedCrm, onConnectCrm, 
     setCurrentPage(1);
   };
 
+  // Compute status counts for filter badges
+  const statusCounts = useMemo(() => {
+    const counts = { all: visitors.length, identified: 0, contacted: 0, captured: 0 };
+    visitors.forEach((v) => { counts[getDisplayStatus(v.status)]++; });
+    return counts;
+  }, [visitors]);
+
+  const filtered = useMemo(() => {
+    if (statusFilter === 'all') return visitors;
+    return visitors.filter((v) => getDisplayStatus(v.status) === statusFilter);
+  }, [visitors, statusFilter]);
+
   const sorted = useMemo(() => {
-    return [...visitors].sort((a, b) => {
+    return [...filtered].sort((a, b) => {
       const aVal = (a as unknown as Record<string, unknown>)[sortKey];
       const bVal = (b as unknown as Record<string, unknown>)[sortKey];
       let cmp = 0;
@@ -61,7 +99,7 @@ export function IdentifiedVisitorsTable({ visitors, connectedCrm, onConnectCrm, 
       else if (typeof aVal === 'number' && typeof bVal === 'number') cmp = aVal - bVal;
       return sortDir === 'asc' ? cmp : -cmp;
     });
-  }, [visitors, sortKey, sortDir]);
+  }, [filtered, sortKey, sortDir]);
 
   const totalPages = Math.ceil(sorted.length / PAGE_SIZE);
   const paginated = sorted.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
@@ -74,29 +112,37 @@ export function IdentifiedVisitorsTable({ visitors, connectedCrm, onConnectCrm, 
     { key: 'industry', label: 'Industry', align: 'left' },
     { key: 'title', label: 'Title', align: 'left' },
     { key: 'sourceUrl', label: 'Source Page', align: 'left' },
+    { key: 'status', label: 'Status', align: 'left' },
     { key: 'createdAt', label: 'Date', align: 'left' },
   ];
 
   const handleExportCSV = () => {
-    const headers = ['Name', 'Email', 'LinkedIn', 'Company', 'Industry', 'Title', 'Source Page', 'Date'];
-    const rows = sorted.map((r) => [r.name, r.email, r.linkedinUrl, r.company, r.industry, r.title, r.sourceUrl, formatDate(r.createdAt)]);
+    const headers = ['Name', 'Email', 'LinkedIn', 'Company', 'Industry', 'Title', 'Source Page', 'Status', 'Date'];
+    const rows = sorted.map((r) => [r.name, r.email, r.linkedinUrl, r.company, r.industry, r.title, r.sourceUrl, getDisplayStatus(r.status), formatDate(r.createdAt)]);
     const csv = [headers, ...rows].map((r) => r.map((c) => `"${c}"`).join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'identified-visitors.csv';
+    a.download = 'leads.csv';
     a.click();
     URL.revokeObjectURL(url);
   };
+
+  const FILTER_BUTTONS: { key: StatusFilter; label: string }[] = [
+    { key: 'all', label: 'All' },
+    { key: 'identified', label: 'Identified' },
+    { key: 'contacted', label: 'Contacted' },
+    { key: 'captured', label: 'Captured' },
+  ];
 
   return (
     <div className="bg-white rounded-[14px] border border-surface-200 shadow-card">
       <div className="px-4 py-3 border-b border-surface-100 flex items-center justify-between">
         <div>
-          <h3 className="text-sm font-semibold text-surface-900">Identified Visitors</h3>
+          <h3 className="text-sm font-semibold text-surface-900">Organic Leads</h3>
           <p className="text-xs text-surface-500 mt-0.5">
-            {sorted.length} visitors via RB2B &middot; Showing {(currentPage - 1) * PAGE_SIZE + 1}&ndash;{Math.min(currentPage * PAGE_SIZE, sorted.length)}
+            {sorted.length} leads &middot; Showing {sorted.length > 0 ? (currentPage - 1) * PAGE_SIZE + 1 : 0}&ndash;{Math.min(currentPage * PAGE_SIZE, sorted.length)}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -131,6 +177,28 @@ export function IdentifiedVisitorsTable({ visitors, connectedCrm, onConnectCrm, 
         </div>
       </div>
 
+      {/* Status filter bar */}
+      <div className="px-4 py-2 border-b border-surface-100 flex items-center gap-1.5">
+        {FILTER_BUTTONS.map((f) => (
+          <button
+            key={f.key}
+            onClick={() => { setStatusFilter(f.key); setCurrentPage(1); }}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
+              statusFilter === f.key
+                ? 'bg-surface-900 text-white'
+                : 'text-surface-600 bg-surface-50 hover:bg-surface-100'
+            }`}
+          >
+            {f.label}
+            <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${
+              statusFilter === f.key ? 'bg-white/20' : 'bg-surface-200/80'
+            }`}>
+              {statusCounts[f.key]}
+            </span>
+          </button>
+        ))}
+      </div>
+
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-surface-200">
           <thead className="bg-surface-50">
@@ -149,7 +217,7 @@ export function IdentifiedVisitorsTable({ visitors, connectedCrm, onConnectCrm, 
               ))}
               {connectedCrm && (
                 <th className="px-3 py-2 text-xs font-medium text-surface-500 uppercase tracking-wider text-left">
-                  CRM Status
+                  CRM
                 </th>
               )}
             </tr>
@@ -157,7 +225,18 @@ export function IdentifiedVisitorsTable({ visitors, connectedCrm, onConnectCrm, 
           <tbody className="divide-y divide-surface-200">
             {paginated.map((row) => (
               <tr key={row.id} className="hover:bg-surface-50">
-                <td className="px-3 py-2 text-sm font-medium text-surface-900 whitespace-nowrap">{row.name}</td>
+                <td className="px-3 py-2 text-sm font-medium whitespace-nowrap">
+                  {(getDisplayStatus(row.status) === 'contacted' || getDisplayStatus(row.status) === 'captured') ? (
+                    <button
+                      onClick={() => onOpenConversation?.(row)}
+                      className="text-indigo-600 hover:text-indigo-800 hover:underline transition-colors text-left"
+                    >
+                      {row.name}
+                    </button>
+                  ) : (
+                    <span className="text-surface-900">{row.name}</span>
+                  )}
+                </td>
                 <td className="px-3 py-2 text-sm text-surface-600 whitespace-nowrap max-w-[200px] truncate">
                   <a href={`mailto:${row.email}`} className="hover:text-indigo-600 hover:underline transition-colors">
                     {row.email}
@@ -184,6 +263,22 @@ export function IdentifiedVisitorsTable({ visitors, connectedCrm, onConnectCrm, 
                 </td>
                 <td className="px-3 py-2 text-sm text-surface-700 max-w-[180px] truncate">{row.title}</td>
                 <td className="px-3 py-2 text-sm text-surface-500 max-w-[200px] truncate font-mono text-xs">{row.sourceUrl}</td>
+                <td className="px-3 py-2">
+                  <div className="flex items-center gap-1.5">
+                    <StatusBadgeInline status={getDisplayStatus(row.status)} />
+                    {(getDisplayStatus(row.status) === 'contacted' || getDisplayStatus(row.status) === 'captured') && (
+                      <button
+                        onClick={() => onOpenConversation?.(row)}
+                        className="p-0.5 rounded hover:bg-surface-100 text-surface-400 hover:text-indigo-600 transition-colors"
+                        title="View conversation"
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
+                        </svg>
+                      </button>
+                    )}
+                  </div>
+                </td>
                 <td className="px-3 py-2 text-sm text-surface-500 whitespace-nowrap">{formatDate(row.createdAt)}</td>
                 {connectedCrm && (
                   <td className="px-3 py-2">
@@ -191,7 +286,7 @@ export function IdentifiedVisitorsTable({ visitors, connectedCrm, onConnectCrm, 
                       <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                       </svg>
-                      Sent to {connectedCrm.name}
+                      Sent
                     </span>
                   </td>
                 )}
