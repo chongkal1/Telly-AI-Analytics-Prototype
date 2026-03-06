@@ -2,21 +2,15 @@
 
 import { useState } from 'react';
 import { ContentProductionInsight, ProductionPriority } from '@/data/chart-data';
-import { AgentGoal, AgentActivityEntry } from '@/types';
-
-const AVAILABLE_GOALS = [
-  'Lead Generation',
-  'Brand Awareness',
-  'Organic Traffic Growth',
-];
+import { AgentGoal } from '@/types';
 
 /* ── Priority config (shared) ── */
 
-export const PRIORITY_CONFIG: Record<ProductionPriority, { label: string; bg: string; text: string; border: string; dot: string; borderLeft: string }> = {
-  'double-down': { label: 'Scale Production', bg: 'bg-[#00C5DF]/10', text: 'text-[#00C5DF]', border: 'border-[#00C5DF]/30', dot: 'bg-[#00C5DF]/100', borderLeft: 'border-l-[#00C5DF]' },
-  'optimize-first': { label: 'Update Content', bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200', dot: 'bg-amber-500', borderLeft: 'border-l-amber-400' },
-  'delete-merge': { label: 'Delete & Merge', bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200', dot: 'bg-red-500', borderLeft: 'border-l-red-400' },
-  'monitor': { label: 'Monitor', bg: 'bg-surface-50', text: 'text-surface-600', border: 'border-surface-200', dot: 'bg-surface-400', borderLeft: 'border-l-surface-300' },
+export const PRIORITY_CONFIG: Record<ProductionPriority, { label: string; bg: string; text: string; border: string; dot: string; borderLeft: string; ringColor: string }> = {
+  'double-down': { label: 'Scale Production', bg: 'bg-[#00C5DF]/10', text: 'text-[#00C5DF]', border: 'border-[#00C5DF]/30', dot: 'bg-[#00C5DF]/100', borderLeft: 'border-l-[#00C5DF]', ringColor: '#00C5DF' },
+  'optimize-first': { label: 'Update Content', bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200', dot: 'bg-amber-500', borderLeft: 'border-l-amber-400', ringColor: '#F59E0B' },
+  'delete-merge': { label: 'Delete & Merge', bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200', dot: 'bg-red-500', borderLeft: 'border-l-red-400', ringColor: '#EF4444' },
+  'monitor': { label: 'Publish & Monitor', bg: 'bg-surface-50', text: 'text-surface-600', border: 'border-surface-200', dot: 'bg-surface-400', borderLeft: 'border-l-surface-300', ringColor: '#9CA3AF' },
 };
 
 /* ── Priority badge ── */
@@ -44,7 +38,7 @@ export function AgentActivityLine({ activity }: { activity: string }) {
   );
 }
 
-/* ── Mini progress ring (for summary bar) ── */
+/* ── Mini progress ring ── */
 
 function MiniRing({ current, total, color, size = 28, strokeWidth = 3 }: { current: number; total: number; color: string; size?: number; strokeWidth?: number }) {
   const radius = (size - strokeWidth) / 2;
@@ -63,22 +57,6 @@ function MiniRing({ current, total, color, size = 28, strokeWidth = 3 }: { curre
 /* ── Agent Mission Header ── */
 
 function AgentMissionHeader({ goal }: { goal: AgentGoal }) {
-  const [savedGoal, setSavedGoal] = useState(goal.label);
-  const [selectedGoal, setSelectedGoal] = useState(goal.label);
-  const [isOpen, setIsOpen] = useState(false);
-  const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved'>('idle');
-
-  const hasUnsavedChange = selectedGoal !== savedGoal;
-
-  const handleSave = () => {
-    setSaveState('saving');
-    setTimeout(() => {
-      setSavedGoal(selectedGoal);
-      setSaveState('saved');
-      setTimeout(() => setSaveState('idle'), 2000);
-    }, 800);
-  };
-
   return (
     <div className="bg-surface-900 rounded-[14px] p-5 text-white">
       <div className="flex items-center justify-between mb-4">
@@ -108,184 +86,183 @@ function AgentMissionHeader({ goal }: { goal: AgentGoal }) {
         </div>
       </div>
 
-      <div className="flex-1 min-w-0">
-        {/* Goal selector */}
-        <div className="relative mb-3">
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setIsOpen(!isOpen)}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/15 transition-colors"
-            >
-              <svg className="w-4 h-4 text-[#00C5DF] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3 3v1.5M3 21v-6m0 0l2.77-.693a9 9 0 016.208.682l.108.054a9 9 0 006.086.71l3.114-.732a48.524 48.524 0 01-.005-10.499l-3.11.732a9 9 0 01-6.085-.711l-.108-.054a9 9 0 00-6.208-.682L3 4.5M3 15V4.5" />
-              </svg>
-              <span className="text-sm font-semibold text-white">Goal: {selectedGoal}</span>
-              <svg className={`w-3.5 h-3.5 text-surface-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-
-            {/* Save button — appears when goal changed */}
-            {hasUnsavedChange && saveState === 'idle' && (
-              <button
-                onClick={handleSave}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#00C5DF] hover:bg-[#00C5DF]/80 text-surface-900 text-xs font-semibold transition-colors"
-              >
-                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                </svg>
-                Save
-              </button>
-            )}
-            {saveState === 'saving' && (
-              <span className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-surface-400">
-                <svg className="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182" />
-                </svg>
-                Saving...
-              </span>
-            )}
-            {saveState === 'saved' && (
-              <span className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-[#00C5DF]">
-                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                </svg>
-                Saved — agent strategy updated
-              </span>
-            )}
-          </div>
-          {isOpen && (
-            <div className="absolute top-full left-0 mt-1 z-20 bg-surface-800 border border-surface-700 rounded-lg shadow-xl py-1 min-w-[220px]">
-              {AVAILABLE_GOALS.map((g) => (
-                <button
-                  key={g}
-                  onClick={() => { setSelectedGoal(g); setIsOpen(false); }}
-                  className={`w-full text-left px-3 py-2 text-xs transition-colors ${
-                    g === selectedGoal
-                      ? 'text-[#00C5DF] bg-white/5'
-                      : 'text-surface-300 hover:text-white hover:bg-white/5'
-                  }`}
-                >
-                  {g}
-                  {g === selectedGoal && (
-                    <svg className="w-3.5 h-3.5 inline ml-2 text-[#00C5DF]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                    </svg>
-                  )}
-                </button>
-              ))}
-            </div>
-          )}
-
-          {/* Warning: changing goal affects strategy */}
-          {hasUnsavedChange && saveState === 'idle' && (
-            <p className="flex items-center gap-1.5 mt-2 text-[11px] text-amber-400/80">
-              <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
-              </svg>
-              Changing the goal will affect how the agent prioritizes clusters and content production
-            </p>
-          )}
-        </div>
-
-        <div className="grid grid-cols-3 gap-3">
-          {goal.stats.map((stat) => (
-            <div key={stat.label} className="bg-white/5 rounded-lg px-3 py-2">
-              <p className="text-[10px] text-surface-400 uppercase tracking-wider">{stat.label}</p>
-              <div className="flex items-center gap-1.5 mt-0.5">
-                <span className="text-sm font-bold text-white font-mono">{stat.value}</span>
-                {stat.change !== undefined && (
-                  <span className={`text-[10px] font-medium ${stat.change > 0 ? 'text-[#00C5DF]' : 'text-red-400'}`}>
-                    {stat.change > 0 ? '+' : ''}{stat.change}%
-                  </span>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
     </div>
   );
 }
 
-/* ── Operations Summary Bar ── */
+/* ── Agent Status Label ── */
 
-function OperationsSummaryBar({ insights }: { insights: ContentProductionInsight[] }) {
-  const counts: Record<ProductionPriority, number> = { 'double-down': 0, 'optimize-first': 0, 'delete-merge': 0, 'monitor': 0 };
-  insights.forEach((i) => { counts[i.priority] += 1; });
-
-  const total = insights.length;
-  const order: ProductionPriority[] = ['double-down', 'optimize-first', 'delete-merge', 'monitor'];
-  const ringColors: Record<ProductionPriority, string> = {
-    'double-down': '#00C5DF',
-    'optimize-first': '#F59E0B',
-    'delete-merge': '#EF4444',
-    'monitor': '#9CA3AF',
+function AgentStatusLabel({ status }: { status: ContentProductionInsight['agentStatus'] }) {
+  const configs: Record<ContentProductionInsight['agentStatus'], { label: string; dotClass: string; textClass: string }> = {
+    'in-progress': { label: 'Working', dotClass: 'bg-emerald-500 animate-pulse', textClass: 'text-emerald-600' },
+    'planned': { label: 'Queued', dotClass: 'bg-amber-400', textClass: 'text-amber-600' },
+    'monitoring': { label: 'Monitoring', dotClass: 'bg-blue-400 animate-pulse', textClass: 'text-blue-600' },
+    'needs-review': { label: 'Queued', dotClass: 'bg-amber-400', textClass: 'text-amber-600' },
   };
+  const cfg = configs[status];
 
   return (
-    <div className="grid grid-cols-4 gap-3">
-      {order.map((p) => (
-        <div key={p} className="bg-white rounded-[14px] border border-surface-200 shadow-card px-3 py-2.5 flex items-center gap-2.5">
-          <MiniRing current={counts[p]} total={total} color={ringColors[p]} />
-          <div className="min-w-0">
-            <p className="text-lg font-bold text-surface-900 font-mono leading-none">{counts[p]}</p>
-            <p className="text-[10px] text-surface-500 mt-0.5 truncate">{PRIORITY_CONFIG[p].label}</p>
-          </div>
-        </div>
-      ))}
+    <span className={`inline-flex items-center gap-1.5 text-[11px] font-medium ${cfg.textClass}`}>
+      <span className={`w-1.5 h-1.5 rounded-full ${cfg.dotClass}`} />
+      {cfg.label}
+    </span>
+  );
+}
+
+/* ── Signal interpretation generator ── */
+
+function getSignalInterpretation(insight: ContentProductionInsight, goal: string): string {
+  const m = insight.keyMetrics;
+  const growth = m.clusterGrowth;
+  const growthDir = growth > 0 ? 'grew' : 'dropped';
+  const growthAbs = Math.abs(growth);
+  const imprStr = m.totalImpressions > 1000 ? `${(m.totalImpressions / 1000).toFixed(1)}K` : `${m.totalImpressions}`;
+
+  if (goal === 'Lead Generation') {
+    switch (insight.priority) {
+      case 'double-down':
+        return `This cluster generates ${m.leads} leads with traffic up ${growthAbs}%. High lead velocity signals opportunity to scale and capture more pipeline.`;
+      case 'optimize-first':
+        return m.leads > 0
+          ? `${imprStr} impressions but only ${m.leads} leads — conversion paths need work before this demand translates to pipeline.`
+          : `Strong visibility (${imprStr} impressions) with zero leads. Adding CTAs and lead capture forms to convert existing traffic.`;
+      case 'delete-merge':
+        return `${m.pageCount} pages generating only ${m.leads} leads. Thin content dilutes authority — consolidating will improve lead quality.`;
+      case 'monitor':
+        return `${m.leads > 0 ? `${m.leads} leads from` : 'Only'} ${m.pageCount} page${m.pageCount > 1 ? 's' : ''}. Collecting more data before deciding next action.`;
+    }
+  }
+
+  if (goal === 'Organic Traffic Growth') {
+    switch (insight.priority) {
+      case 'double-down':
+        return `Traffic ${growthDir} ${growthAbs}% last month with ${m.totalClicks.toLocaleString()} clicks. Expanding keyword coverage to sustain momentum.`;
+      case 'optimize-first':
+        return `${imprStr} impressions but CTR at ${(m.ctr * 100).toFixed(1)}% — positions are there, but titles and meta need refreshing to win more clicks.`;
+      case 'delete-merge':
+        return `Only ${m.avgClicksPerPage} clicks/page across ${m.pageCount} pages. Low-performing content is dragging down cluster authority.`;
+      case 'monitor':
+        return `${m.avgClicksPerPage.toLocaleString()} clicks/page — efficient but small. Watching ranking trends before investing more.`;
+    }
+  }
+
+  // Brand Awareness / Impressions (default)
+  switch (insight.priority) {
+    case 'double-down':
+      return `${imprStr} impressions and ${growthDir} ${growthAbs}%. High visibility — expanding content to dominate this topic space.`;
+    case 'optimize-first':
+      return `${imprStr} impressions but click-through is underperforming. Improving titles and snippets to turn visibility into engagement.`;
+    case 'delete-merge':
+      return `Weak impression share across ${m.pageCount} pages. Merging into fewer, stronger pages will boost topical authority.`;
+    case 'monitor':
+      return `${imprStr} impressions from ${m.pageCount} page${m.pageCount > 1 ? 's' : ''}. Stable visibility — monitoring for changes.`;
+  }
+}
+
+/* ── Task checklist item ── */
+
+function TaskItem({ task, isCurrent }: { task: { label: string; done: boolean }; isCurrent: boolean }) {
+  return (
+    <div
+      className={`flex items-start gap-2 text-[11px] leading-snug py-0.5 px-1.5 rounded ${
+        isCurrent ? 'bg-[#00C5DF]/8 font-medium' : ''
+      }`}
+    >
+      {task.done ? (
+        <svg className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-px" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+        </svg>
+      ) : isCurrent ? (
+        <svg className="w-3.5 h-3.5 text-[#00C5DF] shrink-0 mt-px" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z" />
+        </svg>
+      ) : (
+        <div className="w-3.5 h-3.5 rounded border border-surface-300 shrink-0 mt-px" />
+      )}
+      <span className={task.done ? 'text-surface-400 line-through' : isCurrent ? 'text-surface-900' : 'text-surface-500'}>
+        {task.label}
+        {isCurrent && (
+          <span className="ml-1.5 inline-flex items-center px-1 py-px text-[9px] font-bold rounded bg-[#00C5DF]/20 text-[#00C5DF] uppercase tracking-wide">
+            Now
+          </span>
+        )}
+      </span>
     </div>
   );
 }
 
-/* ── Agent Cluster Card ── */
+/* ── Agent Cluster Card (agent-first, compact) ── */
 
-function AgentClusterCard({ insight, onSelect }: { insight: ContentProductionInsight; onSelect?: (category: string) => void }) {
-  const c = PRIORITY_CONFIG[insight.priority];
-  const growth = insight.keyMetrics.clusterGrowth;
-  const isActive = insight.agentStatus === 'in-progress';
+const MAX_VISIBLE_TASKS = 3;
 
-  // Mock task progress — derive from pageCount
-  const totalTasks = Math.max(3, Math.min(8, insight.keyMetrics.pageCount));
-  const completedTasks = Math.max(1, Math.round(totalTasks * (insight.priority === 'double-down' ? 0.6 : insight.priority === 'delete-merge' ? 0.3 : insight.priority === 'optimize-first' ? 0.5 : 0.8)));
-  const taskPct = Math.round((completedTasks / totalTasks) * 100);
+function AgentClusterCard({ insight, onSelect, goalLabel }: { insight: ContentProductionInsight; onSelect?: (category: string) => void; goalLabel: string }) {
+  const [expanded, setExpanded] = useState(false);
+  const tasks = insight.agentTasks;
+  const completedCount = tasks.filter(t => t.done).length;
+  const taskPct = tasks.length > 0 ? Math.round((completedCount / tasks.length) * 100) : 0;
+  const currentTaskIdx = tasks.findIndex(t => !t.done);
+  const hasMany = tasks.length > MAX_VISIBLE_TASKS;
+
+  // Show: current task context (1 before + current + 1 after), or first 3
+  const visibleTasks = (() => {
+    if (expanded || !hasMany) return tasks.map((t, i) => ({ ...t, idx: i }));
+    // Smart slice: show around the current task
+    if (currentTaskIdx >= 0) {
+      const start = Math.max(0, currentTaskIdx - 1);
+      const end = Math.min(tasks.length, start + MAX_VISIBLE_TASKS);
+      return tasks.slice(start, end).map((t, i) => ({ ...t, idx: start + i }));
+    }
+    return tasks.slice(0, MAX_VISIBLE_TASKS).map((t, i) => ({ ...t, idx: i }));
+  })();
+
+  const hiddenCount = tasks.length - visibleTasks.length;
 
   return (
-    <div className={`group bg-white rounded-[14px] border border-surface-200 shadow-card p-4 border-l-[3px] ${c.borderLeft} transition-colors hover:border-surface-300`}>
-      <div className="flex items-start justify-between mb-2">
-        <PriorityBadge priority={insight.priority} />
-        <div className="flex items-center gap-2">
-          {isActive && <span className="w-2 h-2 rounded-full bg-[#00C5DF] animate-pulse" />}
-          {growth !== 0 && (
-            <span className={`inline-flex items-center gap-0.5 text-xs font-medium ${growth > 0 ? 'text-[#00C5DF]' : 'text-red-600'}`}>
-              <svg className={`w-3 h-3 ${growth > 0 ? '' : 'rotate-180'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
-              </svg>
-              {Math.abs(growth)}%
-            </span>
-          )}
-        </div>
+    <div className="group bg-white rounded-[12px] border border-surface-200 shadow-card p-3 transition-colors hover:border-surface-300">
+      {/* Row 1: Agent status */}
+      <div className="flex items-center justify-between mb-1.5">
+        <AgentStatusLabel status={insight.agentStatus} />
+        {/* Compact progress indicator */}
+        <span className="text-[10px] text-surface-400 font-mono">{completedCount}/{tasks.length}</span>
       </div>
 
-      <h4 className="text-sm font-semibold text-surface-900 mb-1">
-        {onSelect ? (
-          <button
-            className="hover:text-[#00C5DF] hover:underline transition-colors text-left"
-            onClick={() => onSelect(insight.category)}
-          >
-            {insight.category}
-          </button>
-        ) : (
-          insight.category
+      {/* Row 2: Category name */}
+      <div className="flex items-center gap-2 mb-1">
+        <h4 className="text-[13px] font-semibold text-surface-900">
+          {onSelect ? (
+            <button
+              className="hover:text-[#00C5DF] hover:underline transition-colors text-left"
+              onClick={() => onSelect(insight.category)}
+            >
+              {insight.category}
+            </button>
+          ) : (
+            insight.category
+          )}
+        </h4>
+        {insight.isNewTopic && (
+          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-semibold rounded-full bg-[#00C5DF]/10 text-[#00C5DF] border border-[#00C5DF]/30">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#00C5DF] animate-pulse" />
+            New Topic
+          </span>
         )}
-      </h4>
+      </div>
 
-      {/* Task progress bar */}
+      {/* Row 3: Signal interpretation — collapsible "why" */}
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className="flex items-start gap-1.5 mb-2 w-full text-left group/signal"
+      >
+        <svg className="w-3.5 h-3.5 text-amber-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 001.5-.189m-1.5.189a6.01 6.01 0 01-1.5-.189m3.75 7.478a12.06 12.06 0 01-4.5 0m3.75 2.383a14.406 14.406 0 01-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 10-7.517 0c.85.493 1.509 1.333 1.509 2.316V18" />
+        </svg>
+        <p className={`text-[11px] leading-relaxed text-surface-600 ${expanded ? '' : 'line-clamp-2'}`}>
+          {getSignalInterpretation(insight, goalLabel)}
+        </p>
+      </button>
+
+      {/* Row 4: Progress bar (always visible) */}
       <div className="mb-2">
-        <div className="flex items-center justify-between mb-1">
-          <span className="text-[10px] text-surface-400">{completedTasks} of {totalTasks} tasks complete</span>
-          <span className="text-[10px] font-medium text-surface-500 font-mono">{taskPct}%</span>
-        </div>
         <div className="h-1.5 bg-surface-100 rounded-full overflow-hidden">
           <div
             className="h-full rounded-full bg-[#00C5DF] transition-all duration-500"
@@ -294,116 +271,106 @@ function AgentClusterCard({ insight, onSelect }: { insight: ContentProductionIns
         </div>
       </div>
 
-      {/* Agent activity */}
-      <AgentActivityLine activity={insight.agentActivity} />
+      {/* Row 5: Task checklist (collapsed by default, shows around current task) */}
+      <div className="space-y-0.5 mb-2">
+        {visibleTasks.map((task) => (
+          <TaskItem key={task.idx} task={task} isCurrent={task.idx === currentTaskIdx} />
+        ))}
+        {hasMany && !expanded && hiddenCount > 0 && (
+          <button
+            onClick={() => setExpanded(true)}
+            className="text-[10px] text-surface-400 hover:text-[#00C5DF] pl-6 py-0.5 transition-colors"
+          >
+            +{hiddenCount} more step{hiddenCount > 1 ? 's' : ''}
+          </button>
+        )}
+        {expanded && hasMany && (
+          <button
+            onClick={() => setExpanded(false)}
+            className="text-[10px] text-surface-400 hover:text-[#00C5DF] pl-6 py-0.5 transition-colors"
+          >
+            Show less
+          </button>
+        )}
+      </div>
 
-      {/* Mini metrics row */}
-      <div className="flex items-center gap-3 mt-2 pt-2 border-t border-surface-100">
-        <div className="flex items-center gap-1">
-          <span className="text-[10px] text-surface-400">Leads</span>
-          <span className="text-xs font-semibold text-surface-900 font-mono">{insight.keyMetrics.leads}</span>
-        </div>
-        <div className="w-px h-3 bg-surface-200" />
-        <div className="flex items-center gap-1">
-          <span className="text-[10px] text-surface-400">Impr</span>
-          <span className="text-xs font-semibold text-surface-900 font-mono">{insight.keyMetrics.totalImpressions > 1000 ? `${(insight.keyMetrics.totalImpressions / 1000).toFixed(1)}K` : insight.keyMetrics.totalImpressions}</span>
-        </div>
-        <div className="w-px h-3 bg-surface-200" />
-        <div className="flex items-center gap-1">
-          <span className="text-[10px] text-surface-400">Pages</span>
-          <span className="text-xs font-semibold text-surface-900 font-mono">{insight.keyMetrics.pageCount}</span>
-        </div>
+      {/* Row 6: Metrics (small, muted) */}
+      <div className="flex items-center gap-2.5 pt-1.5 border-t border-surface-100 text-[10px] text-surface-400">
+        <span>Leads <span className="font-medium text-surface-500 font-mono">{insight.keyMetrics.leads}</span></span>
+        <span className="text-surface-200">&middot;</span>
+        <span>Impr <span className="font-medium text-surface-500 font-mono">{insight.keyMetrics.totalImpressions > 1000 ? `${(insight.keyMetrics.totalImpressions / 1000).toFixed(1)}K` : insight.keyMetrics.totalImpressions}</span></span>
+        <span className="text-surface-200">&middot;</span>
+        <span>Pages <span className="font-medium text-surface-500 font-mono">{insight.keyMetrics.pageCount}</span></span>
       </div>
     </div>
   );
 }
 
-/* ── Activity type icon ── */
+/* ── Kanban Column ── */
 
-function ActivityTypeIcon({ type }: { type: AgentActivityEntry['type'] }) {
-  const configs: Record<AgentActivityEntry['type'], { bg: string; color: string; icon: string }> = {
-    publish: { bg: 'bg-[#00C5DF]/10', color: 'text-[#00C5DF]', icon: 'M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5m-7.5 3h7.5m3-9h3.375c.621 0 1.125.504 1.125 1.125V18a2.25 2.25 0 01-2.25 2.25M16.5 7.5V18a2.25 2.25 0 002.25 2.25M16.5 7.5V4.875c0-.621-.504-1.125-1.125-1.125H4.125C3.504 3.75 3 4.254 3 4.875V18a2.25 2.25 0 002.25 2.25h13.5M6 7.5h3v3H6v-3z' },
-    optimize: { bg: 'bg-amber-50', color: 'text-amber-600', icon: 'M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182' },
-    research: { bg: 'bg-indigo-50', color: 'text-indigo-600', icon: 'M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z' },
-    create: { bg: 'bg-purple-50', color: 'text-purple-600', icon: 'M12 4.5v15m7.5-7.5h-15' },
-    update: { bg: 'bg-blue-50', color: 'text-blue-600', icon: 'M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125' },
-    analyze: { bg: 'bg-emerald-50', color: 'text-emerald-600', icon: 'M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z' },
-  };
-  const cfg = configs[type];
+function KanbanColumn({ priority, insights, total, onSelect, goalLabel }: { priority: ProductionPriority; insights: ContentProductionInsight[]; total: number; onSelect?: (category: string) => void; goalLabel: string }) {
+  const c = PRIORITY_CONFIG[priority];
 
   return (
-    <div className={`w-7 h-7 rounded-full ${cfg.bg} flex items-center justify-center shrink-0`}>
-      <svg className={`w-3.5 h-3.5 ${cfg.color}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d={cfg.icon} />
-      </svg>
-    </div>
-  );
-}
-
-/* ── Agent Activity Feed ── */
-
-function AgentActivityFeed({ entries }: { entries: AgentActivityEntry[] }) {
-  const [showAll, setShowAll] = useState(false);
-  const visible = showAll ? entries : entries.slice(0, 3);
-
-  return (
-    <div className="bg-white rounded-[14px] border border-surface-200 shadow-card p-4">
-      <div className="flex items-center gap-2 mb-3">
-        <svg className="w-4 h-4 text-surface-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        <h3 className="text-sm font-semibold text-surface-900">Live Activity Feed</h3>
-        <span className="inline-flex items-center gap-1 text-[10px] text-surface-400 ml-auto">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#00C5DF] animate-pulse" />
-          Streaming
-        </span>
-      </div>
-      <div className="relative">
-        {/* Timeline connector */}
-        <div className="absolute left-[13px] top-4 bottom-4 w-px bg-surface-200" />
-        <div className="space-y-0">
-          {visible.map((entry) => (
-            <div key={entry.id} className="flex items-start gap-3 py-2 relative">
-              <ActivityTypeIcon type={entry.type} />
-              <div className="flex-1 min-w-0">
-                <p className="text-xs text-surface-700">
-                  {entry.action}
-                  <span className="text-surface-400"> in </span>
-                  <span className="font-medium text-surface-900">{entry.cluster}</span>
-                </p>
-              </div>
-              <span className="text-[10px] text-surface-400 whitespace-nowrap shrink-0">{entry.relativeTime}</span>
+    <div className="flex flex-col min-w-0">
+      {/* Column header with colored top border */}
+      <div className="rounded-t-[10px] border-t-[3px] pt-3 pb-2 px-1" style={{ borderColor: c.ringColor }}>
+        <div className="flex items-center gap-2">
+          <MiniRing current={insights.length} total={total} color={c.ringColor} size={24} strokeWidth={2.5} />
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5">
+              <span className="text-lg font-bold text-surface-900 font-mono leading-none">{insights.length}</span>
+              <span className={`text-[11px] font-medium ${c.text}`}>{c.label}</span>
             </div>
-          ))}
+          </div>
         </div>
       </div>
-      {entries.length > 3 && (
-        <button
-          onClick={() => setShowAll(!showAll)}
-          className="mt-2 w-full text-center text-xs font-medium text-surface-500 hover:text-[#00C5DF] py-1.5 rounded-lg hover:bg-surface-50 transition-colors"
-        >
-          {showAll ? 'Show less' : `View more (${entries.length - 3})`}
-        </button>
-      )}
+
+      {/* Stacked cards */}
+      <div className="space-y-2.5 mt-1">
+        {insights.map((insight) => (
+          <AgentClusterCard key={insight.category} insight={insight} onSelect={onSelect} goalLabel={goalLabel} />
+        ))}
+        {insights.length === 0 && (
+          <div className="text-center py-6 text-xs text-surface-400 border border-dashed border-surface-200 rounded-[12px]">
+            No clusters
+          </div>
+        )}
+      </div>
     </div>
   );
 }
 
 /* ── Agent Mission Control (main export) ── */
 
-export function AgentMissionControl({ insights, goal, activityFeed, onSelect }: { insights: ContentProductionInsight[]; goal: AgentGoal; activityFeed: AgentActivityEntry[]; onSelect?: (category: string) => void }) {
+export function AgentMissionControl({ insights, goal, onSelect }: { insights: ContentProductionInsight[]; goal: AgentGoal; onSelect?: (category: string) => void }) {
+
   if (insights.length === 0) return null;
+
+  const priorities: ProductionPriority[] = ['monitor', 'double-down', 'optimize-first', 'delete-merge'];
+  const grouped: Record<ProductionPriority, ContentProductionInsight[]> = {
+    'double-down': [],
+    'optimize-first': [],
+    'delete-merge': [],
+    'monitor': [],
+  };
+  insights.forEach((i) => { grouped[i.priority].push(i); });
 
   return (
     <div className="space-y-3">
       <AgentMissionHeader goal={goal} />
-      <OperationsSummaryBar insights={insights} />
-      <div className="grid grid-cols-2 gap-3">
-        {insights.map((insight) => (
-          <AgentClusterCard key={insight.category} insight={insight} onSelect={onSelect} />
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        {priorities.map((p) => (
+          <KanbanColumn
+            key={p}
+            priority={p}
+            insights={grouped[p]}
+            total={insights.length}
+            onSelect={onSelect}
+            goalLabel={goal.label}
+          />
         ))}
       </div>
-      <AgentActivityFeed entries={activityFeed} />
     </div>
   );
 }

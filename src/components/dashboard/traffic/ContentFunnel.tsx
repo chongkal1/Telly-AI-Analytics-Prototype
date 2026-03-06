@@ -68,6 +68,7 @@ const STAGE_COLORS = [
   { fill: '#dbeafe', fillSelected: '#bfdbfe', stroke: '#60a5fa', labelColor: '#1d4ed8' },
   { fill: '#ccf7fa', fillSelected: '#99eff5', stroke: '#00C5DF', labelColor: '#008a9b' },
   { fill: '#fef3c7', fillSelected: '#fde68a', stroke: '#fbbf24', labelColor: '#92400e' },
+  { fill: '#d1fae5', fillSelected: '#a7f3d0', stroke: '#34d399', labelColor: '#065f46' },
 ];
 
 /* ── Priority badge ── */
@@ -121,18 +122,29 @@ const STAGE_COLUMNS: Record<string, { columns: ColumnDef[]; defaultSort: string 
       priorityColumn,
       { label: 'Clicks', colKey: 'clicks', align: 'right', render: (r) => r.clicks.toLocaleString() },
       { label: 'Click Share', colKey: 'clickShare', align: 'right', render: (r) => `${r.clickShare}%` },
-      { label: 'CTA Clicks', colKey: 'ctaClicks', align: 'right', render: (r) => r.ctaClicks.toLocaleString() },
-      { label: 'CTA Rate', colKey: 'ctaRate', align: 'right', render: (r) => `${r.ctaRate.toFixed(2)}%` },
+      { label: 'Identified', colKey: 'ctaClicks', align: 'right', render: (r) => r.ctaClicks.toLocaleString() },
+      { label: 'ID Rate', colKey: 'ctaRate', align: 'right', render: (r) => `${r.ctaRate.toFixed(2)}%` },
     ],
   },
-  'CTA Clicks': {
+  'Identified Visitors': {
     defaultSort: 'ctaClicks',
     columns: [
       { label: 'Topical Cluster', colKey: 'cluster', render: (r) => r.cluster },
       priorityColumn,
-      { label: 'CTA Clicks', colKey: 'ctaClicks', align: 'right', render: (r) => r.ctaClicks.toLocaleString() },
-      { label: 'CTA Share', colKey: 'ctaClickShare', align: 'right', render: (r) => `${r.ctaClickShare}%` },
+      { label: 'Identified', colKey: 'ctaClicks', align: 'right', render: (r) => r.ctaClicks.toLocaleString() },
+      { label: 'ID Share', colKey: 'ctaClickShare', align: 'right', render: (r) => `${r.ctaClickShare}%` },
       { label: 'Leads', colKey: 'leads', align: 'right', render: (r) => r.leads.toLocaleString() },
+      { label: 'Conv. Rate', colKey: 'conversionRate', align: 'right', render: (r) => `${r.conversionRate.toFixed(2)}%` },
+    ],
+  },
+  'Contacted Leads': {
+    defaultSort: 'ctaClicks',
+    columns: [
+      { label: 'Topical Cluster', colKey: 'cluster', render: (r) => r.cluster },
+      priorityColumn,
+      { label: 'Contacted', colKey: 'ctaClicks', align: 'right', render: (r) => r.ctaClicks.toLocaleString() },
+      { label: 'Share', colKey: 'ctaClickShare', align: 'right', render: (r) => `${r.ctaClickShare}%` },
+      { label: 'Captured', colKey: 'leads', align: 'right', render: (r) => r.leads.toLocaleString() },
       { label: 'Conv. Rate', colKey: 'conversionRate', align: 'right', render: (r) => `${r.conversionRate.toFixed(2)}%` },
     ],
   },
@@ -141,7 +153,7 @@ const STAGE_COLUMNS: Record<string, { columns: ColumnDef[]; defaultSort: string 
     columns: [
       { label: 'Topical Cluster', colKey: 'cluster', render: (r) => r.cluster },
       priorityColumn,
-      { label: 'Leads', colKey: 'leads', align: 'right', render: (r) => r.leads.toLocaleString() },
+      { label: 'Captured', colKey: 'leads', align: 'right', render: (r) => r.leads.toLocaleString() },
       { label: 'Lead Share', colKey: 'leadShare', align: 'right', render: (r) => `${r.leadShare}%` },
       { label: 'Conv. Rate', colKey: 'conversionRate', align: 'right', render: (r) => `${r.conversionRate.toFixed(2)}%` },
     ],
@@ -233,18 +245,29 @@ const ARTICLE_STAGE_COLUMNS: Record<string, { columns: ArticleColumnDef[]; defau
       { label: 'Cluster', colKey: 'category', render: (r) => r.category },
       { label: 'Clicks', colKey: 'clicks', align: 'right', render: (r) => r.clicks.toLocaleString() },
       { label: 'Click Share', colKey: 'clickShare', align: 'right', render: (r) => `${r.clickShare}%` },
-      { label: 'CTA Clicks', colKey: 'ctaClicks', align: 'right', render: (r) => r.ctaClicks.toLocaleString() },
-      { label: 'CTA Rate', colKey: 'ctaRate', align: 'right', render: (r) => `${r.ctaRate.toFixed(2)}%` },
+      { label: 'Identified', colKey: 'ctaClicks', align: 'right', render: (r) => r.ctaClicks.toLocaleString() },
+      { label: 'ID Rate', colKey: 'ctaRate', align: 'right', render: (r) => `${r.ctaRate.toFixed(2)}%` },
     ],
   },
-  'CTA Clicks': {
+  'Identified Visitors': {
     defaultSort: 'ctaClicks',
     columns: [
       { label: 'Article', colKey: 'title', render: (r) => r.title },
       { label: 'Cluster', colKey: 'category', render: (r) => r.category },
-      { label: 'CTA Clicks', colKey: 'ctaClicks', align: 'right', render: (r) => r.ctaClicks.toLocaleString() },
-      { label: 'CTA Share', colKey: 'ctaClickShare', align: 'right', render: (r) => `${r.ctaClickShare}%` },
+      { label: 'Identified', colKey: 'ctaClicks', align: 'right', render: (r) => r.ctaClicks.toLocaleString() },
+      { label: 'ID Share', colKey: 'ctaClickShare', align: 'right', render: (r) => `${r.ctaClickShare}%` },
       { label: 'Leads', colKey: 'leads', align: 'right', render: (r) => r.leads.toLocaleString() },
+      { label: 'Conv. Rate', colKey: 'conversionRate', align: 'right', render: (r) => `${r.conversionRate.toFixed(2)}%` },
+    ],
+  },
+  'Contacted Leads': {
+    defaultSort: 'ctaClicks',
+    columns: [
+      { label: 'Article', colKey: 'title', render: (r) => r.title },
+      { label: 'Cluster', colKey: 'category', render: (r) => r.category },
+      { label: 'Contacted', colKey: 'ctaClicks', align: 'right', render: (r) => r.ctaClicks.toLocaleString() },
+      { label: 'Share', colKey: 'ctaClickShare', align: 'right', render: (r) => `${r.ctaClickShare}%` },
+      { label: 'Captured', colKey: 'leads', align: 'right', render: (r) => r.leads.toLocaleString() },
       { label: 'Conv. Rate', colKey: 'conversionRate', align: 'right', render: (r) => `${r.conversionRate.toFixed(2)}%` },
     ],
   },
@@ -253,7 +276,7 @@ const ARTICLE_STAGE_COLUMNS: Record<string, { columns: ArticleColumnDef[]; defau
     columns: [
       { label: 'Article', colKey: 'title', render: (r) => r.title },
       { label: 'Cluster', colKey: 'category', render: (r) => r.category },
-      { label: 'Leads', colKey: 'leads', align: 'right', render: (r) => r.leads.toLocaleString() },
+      { label: 'Captured', colKey: 'leads', align: 'right', render: (r) => r.leads.toLocaleString() },
       { label: 'Lead Share', colKey: 'leadShare', align: 'right', render: (r) => `${r.leadShare}%` },
       { label: 'Conv. Rate', colKey: 'conversionRate', align: 'right', render: (r) => `${r.conversionRate.toFixed(2)}%` },
     ],
@@ -393,9 +416,11 @@ interface ContentFunnelProps {
   data: FunnelStageData[];
   articles?: PageOverviewData[];
   compareEnabled?: boolean;
+  compact?: boolean;
+  onNavigate?: () => void;
 }
 
-export function ContentFunnel({ data, articles = [], compareEnabled = false }: ContentFunnelProps) {
+export function ContentFunnel({ data, articles = [], compareEnabled = false, compact = false, onNavigate }: ContentFunnelProps) {
   const [selectedStage, setSelectedStage] = useState<string | null>('Impressions');
   const [breakdownView, setBreakdownView] = useState<BreakdownView>('clusters');
 
@@ -411,7 +436,7 @@ export function ContentFunnel({ data, articles = [], compareEnabled = false }: C
       filtered = articles.filter((a) => a.impressions > 0);
     } else if (selectedStage === 'Clicks') {
       filtered = articles.filter((a) => a.clicks > 0);
-    } else if (selectedStage === 'CTA Clicks') {
+    } else if (selectedStage === 'Identified Visitors' || selectedStage === 'Contacted Leads') {
       filtered = articles.filter((a) => a.ctaClicks > 0);
     } else {
       filtered = articles.filter((a) => a.leads > 0);
@@ -448,10 +473,30 @@ export function ContentFunnel({ data, articles = [], compareEnabled = false }: C
   });
 
   return (
-    <div className="bg-white rounded-[14px] border border-surface-200 shadow-card">
-      <div className="px-4 py-3 border-b border-surface-100">
-        <h3 className="text-sm font-semibold text-surface-900">Content Funnel</h3>
-        <p className="text-xs text-surface-500 mt-0.5">Click a stage to see topical cluster breakdown</p>
+    <div
+      className={`group bg-white rounded-[14px] border border-surface-200 shadow-card overflow-hidden transition-all duration-200 ${
+        compact && onNavigate ? 'cursor-pointer hover:shadow-lg hover:border-surface-300 hover:-translate-y-0.5' : ''
+      }`}
+      onClick={compact && onNavigate ? onNavigate : undefined}
+      role={compact && onNavigate ? 'button' : undefined}
+      tabIndex={compact && onNavigate ? 0 : undefined}
+      onKeyDown={compact && onNavigate ? (e) => { if (e.key === 'Enter' || e.key === ' ') onNavigate(); } : undefined}
+    >
+      <div className="px-4 py-3 border-b border-surface-100 flex items-start justify-between">
+        <div>
+          <h3 className="text-sm font-semibold text-surface-900">Content Funnel</h3>
+          <p className="text-xs text-surface-500 mt-0.5">
+            {compact ? 'Impressions → Clicks → Identified → Contacted → Captured' : 'Click a stage to see topical cluster breakdown'}
+          </p>
+        </div>
+        {compact && onNavigate && (
+          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity mt-0.5">
+            <span className="text-[10px] text-indigo-400 font-medium">Topics</span>
+            <svg className="w-4 h-4 text-surface-300 group-hover:text-indigo-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+            </svg>
+          </div>
+        )}
       </div>
 
       {/* Horizontal funnel — SVG trapezoid segments */}
@@ -480,15 +525,15 @@ export function ContentFunnel({ data, articles = [], compareEnabled = false }: C
             const topRight = cy - rightH / 2;
             const bottomRight = cy + rightH / 2;
 
-            const convLabel = i === 1 ? 'CTR' : i === 2 ? 'CTA rate' : i === 3 ? 'conv.' : '';
+            const convLabel = i === 1 ? 'CTR' : i === 2 ? 'ID rate' : i === 3 ? 'contact rate' : i === 4 ? 'capture rate' : '';
 
             return (
               <g
                 key={stage.stage}
-                onClick={() => setSelectedStage(isSelected ? null : stage.stage)}
-                className="cursor-pointer"
-                role="button"
-                tabIndex={0}
+                onClick={compact ? undefined : () => setSelectedStage(isSelected ? null : stage.stage)}
+                className={compact ? '' : 'cursor-pointer'}
+                role={compact ? undefined : 'button'}
+                tabIndex={compact ? undefined : 0}
               >
                 {/* Trapezoid shape */}
                 <polygon
@@ -564,7 +609,7 @@ export function ContentFunnel({ data, articles = [], compareEnabled = false }: C
       </div>
 
       {/* Stage-specific breakdown panel */}
-      {selectedStage && (
+      {!compact && selectedStage && (
         <div className="border-t border-surface-200 px-4 py-3">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-3">

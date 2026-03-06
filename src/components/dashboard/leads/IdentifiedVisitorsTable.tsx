@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import { Lead } from '@/types';
 import { formatDate } from '@/lib/utils';
+import { CrmInfo } from './CrmIntegrationModal';
 
 const PAGE_SIZE = 10;
 
@@ -31,9 +32,12 @@ function LinkedInIcon() {
 
 interface IdentifiedVisitorsTableProps {
   visitors: Lead[];
+  connectedCrm: CrmInfo | null;
+  onConnectCrm: () => void;
+  onManageCrm: () => void;
 }
 
-export function IdentifiedVisitorsTable({ visitors }: IdentifiedVisitorsTableProps) {
+export function IdentifiedVisitorsTable({ visitors, connectedCrm, onConnectCrm, onManageCrm }: IdentifiedVisitorsTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [sortKey, setSortKey] = useState<string>('createdAt');
   const [sortDir, setSortDir] = useState<SortDirection>('desc');
@@ -86,10 +90,6 @@ export function IdentifiedVisitorsTable({ visitors }: IdentifiedVisitorsTablePro
     URL.revokeObjectURL(url);
   };
 
-  const handleSendToCRM = () => {
-    alert(`${sorted.length} visitors queued for CRM sync. This is a prototype — no data was sent.`);
-  };
-
   return (
     <div className="bg-white rounded-[14px] border border-surface-200 shadow-card">
       <div className="px-4 py-3 border-b border-surface-100 flex items-center justify-between">
@@ -109,15 +109,25 @@ export function IdentifiedVisitorsTable({ visitors }: IdentifiedVisitorsTablePro
             </svg>
             Export CSV
           </button>
-          <button
-            onClick={handleSendToCRM}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors"
-          >
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
-            </svg>
-            Send to CRM
-          </button>
+          {connectedCrm ? (
+            <button
+              onClick={onManageCrm}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-green-700 bg-green-50 border border-green-200 rounded-lg hover:bg-green-100 transition-colors"
+            >
+              <div className="w-2 h-2 rounded-full bg-green-500" />
+              Connected to {connectedCrm.name}
+            </button>
+          ) : (
+            <button
+              onClick={onConnectCrm}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
+              </svg>
+              Connect CRM
+            </button>
+          )}
         </div>
       </div>
 
@@ -137,6 +147,11 @@ export function IdentifiedVisitorsTable({ visitors }: IdentifiedVisitorsTablePro
                   </span>
                 </th>
               ))}
+              {connectedCrm && (
+                <th className="px-3 py-2 text-xs font-medium text-surface-500 uppercase tracking-wider text-left">
+                  CRM Status
+                </th>
+              )}
             </tr>
           </thead>
           <tbody className="divide-y divide-surface-200">
@@ -170,6 +185,16 @@ export function IdentifiedVisitorsTable({ visitors }: IdentifiedVisitorsTablePro
                 <td className="px-3 py-2 text-sm text-surface-700 max-w-[180px] truncate">{row.title}</td>
                 <td className="px-3 py-2 text-sm text-surface-500 max-w-[200px] truncate font-mono text-xs">{row.sourceUrl}</td>
                 <td className="px-3 py-2 text-sm text-surface-500 whitespace-nowrap">{formatDate(row.createdAt)}</td>
+                {connectedCrm && (
+                  <td className="px-3 py-2">
+                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-medium rounded bg-green-50 text-green-700">
+                      <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                      </svg>
+                      Sent to {connectedCrm.name}
+                    </span>
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>

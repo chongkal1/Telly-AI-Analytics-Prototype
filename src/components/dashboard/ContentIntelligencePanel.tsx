@@ -141,9 +141,6 @@ function IndustryTable({ data, onSelect }: { data: IndustryContentGap[]; onSelec
             <Th label="Visitors" colKey="leadCount" align="right" sortKey={sortKey} sortDir={sortDir} onSort={toggle} />
             <Th label="% Share" colKey="leadPercentage" align="right" sortKey={sortKey} sortDir={sortDir} onSort={toggle} />
             <Th label="Pipeline Value" colKey="pipelineValue" align="right" sortKey={sortKey} sortDir={sortDir} onSort={toggle} />
-            <Th label="Conv. Rate" colKey="conversionRate" align="right" sortKey={sortKey} sortDir={sortDir} onSort={toggle} />
-            <th className="px-4 py-3 text-xs font-medium text-surface-500 uppercase tracking-wider text-left">Coverage</th>
-            <th className="px-4 py-3 text-xs font-medium text-surface-500 uppercase tracking-wider text-right">Topics</th>
             <th className="px-4 py-3 text-xs font-medium text-surface-500 uppercase tracking-wider text-center">Action</th>
           </tr>
         </thead>
@@ -158,9 +155,6 @@ function IndustryTable({ data, onSelect }: { data: IndustryContentGap[]; onSelec
               <td className="px-4 py-3 text-sm text-surface-700 text-right font-mono whitespace-nowrap">{row.leadCount}</td>
               <td className="px-4 py-3 text-sm text-surface-700 text-right font-mono whitespace-nowrap">{row.leadPercentage}%</td>
               <td className="px-4 py-3 text-sm text-surface-700 text-right font-mono whitespace-nowrap">{formatCurrency(row.pipelineValue)}</td>
-              <td className="px-4 py-3 text-sm text-surface-700 text-right font-mono whitespace-nowrap">{(row.conversionRate * 100).toFixed(0)}%</td>
-              <td className="px-4 py-3 whitespace-nowrap"><CoverageBadge coverage={row.contentCoverage} /></td>
-              <td className="px-4 py-3 text-sm text-surface-700 text-right font-mono whitespace-nowrap">{row.suggestedTopics.length}</td>
               <td className="px-4 py-3 text-center whitespace-nowrap">
                 {row.contentCoverage !== 'strong' && <CreateClusterButton gap={row} />}
               </td>
@@ -284,9 +278,13 @@ function IndustryDetail({ gap, onBack }: { gap: IndustryContentGap; onBack: () =
 
 /* ── Main component ── */
 
-export function ContentIntelligencePanel() {
+export function ContentIntelligencePanel({ excludeIndustries }: { excludeIndustries?: Set<string> } = {}) {
   const [selectedIndustry, setSelectedIndustry] = useState<string | null>(null);
-  const data = useMemo(() => getContentIntelligence(), []);
+  const allData = useMemo(() => getContentIntelligence(), []);
+  const data = useMemo(
+    () => excludeIndustries ? allData.filter((d) => !excludeIndustries.has(d.industry)) : allData,
+    [allData, excludeIndustries],
+  );
 
   const selected = selectedIndustry ? data.find((d) => d.industry === selectedIndustry) : null;
 

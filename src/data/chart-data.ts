@@ -1,7 +1,7 @@
 import { dailyTraffic, getPageMetrics } from './traffic';
 import { pages } from './pages';
 import { leads } from './leads';
-import { DailyTraffic, Lead, AgentGoal, AgentActivityEntry } from '@/types';
+import { DailyTraffic, Lead, AgentGoal, AgentActivityEntry, MaturityStage, CompetitorGapTopic } from '@/types';
 import {
   dailyAITraffic,
   aiPageCitations,
@@ -15,6 +15,72 @@ import {
   getCtaMetrics,
   pageCtaClicks,
 } from './cta-clicks';
+
+import { STAGE_CONFIGS } from '@/hooks/useMaturityStage';
+
+export function getCompetitorGapTopics(): CompetitorGapTopic[] {
+  return [
+    {
+      id: 'cg-1',
+      topic: 'Technical SEO Audit Checklist',
+      competitor: 'Ahrefs Blog',
+      competitorUrl: 'https://ahrefs.com/blog/technical-seo-audit',
+      rationale: 'Ahrefs ranks #1 for "technical SEO audit" with 12K monthly searches. You have no comparable guide — creating one could capture significant search traffic.',
+      estimatedImpact: 'high',
+      keywords: ['technical SEO audit', 'SEO checklist', 'site audit', 'crawl errors'],
+    },
+    {
+      id: 'cg-2',
+      topic: 'Content Decay: How to Find & Fix Declining Pages',
+      competitor: 'Semrush Blog',
+      competitorUrl: 'https://semrush.com/blog/content-decay',
+      rationale: 'Semrush\'s content decay guide drives 8K visits/month. This topic aligns with your content optimization cluster and fills a clear gap.',
+      estimatedImpact: 'high',
+      keywords: ['content decay', 'declining traffic', 'content refresh', 'historical optimization'],
+    },
+    {
+      id: 'cg-3',
+      topic: 'Programmatic SEO: The Complete Guide',
+      competitor: 'Zapier Blog',
+      competitorUrl: 'https://zapier.com/blog/programmatic-seo',
+      rationale: 'Programmatic SEO is trending (180% YoY search growth). Zapier dominates but the topic overlaps with your AI & Automation cluster.',
+      estimatedImpact: 'high',
+      keywords: ['programmatic SEO', 'pSEO', 'automated pages', 'template pages'],
+    },
+    {
+      id: 'cg-4',
+      topic: 'Link Building Strategies That Actually Work',
+      competitor: 'Backlinko',
+      competitorUrl: 'https://backlinko.com/link-building',
+      rationale: 'Backlinko\'s link building guide gets 25K visits/month. You cover on-page SEO well but have minimal link building content.',
+      estimatedImpact: 'medium',
+      keywords: ['link building', 'backlinks', 'outreach', 'digital PR'],
+    },
+    {
+      id: 'cg-5',
+      topic: 'AI Content Detection & How to Write Authentically',
+      competitor: 'Search Engine Journal',
+      competitorUrl: 'https://searchenginejournal.com/ai-content-detection',
+      rationale: 'AI content concerns are top-of-mind for your audience. SEJ covers it heavily but your AI cluster lacks this angle.',
+      estimatedImpact: 'medium',
+      keywords: ['AI content detection', 'AI writing', 'authentic content', 'Google AI policy'],
+    },
+    {
+      id: 'cg-6',
+      topic: 'B2B SaaS Content Marketing Benchmarks',
+      competitor: 'Animalz',
+      competitorUrl: 'https://animalz.co/blog/content-marketing-benchmarks',
+      rationale: 'Benchmark content generates high-intent leads. Animalz owns this space but your SaaS audience would engage strongly with your own data.',
+      estimatedImpact: 'medium',
+      keywords: ['content marketing benchmarks', 'SaaS benchmarks', 'B2B content metrics', 'content ROI'],
+    },
+  ];
+}
+
+function getStageScale(stage?: MaturityStage) {
+  if (!stage) return STAGE_CONFIGS['18mo'];
+  return STAGE_CONFIGS[stage];
+}
 
 function filterByDateRange(data: DailyTraffic[], startDate?: string, endDate?: string): DailyTraffic[] {
   if (!startDate || !endDate) return data.slice(-30);
@@ -168,7 +234,9 @@ export function getMetricValue(
   endDate?: string,
   compareStartDate?: string,
   compareEndDate?: string,
+  stage?: MaturityStage,
 ): { value: string; change: number | null; previousValue?: string } {
+  const scale = getStageScale(stage);
   const current = filterByDateRange(dailyTraffic, startDate, endDate);
   const previous = (compareStartDate && compareEndDate)
     ? filterByDateRange(dailyTraffic, compareStartDate, compareEndDate)
@@ -194,8 +262,8 @@ export function getMetricValue(
 
   switch (dataKey) {
     case 'totalClicks': {
-      const cur = sumField(current, 'clicks');
-      const prev = sumField(previous, 'clicks');
+      const cur = Math.round(sumField(current, 'clicks') * scale.traffic);
+      const prev = Math.round(sumField(previous, 'clicks') * scale.traffic);
       return {
         value: cur.toLocaleString(),
         change: prev > 0 ? Math.round(((cur - prev) / prev) * 100) : null,
@@ -203,8 +271,8 @@ export function getMetricValue(
       };
     }
     case 'totalImpressions': {
-      const cur = sumField(current, 'impressions');
-      const prev = sumField(previous, 'impressions');
+      const cur = Math.round(sumField(current, 'impressions') * scale.impr);
+      const prev = Math.round(sumField(previous, 'impressions') * scale.impr);
       return {
         value: cur.toLocaleString(),
         change: prev > 0 ? Math.round(((cur - prev) / prev) * 100) : null,
@@ -220,8 +288,11 @@ export function getMetricValue(
         previousValue: `${(prev * 100).toFixed(2)}%`,
       };
     }
-    case 'leadsGenerated':
-      return { value: '14', change: 40, previousValue: '10' };
+    case 'leadsGenerated': {
+      const scaledLeads = Math.round(14 * scale.leads);
+      const scaledPrev = Math.round(10 * scale.leads);
+      return { value: scaledLeads.toString(), change: scaledPrev > 0 ? Math.round(((scaledLeads - scaledPrev) / scaledPrev) * 100) : null, previousValue: scaledPrev.toString() };
+    }
     case 'totalArticles':
       return { value: '80', change: 12, previousValue: '71' };
     case 'totalContentPieces':
@@ -660,6 +731,11 @@ export type ProductionPriority = 'double-down' | 'optimize-first' | 'delete-merg
 
 export type AgentStatus = 'in-progress' | 'planned' | 'monitoring' | 'needs-review';
 
+export interface AgentTask {
+  label: string;
+  done: boolean;
+}
+
 export interface ContentProductionInsight {
   category: string;
   priority: ProductionPriority;
@@ -680,6 +756,8 @@ export interface ContentProductionInsight {
     clusterGrowth: number;
   };
   actions: string[];
+  agentTasks: AgentTask[];
+  isNewTopic?: boolean;
 }
 
 function median(values: number[]): number {
@@ -700,6 +778,7 @@ export function getContentProductionInsights(
   clusters: ClusterSummary[],
   startDate?: string,
   endDate?: string,
+  stage?: MaturityStage,
 ): ContentProductionInsight[] {
   // Compute growth for each cluster by averaging clicksChange across pages
   const clusterGrowths: Record<string, number> = {};
@@ -717,7 +796,7 @@ export function getContentProductionInsights(
   const medianAvgClicksPerPage = median(clusters.map((c) => c.avgClicksPerPage));
   const medianCtr = median(clusters.map((c) => c.ctr));
 
-  return clusters.map((c) => {
+  const baseResults = clusters.map((c) => {
     const growth = clusterGrowths[c.category] ?? 0;
     const highVolume = c.totalClicks >= medianClicks;
     const highEfficiency = c.avgClicksPerPage >= medianAvgClicksPerPage;
@@ -811,6 +890,19 @@ export function getContentProductionInsights(
       ];
     }
 
+    // Generate agentTasks from actions with completion based on priority
+    const doneFraction: Record<ProductionPriority, number> = {
+      'double-down': 0.6,
+      'optimize-first': 0.5,
+      'delete-merge': 0.3,
+      'monitor': 0.8,
+    };
+    const doneCount = Math.max(0, Math.round(actions.length * doneFraction[priority]));
+    const agentTasks: AgentTask[] = actions.map((label, i) => ({
+      label: label.replace(/^(Planned: |Scheduled: )/, ''),
+      done: i < doneCount,
+    }));
+
     return {
       category: c.category,
       priority,
@@ -831,16 +923,63 @@ export function getContentProductionInsights(
         clusterGrowth: growth,
       },
       actions,
+      agentTasks,
     };
   }).sort((a, b) => PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority]);
+
+  // Stage-based remapping
+  const stageKey = stage || '18mo';
+  const stageConfig = getStageScale(stage);
+  const limitedResults = baseResults.slice(0, stageConfig.clusters);
+
+  if (stageKey === '1mo' || stageKey === '3mo') {
+    const earlyTasks: AgentTask[] = [
+      { label: 'Publish article', done: true },
+      { label: 'Submit to Search Console', done: true },
+      { label: 'Verify indexation', done: false },
+      { label: 'Track impressions', done: false },
+    ];
+    limitedResults.forEach((insight) => {
+      insight.priority = 'monitor';
+      insight.priorityLabel = 'Publish & Monitor';
+      insight.agentTasks = earlyTasks.map(t => ({ ...t }));
+      insight.agentStatus = 'monitoring';
+    });
+  } else if (stageKey === '6mo') {
+    const midTasks: AgentTask[] = [
+      { label: 'Update meta titles', done: true },
+      { label: 'Add internal links', done: false },
+      { label: 'Review thin content for merge', done: false },
+    ];
+    limitedResults.forEach((insight) => {
+      if (insight.priority === 'delete-merge' || insight.priority === 'optimize-first') {
+        insight.agentTasks = midTasks.map(t => ({ ...t }));
+      }
+    });
+  } else if (stageKey === '9mo') {
+    limitedResults.forEach((insight, idx) => {
+      if (idx < 2) {
+        insight.agentTasks = [
+          { label: 'Insert CTA', done: true },
+          { label: 'Test lead capture form', done: false },
+          { label: 'Analyze conversion paths', done: false },
+          ...insight.agentTasks.slice(0, 2),
+        ];
+      }
+    });
+  }
+
+  return limitedResults;
 }
 
-export function getContentIntelligence(): IndustryContentGap[] {
-  const totalLeads = leads.length;
+export function getContentIntelligence(stage?: MaturityStage): IndustryContentGap[] {
+  const scaledLeads = stage ? getScaledLeads(stage) : leads;
+  const totalLeads = scaledLeads.length;
+  if (totalLeads === 0) return [];
 
   // Group leads by industry
   const byIndustry: Record<string, Lead[]> = {};
-  leads.forEach((l) => {
+  scaledLeads.forEach((l) => {
     if (!byIndustry[l.industry]) byIndustry[l.industry] = [];
     byIndustry[l.industry].push(l);
   });
@@ -909,7 +1048,8 @@ export interface FunnelStageData {
 
 const SCALE_FACTOR = 50;
 
-export function getContentFunnelData(startDate?: string, endDate?: string, productionInsights?: ContentProductionInsight[]): FunnelStageData[] {
+export function getContentFunnelData(startDate?: string, endDate?: string, productionInsights?: ContentProductionInsight[], stage?: MaturityStage): FunnelStageData[] {
+  const funnelScale = getStageScale(stage);
   // Build priority map from production insights
   const priorityMap: Record<string, { priority: ProductionPriority; label: string }> = {};
   if (productionInsights) {
@@ -966,14 +1106,16 @@ export function getContentFunnelData(startDate?: string, endDate?: string, produ
     };
   });
 
-  const totalImpressions = pageData.reduce((s, p) => s + p.impressions, 0) * SCALE_FACTOR;
-  const totalClicks = pageData.reduce((s, p) => s + p.clicks, 0) * SCALE_FACTOR;
-  const totalCtaClicks = pageData.reduce((s, p) => s + p.ctaClicks, 0) * SCALE_FACTOR;
-  const totalLeads = pageData.reduce((s, p) => s + p.leads, 0) * SCALE_FACTOR;
+  const totalImpressions = Math.round(pageData.reduce((s, p) => s + p.impressions, 0) * SCALE_FACTOR * funnelScale.impr);
+  const totalClicks = Math.round(pageData.reduce((s, p) => s + p.clicks, 0) * SCALE_FACTOR * funnelScale.traffic);
+  const totalIdentified = Math.round(pageData.reduce((s, p) => s + p.ctaClicks, 0) * SCALE_FACTOR * funnelScale.identified * 1.8);
+  const totalContacted = Math.round(pageData.reduce((s, p) => s + p.ctaClicks, 0) * SCALE_FACTOR * funnelScale.contacted * 0.6);
+  const totalLeads = Math.round(pageData.reduce((s, p) => s + p.leads, 0) * SCALE_FACTOR * funnelScale.leads);
 
   const prevTotalImpressions = prevPageData.reduce((s, p) => s + p.impressions, 0) * SCALE_FACTOR;
   const prevTotalClicks = prevPageData.reduce((s, p) => s + p.clicks, 0) * SCALE_FACTOR;
-  const prevTotalCtaClicks = prevPageData.reduce((s, p) => s + p.ctaClicks, 0) * SCALE_FACTOR;
+  const prevTotalIdentified = Math.round(prevPageData.reduce((s, p) => s + p.ctaClicks, 0) * SCALE_FACTOR * 1.8);
+  const prevTotalContacted = Math.round(prevPageData.reduce((s, p) => s + p.ctaClicks, 0) * SCALE_FACTOR * 0.6);
   const prevTotalLeads = prevPageData.reduce((s, p) => s + p.leads, 0) * SCALE_FACTOR;
 
   function pctChange(cur: number, prev: number): number | null {
@@ -1025,8 +1167,9 @@ export function getContentFunnelData(startDate?: string, endDate?: string, produ
   return [
     { stage: 'Impressions', count: totalImpressions, percentage: 100, change: pctChange(totalImpressions, prevTotalImpressions), prevCount: prevTotalImpressions, clusterBreakdown: buildBreakdown(withImpressions) },
     { stage: 'Clicks', count: totalClicks, percentage: totalImpressions > 0 ? Math.round((totalClicks / totalImpressions) * 1000) / 10 : 0, change: pctChange(totalClicks, prevTotalClicks), prevCount: prevTotalClicks, clusterBreakdown: buildBreakdown(withClicks) },
-    { stage: 'CTA Clicks', count: totalCtaClicks, percentage: totalClicks > 0 ? Math.round((totalCtaClicks / totalClicks) * 1000) / 10 : 0, change: pctChange(totalCtaClicks, prevTotalCtaClicks), prevCount: prevTotalCtaClicks, clusterBreakdown: buildBreakdown(withCtaClicks) },
-    { stage: 'Captured Leads', count: totalLeads, percentage: totalCtaClicks > 0 ? Math.round((totalLeads / totalCtaClicks) * 10000) / 100 : 0, change: pctChange(totalLeads, prevTotalLeads), prevCount: prevTotalLeads, clusterBreakdown: buildBreakdown(withLeads) },
+    { stage: 'Identified Visitors', count: totalIdentified, percentage: totalClicks > 0 ? Math.round((totalIdentified / totalClicks) * 1000) / 10 : 0, change: pctChange(totalIdentified, prevTotalIdentified), prevCount: prevTotalIdentified, clusterBreakdown: buildBreakdown(withCtaClicks) },
+    { stage: 'Contacted Leads', count: totalContacted, percentage: totalIdentified > 0 ? Math.round((totalContacted / totalIdentified) * 1000) / 10 : 0, change: pctChange(totalContacted, prevTotalContacted), prevCount: prevTotalContacted, clusterBreakdown: buildBreakdown(withCtaClicks) },
+    { stage: 'Captured Leads', count: totalLeads, percentage: totalContacted > 0 ? Math.round((totalLeads / totalContacted) * 10000) / 100 : 0, change: pctChange(totalLeads, prevTotalLeads), prevCount: prevTotalLeads, clusterBreakdown: buildBreakdown(withLeads) },
   ];
 }
 
@@ -1160,29 +1303,165 @@ export function getContentFreshnessData(startDate?: string, endDate?: string): C
 
 /* ── Agent Goal & Activity Feed ── */
 
-export function getAgentGoalData(): AgentGoal {
-  return {
-    label: 'Lead Generation',
-    targetMetric: 'Target: 50 qualified leads / month',
-    current: 34,
-    target: 50,
-    stats: [
-      { label: 'Leads This Month', value: '34', change: 21 },
-      { label: 'Conversion Rate', value: '4.2%', change: 8 },
-      { label: 'Content Pieces Active', value: '80', change: 12 },
-    ],
-    clustersManaged: 8,
-    uptimeHours: 672,
+export function getAgentGoalData(stage?: MaturityStage): AgentGoal {
+  const stageKey = stage || '18mo';
+  const cfg = getStageScale(stage);
+
+  const goalDataByStage: Record<MaturityStage, AgentGoal> = {
+    '1mo': {
+      label: 'Organic Traffic Growth',
+      targetMetric: 'Target: 10K impressions / month',
+      current: 0,
+      target: 10000,
+      stats: [
+        { label: 'Impressions', value: '0', change: 0 },
+        { label: 'Published', value: '12', change: 100 },
+        { label: 'Indexed', value: '3', change: 100 },
+      ],
+      clustersManaged: cfg.clusters,
+      uptimeHours: 24,
+    },
+    '3mo': {
+      label: 'Organic Traffic Growth',
+      targetMetric: 'Target: 50K impressions / month',
+      current: 18000,
+      target: 50000,
+      stats: [
+        { label: 'Impressions', value: '18K', change: 240 },
+        { label: 'Published', value: '28', change: 133 },
+        { label: 'Indexed', value: '22', change: 633 },
+      ],
+      clustersManaged: cfg.clusters,
+      uptimeHours: 72,
+    },
+    '6mo': {
+      label: 'Organic Traffic Growth',
+      targetMetric: 'Target: 5K clicks / month',
+      current: 1200,
+      target: 5000,
+      stats: [
+        { label: 'Clicks', value: '1.2K', change: 100 },
+        { label: 'Impressions', value: '85K', change: 372 },
+        { label: 'CTR', value: '1.4%', change: 40 },
+      ],
+      clustersManaged: cfg.clusters,
+      uptimeHours: 168,
+    },
+    '9mo': {
+      label: 'Lead Generation',
+      targetMetric: 'Target: 20 leads / month',
+      current: 8,
+      target: 20,
+      stats: [
+        { label: 'Leads', value: '8', change: 100 },
+        { label: 'Conv Rate', value: '1.8%', change: 100 },
+        { label: 'Clicks', value: '4.5K', change: 275 },
+      ],
+      clustersManaged: cfg.clusters,
+      uptimeHours: 336,
+    },
+    '12mo': {
+      label: 'Lead Generation',
+      targetMetric: 'Target: 35 leads / month',
+      current: 22,
+      target: 35,
+      stats: [
+        { label: 'Leads', value: '22', change: 175 },
+        { label: 'Conv Rate', value: '3.1%', change: 72 },
+        { label: 'Content Active', value: '60', change: 33 },
+      ],
+      clustersManaged: cfg.clusters,
+      uptimeHours: 504,
+    },
+    '18mo': {
+      label: 'Lead Generation',
+      targetMetric: 'Target: 50 qualified leads / month',
+      current: 34,
+      target: 50,
+      stats: [
+        { label: 'Leads This Month', value: '34', change: 21 },
+        { label: 'Conversion Rate', value: '4.2%', change: 8 },
+        { label: 'Content Pieces Active', value: '80', change: 12 },
+      ],
+      clustersManaged: 8,
+      uptimeHours: 672,
+    },
   };
+
+  return goalDataByStage[stageKey];
 }
 
-export function getAgentActivityFeed(): AgentActivityEntry[] {
-  return [
-    { id: 'a1', timestamp: '2026-02-26T14:58:00Z', relativeTime: '2 min ago', action: "Published 'B2B Lead Scoring Guide'", cluster: 'AI & Automation', type: 'publish' },
-    { id: 'a2', timestamp: '2026-02-26T14:52:00Z', relativeTime: '8 min ago', action: 'Identified 3 new keyword opportunities', cluster: 'Technical SEO', type: 'research' },
-    { id: 'a3', timestamp: '2026-02-26T14:45:00Z', relativeTime: '15 min ago', action: 'Updated meta descriptions for 4 pages', cluster: 'SEO', type: 'optimize' },
-    { id: 'a4', timestamp: '2026-02-26T14:00:00Z', relativeTime: '1 hr ago', action: 'Created content brief for new article', cluster: 'Case Studies', type: 'create' },
-    { id: 'a5', timestamp: '2026-02-26T13:30:00Z', relativeTime: '1.5 hrs ago', action: 'Analyzed competitor ranking changes', cluster: 'Content Marketing', type: 'analyze' },
-    { id: 'a6', timestamp: '2026-02-26T12:00:00Z', relativeTime: '3 hrs ago', action: 'Published cluster performance report', cluster: 'Analytics', type: 'publish' },
-  ];
+export function getAgentActivityFeed(stage?: MaturityStage): AgentActivityEntry[] {
+  const stageKey = stage || '18mo';
+
+  const feedByStage: Record<MaturityStage, AgentActivityEntry[]> = {
+    '1mo': [
+      { id: 'a1', timestamp: '2026-02-26T14:58:00Z', relativeTime: '2 min ago', action: "Published 'Getting Started with AI Analytics'", cluster: 'AI & Automation', type: 'publish' },
+      { id: 'a2', timestamp: '2026-02-26T14:52:00Z', relativeTime: '8 min ago', action: 'Submitted 5 pages to Search Console', cluster: 'SEO', type: 'optimize' },
+      { id: 'a3', timestamp: '2026-02-26T14:45:00Z', relativeTime: '15 min ago', action: "Verified indexation for 'B2B Content Guide'", cluster: 'Content Marketing', type: 'analyze' },
+      { id: 'a4', timestamp: '2026-02-26T14:00:00Z', relativeTime: '1 hr ago', action: "Published 'SEO Fundamentals for SaaS'", cluster: 'SEO', type: 'publish' },
+      { id: 'a5', timestamp: '2026-02-26T13:30:00Z', relativeTime: '1.5 hrs ago', action: 'Created sitemap and submitted to Google', cluster: 'Technical SEO', type: 'create' },
+      { id: 'a6', timestamp: '2026-02-26T12:00:00Z', relativeTime: '3 hrs ago', action: 'Set up Google Search Console tracking', cluster: 'Analytics', type: 'analyze' },
+    ],
+    '3mo': [
+      { id: 'a1', timestamp: '2026-02-26T14:58:00Z', relativeTime: '2 min ago', action: "Published 'Content Strategy Playbook'", cluster: 'Content Marketing', type: 'publish' },
+      { id: 'a2', timestamp: '2026-02-26T14:52:00Z', relativeTime: '8 min ago', action: 'Tracked position improvements for 8 keywords', cluster: 'SEO', type: 'analyze' },
+      { id: 'a3', timestamp: '2026-02-26T14:45:00Z', relativeTime: '15 min ago', action: 'Verified indexation for 6 new pages', cluster: 'Technical SEO', type: 'optimize' },
+      { id: 'a4', timestamp: '2026-02-26T14:00:00Z', relativeTime: '1 hr ago', action: 'Researched competitor keyword gaps', cluster: 'SEO', type: 'research' },
+      { id: 'a5', timestamp: '2026-02-26T13:30:00Z', relativeTime: '1.5 hrs ago', action: "Published 'Technical SEO Checklist'", cluster: 'Technical SEO', type: 'publish' },
+      { id: 'a6', timestamp: '2026-02-26T12:00:00Z', relativeTime: '3 hrs ago', action: 'Impressions report: 18K this month (+240%)', cluster: 'Analytics', type: 'analyze' },
+    ],
+    '6mo': [
+      { id: 'a1', timestamp: '2026-02-26T14:58:00Z', relativeTime: '2 min ago', action: 'Updated meta titles for 3 underperforming pages', cluster: 'SEO', type: 'optimize' },
+      { id: 'a2', timestamp: '2026-02-26T14:52:00Z', relativeTime: '8 min ago', action: 'Merged 2 thin articles into pillar page', cluster: 'Content Marketing', type: 'update' },
+      { id: 'a3', timestamp: '2026-02-26T14:45:00Z', relativeTime: '15 min ago', action: 'Added internal links to 5 new articles', cluster: 'Technical SEO', type: 'optimize' },
+      { id: 'a4', timestamp: '2026-02-26T14:00:00Z', relativeTime: '1 hr ago', action: "Published 'AI for Content Marketing Guide'", cluster: 'AI & Automation', type: 'publish' },
+      { id: 'a5', timestamp: '2026-02-26T13:30:00Z', relativeTime: '1.5 hrs ago', action: 'Identified 4 pages with declining CTR', cluster: 'SEO', type: 'analyze' },
+      { id: 'a6', timestamp: '2026-02-26T12:00:00Z', relativeTime: '3 hrs ago', action: 'Deleted 2 non-performing articles', cluster: 'Content Marketing', type: 'optimize' },
+    ],
+    '9mo': [
+      { id: 'a1', timestamp: '2026-02-26T14:58:00Z', relativeTime: '2 min ago', action: "Added CTA to 'AI Automation Guide'", cluster: 'AI & Automation', type: 'optimize' },
+      { id: 'a2', timestamp: '2026-02-26T14:52:00Z', relativeTime: '8 min ago', action: 'Created lead magnet for Data Analytics cluster', cluster: 'Analytics', type: 'create' },
+      { id: 'a3', timestamp: '2026-02-26T14:45:00Z', relativeTime: '15 min ago', action: 'Tested lead capture form on 3 pages', cluster: 'SEO', type: 'optimize' },
+      { id: 'a4', timestamp: '2026-02-26T14:00:00Z', relativeTime: '1 hr ago', action: 'Analyzed conversion paths for top clusters', cluster: 'Content Marketing', type: 'analyze' },
+      { id: 'a5', timestamp: '2026-02-26T13:30:00Z', relativeTime: '1.5 hrs ago', action: "Published 'ROI of Content Marketing' case study", cluster: 'Case Studies', type: 'publish' },
+      { id: 'a6', timestamp: '2026-02-26T12:00:00Z', relativeTime: '3 hrs ago', action: 'Inserted CTAs on 5 high-traffic pages', cluster: 'SEO', type: 'optimize' },
+    ],
+    '12mo': [
+      { id: 'a1', timestamp: '2026-02-26T14:58:00Z', relativeTime: '2 min ago', action: 'A/B tested headline on top lead gen page', cluster: 'SEO', type: 'optimize' },
+      { id: 'a2', timestamp: '2026-02-26T14:52:00Z', relativeTime: '8 min ago', action: 'Optimized lead quality scoring rules', cluster: 'Analytics', type: 'analyze' },
+      { id: 'a3', timestamp: '2026-02-26T14:45:00Z', relativeTime: '15 min ago', action: "Published 'Enterprise SEO Playbook'", cluster: 'SEO', type: 'publish' },
+      { id: 'a4', timestamp: '2026-02-26T14:00:00Z', relativeTime: '1 hr ago', action: 'Prioritized top 3 clusters by lead velocity', cluster: 'Content Marketing', type: 'analyze' },
+      { id: 'a5', timestamp: '2026-02-26T13:30:00Z', relativeTime: '1.5 hrs ago', action: 'Updated CTAs based on conversion data', cluster: 'AI & Automation', type: 'optimize' },
+      { id: 'a6', timestamp: '2026-02-26T12:00:00Z', relativeTime: '3 hrs ago', action: 'Created retargeting audience from cluster traffic', cluster: 'Case Studies', type: 'create' },
+    ],
+    '18mo': [
+      { id: 'a1', timestamp: '2026-02-26T14:58:00Z', relativeTime: '2 min ago', action: "Published 'B2B Lead Scoring Guide'", cluster: 'AI & Automation', type: 'publish' },
+      { id: 'a2', timestamp: '2026-02-26T14:52:00Z', relativeTime: '8 min ago', action: 'Identified 3 new keyword opportunities', cluster: 'Technical SEO', type: 'research' },
+      { id: 'a3', timestamp: '2026-02-26T14:45:00Z', relativeTime: '15 min ago', action: 'Updated meta descriptions for 4 pages', cluster: 'SEO', type: 'optimize' },
+      { id: 'a4', timestamp: '2026-02-26T14:00:00Z', relativeTime: '1 hr ago', action: 'Created content brief for new article', cluster: 'Case Studies', type: 'create' },
+      { id: 'a5', timestamp: '2026-02-26T13:30:00Z', relativeTime: '1.5 hrs ago', action: 'Analyzed competitor ranking changes', cluster: 'Content Marketing', type: 'analyze' },
+      { id: 'a6', timestamp: '2026-02-26T12:00:00Z', relativeTime: '3 hrs ago', action: 'Published cluster performance report', cluster: 'Analytics', type: 'publish' },
+    ],
+  };
+
+  return feedByStage[stageKey];
+}
+
+/* ── Stage-scaled helpers ── */
+
+export function getScaledLeads(stage?: MaturityStage): Lead[] {
+  const scale = getStageScale(stage);
+  if (scale.leads === 0) return [];
+  const count = Math.round(leads.length * scale.leads);
+  return leads.slice(0, count);
+}
+
+export function getScaledTrafficData(data: DailyTraffic[], stage?: MaturityStage): DailyTraffic[] {
+  const scale = getStageScale(stage);
+  return data.map((d) => ({
+    ...d,
+    clicks: Math.round(d.clicks * scale.traffic),
+    impressions: Math.round(d.impressions * scale.impr),
+  }));
 }

@@ -2,16 +2,13 @@
 
 import { useMemo } from 'react';
 import { useDateRange } from '@/hooks/useDateRange';
-import { getMetricValue, getAllPagesOverview } from '@/data/chart-data';
+import { getMetricValue, getAllPagesOverview, getChartData } from '@/data/chart-data';
 import { getGeographicData } from '@/data/geography';
-import { aiPageCitations } from '@/data/ai-analytics';
 import { MetricCard } from '@/components/shared/MetricCard';
-import { DashboardWidget } from './DashboardWidget';
 import { TopPages } from './traffic/TopMovers';
-import { AIPageVisibility } from './traffic/AIPageVisibility';
 import { GeographySection } from './traffic/GeographySection';
-import { dashboards } from '@/data/dashboards';
-import { Widget } from '@/types';
+import { UnifiedTrafficTrend } from './traffic/UnifiedTrafficTrend';
+import { PieChartWidget } from '@/components/charts/PieChartWidget';
 
 /* ── Organic metric card configs ── */
 
@@ -24,52 +21,6 @@ const ORGANIC_METRICS: { title: string; dataKey: string }[] = [
   { title: 'Leads Generated', dataKey: 'leadsGenerated' },
 ];
 
-/* ── AI Analytics section ── */
-
-function AIAnalyticsSection() {
-  // Get all AI widgets from the traffic dashboard config
-  const trafficDashboard = dashboards[0];
-  const aiWidgetStartIndex = trafficDashboard.widgets.findIndex((w) => w.type === 'section' && w.title === 'AI Analytics');
-  const aiWidgets: Widget[] = aiWidgetStartIndex >= 0
-    ? trafficDashboard.widgets.slice(aiWidgetStartIndex)
-    : [];
-
-  return (
-    <div
-      className="gap-4"
-      style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(12, minmax(0, 1fr))',
-      }}
-    >
-      {aiWidgets.map((widget) => (
-        <div
-          key={widget.id}
-          style={{ gridColumn: `span ${Math.min(widget.colSpan, 12)}` }}
-          className="min-w-0 [&>*]:h-full"
-        >
-          <DashboardWidget widget={widget} />
-        </div>
-      ))}
-    </div>
-  );
-}
-
-/* ── Organic Traffic Trend (preserved from DashboardWidget) ── */
-
-function OrganicTrafficTrend() {
-  const trafficDashboard = dashboards[0];
-  const trendWidget = trafficDashboard.widgets.find((w) => w.dataKey === 'dailyTraffic' && w.type === 'line');
-
-  if (!trendWidget) return null;
-
-  return (
-    <div className="min-w-0">
-      <DashboardWidget widget={trendWidget} />
-    </div>
-  );
-}
-
 /* ── Main TrafficDashboard ── */
 
 interface TrafficDashboardProps {
@@ -81,10 +32,22 @@ export function TrafficDashboard({ onPageClick }: TrafficDashboardProps) {
 
   const allPages = useMemo(() => getAllPagesOverview(startDate, endDate), [startDate, endDate]);
   const geoData = useMemo(() => getGeographicData(), []);
+  const engineBreakdown = useMemo(() => {
+    const aiEngines = getChartData('aiEngineBreakdown', startDate, endDate) as { name: string; value: number }[];
+    const totalAI = aiEngines.reduce((s, e) => s + e.value, 0);
+    // Add traditional search engines proportional to AI traffic
+    return [
+      { name: 'Google', value: Math.round(totalAI * 4.2) },
+      { name: 'Bing', value: Math.round(totalAI * 0.45) },
+      { name: 'DuckDuckGo', value: Math.round(totalAI * 0.08) },
+      { name: 'Yahoo', value: Math.round(totalAI * 0.12) },
+      ...aiEngines,
+    ];
+  }, [startDate, endDate]);
 
   return (
     <div className="space-y-4">
-      {/* 1. Organic metric cards */}
+      {/* 1. Metric cards */}
       <div
         className="gap-4"
         style={{
@@ -113,20 +76,26 @@ export function TrafficDashboard({ onPageClick }: TrafficDashboardProps) {
         })}
       </div>
 
-      {/* 2. Organic Traffic Trend */}
-      <OrganicTrafficTrend />
+      {/* 2. Traffic Trend + Citations by Engine */}
+      <div className="grid grid-cols-4 gap-4">
+        <div className="col-span-3">
+          <UnifiedTrafficTrend />
+        </div>
+        <div className="col-span-1">
+          <div className="bg-white rounded-[14px] border border-surface-200 shadow-card p-4 h-full flex flex-col">
+            <h3 className="text-sm font-semibold text-surface-900 mb-2">Traffic by Engine</h3>
+            <div className="flex-1 min-h-0">
+              <PieChartWidget data={engineBreakdown} height={260} />
+            </div>
+          </div>
+        </div>
+      </div>
 
-      {/* 5. Top Pages */}
+      {/* 3. Top Pages */}
       <TopPages pages={allPages} onPageClick={onPageClick} />
 
-      {/* 6. Geography */}
+      {/* 4. Geography */}
       <GeographySection data={geoData} />
-
-      {/* 8. AI Analytics section */}
-      <AIAnalyticsSection />
-
-      {/* 9. AI Page Visibility */}
-      <AIPageVisibility data={aiPageCitations} onPageClick={onPageClick} />
     </div>
   );
 }

@@ -24,7 +24,7 @@ export interface DailyTraffic {
   position: number;
 }
 
-export type LeadStatus = 'new' | 'contacted' | 'qualified' | 'converted' | 'lost';
+export type LeadStatus = 'new' | 'identified' | 'contacted' | 'qualified' | 'captured' | 'converted';
 
 export type LeadIndustry =
   | 'SaaS' | 'FinTech' | 'Healthcare' | 'E-Commerce'
@@ -124,6 +124,8 @@ export interface MonthlyReport {
   dailyTraffic: { date: string; clicks: number; impressions: number }[];
 }
 
+export type MaturityStage = '1mo' | '3mo' | '6mo' | '9mo' | '12mo' | '18mo';
+
 export type MessageRole = 'user' | 'assistant';
 
 export interface ChartMeta {
@@ -200,4 +202,14 @@ export interface Dashboard {
   id: string;
   name: string;
   widgets: Widget[];
+}
+
+export interface CompetitorGapTopic {
+  id: string;
+  topic: string;
+  competitor: string;
+  competitorUrl: string;
+  rationale: string;
+  estimatedImpact: 'high' | 'medium' | 'low';
+  keywords: string[];
 }

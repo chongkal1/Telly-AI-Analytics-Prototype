@@ -10,20 +10,22 @@ import { PieChartWidget } from '@/components/charts/PieChartWidget';
 import { IdentifiedVisitorsTable } from './leads/IdentifiedVisitorsTable';
 import { RecentLeadsTable } from './leads/RecentLeadsTable';
 import { TrendIndicator } from '@/components/shared/TrendIndicator';
+import { CrmConnectModal, CrmManageModal, CrmInfo } from './leads/CrmIntegrationModal';
 
 const LEAD_METRICS: { title: string; dataKey: string }[] = [
   { title: 'Identified Visitors', dataKey: 'identifiedVisitors' },
   { title: 'Organic Leads Captured', dataKey: 'organicLeadsCaptured' },
 ];
 
-const DEFAULT_DEAL_SIZE = 10000;
-const DEAL_SIZE_PRESETS = [1000, 5000, 10000, 25000, 50000];
+import { useDealSize } from '@/hooks/useDealSize';
+
+const DEAL_SIZE_PRESETS = [500, 1000, 5000, 10000, 50000];
 
 const fmtUsd = (n: number) =>
   new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(n);
 
 function PipelineValueCard({ leadsCount }: { leadsCount: number }) {
-  const [dealSize, setDealSize] = useState(DEFAULT_DEAL_SIZE);
+  const { dealSize, setDealSize } = useDealSize();
   const [open, setOpen] = useState(false);
   const [customValue, setCustomValue] = useState('');
   const popoverRef = useRef<HTMLDivElement>(null);
@@ -189,6 +191,28 @@ export function LeadsDashboard() {
   const [visitorsGroupMode, setVisitorsGroupMode] = useState<GroupMode>('industry');
   const [leadsGroupMode, setLeadsGroupMode] = useState<GroupMode>('industry');
 
+  // CRM integration state
+  const [connectedCrm, setConnectedCrm] = useState<CrmInfo | null>(null);
+  const [showConnectModal, setShowConnectModal] = useState(false);
+  const [showManageModal, setShowManageModal] = useState(false);
+  const [lastSyncDate, setLastSyncDate] = useState<string>('');
+
+  const handleCrmConnect = (crm: CrmInfo) => {
+    setConnectedCrm(crm);
+    setLastSyncDate(new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }));
+    setShowConnectModal(false);
+  };
+
+  const handleCrmSync = () => {
+    setLastSyncDate(new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }));
+  };
+
+  const handleCrmDisconnect = () => {
+    setConnectedCrm(null);
+    setLastSyncDate('');
+    setShowManageModal(false);
+  };
+
   const visitorsByIndustry = useMemo(
     () => getChartData('leadsByIndustry', startDate, endDate) as { name: string; value: number }[],
     [startDate, endDate],
@@ -270,10 +294,37 @@ export function LeadsDashboard() {
       </div>
 
       {/* Row 3: Identified Visitors table */}
-      <IdentifiedVisitorsTable visitors={leads} />
+      <IdentifiedVisitorsTable
+        visitors={leads}
+        connectedCrm={connectedCrm}
+        onConnectCrm={() => setShowConnectModal(true)}
+        onManageCrm={() => setShowManageModal(true)}
+      />
 
       {/* Row 4: Recent Leads table */}
-      <RecentLeadsTable leads={capturedLeads} />
+      <RecentLeadsTable
+        leads={capturedLeads}
+        connectedCrm={connectedCrm}
+        onConnectCrm={() => setShowConnectModal(true)}
+        onManageCrm={() => setShowManageModal(true)}
+      />
+
+      {/* CRM Modals */}
+      <CrmConnectModal
+        open={showConnectModal}
+        onClose={() => setShowConnectModal(false)}
+        onConnect={handleCrmConnect}
+      />
+      {connectedCrm && (
+        <CrmManageModal
+          open={showManageModal}
+          onClose={() => setShowManageModal(false)}
+          connectedCrm={connectedCrm}
+          lastSyncDate={lastSyncDate}
+          onSync={handleCrmSync}
+          onDisconnect={handleCrmDisconnect}
+        />
+      )}
     </div>
   );
 }

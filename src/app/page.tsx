@@ -13,6 +13,9 @@ import { LeadsDashboard } from '@/components/dashboard/LeadsDashboard';
 import { ReportsDashboard } from '@/components/dashboard/reports/ReportsDashboard';
 import { ArticleDetail } from '@/components/article/ArticleDetail';
 import { DateRangeProvider } from '@/hooks/useDateRange';
+import { MaturityStageProvider } from '@/hooks/useMaturityStage';
+import { DealSizeProvider } from '@/hooks/useDealSize';
+import { MaturityStageSwitcher } from '@/components/dashboard/MaturityStageSwitcher';
 
 const tabs = [
   { id: 'dashboard', label: 'Dashboard' },
@@ -46,6 +49,8 @@ export default function Home() {
   }, []);
 
   return (
+    <MaturityStageProvider>
+    <DealSizeProvider>
     <DateRangeProvider>
       <div className={fullPage ? 'flex' : 'h-screen flex'}>
         {/* Icon sidebar */}
@@ -65,9 +70,12 @@ export default function Home() {
             />
           ) : (
             <div className="p-6">
+              {activeTab === 'dashboard' && <MaturityStageSwitcher />}
               <div className="flex items-center justify-between mb-4">
                 <h1 className="text-lg font-semibold text-surface-900">{tabTitles[activeTab]}</h1>
-                {activeTab !== 'reports' && <DateRangePicker />}
+                <div className="flex items-center gap-4">
+                  {activeTab !== 'reports' && <DateRangePicker />}
+                </div>
               </div>
               <DashboardTabs activeTab={activeTab} onTabChange={setActiveTab} tabs={tabs} />
               {activeTab === 'dashboard' ? (
@@ -86,5 +94,7 @@ export default function Home() {
         </div>
       </div>
     </DateRangeProvider>
+    </DealSizeProvider>
+    </MaturityStageProvider>
   );
 }

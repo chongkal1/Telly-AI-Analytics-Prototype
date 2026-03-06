@@ -4,6 +4,7 @@ import React, { useState, useMemo } from 'react';
 import { Lead, LeadStatus } from '@/types';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { formatDate } from '@/lib/utils';
+import { CrmInfo } from './CrmIntegrationModal';
 
 const PAGE_SIZE = 10;
 
@@ -24,9 +25,12 @@ function SortIcon({ active, direction }: { active: boolean; direction: SortDirec
 
 interface RecentLeadsTableProps {
   leads: Lead[];
+  connectedCrm: CrmInfo | null;
+  onConnectCrm: () => void;
+  onManageCrm: () => void;
 }
 
-export function RecentLeadsTable({ leads }: RecentLeadsTableProps) {
+export function RecentLeadsTable({ leads, connectedCrm, onConnectCrm, onManageCrm }: RecentLeadsTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [sortKey, setSortKey] = useState<string>('createdAt');
   const [sortDir, setSortDir] = useState<SortDirection>('desc');
@@ -64,13 +68,58 @@ export function RecentLeadsTable({ leads }: RecentLeadsTableProps) {
     { key: 'createdAt', label: 'Date', align: 'left' },
   ];
 
+  const handleExportCSV = () => {
+    const headers = ['Name', 'Email', 'Company', 'Industry', 'Status', 'Date'];
+    const rows = sorted.map((r) => [r.name, r.email, r.company, r.industry, r.status, formatDate(r.createdAt)]);
+    const csv = [headers, ...rows].map((r) => r.map((c) => `"${c}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'recent-leads.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="bg-white rounded-[14px] border border-surface-200 shadow-card">
-      <div className="px-4 py-3 border-b border-surface-100">
-        <h3 className="text-sm font-semibold text-surface-900">Recent Leads</h3>
-        <p className="text-xs text-surface-500 mt-0.5">
-          {sorted.length} captured leads &middot; Showing {(currentPage - 1) * PAGE_SIZE + 1}&ndash;{Math.min(currentPage * PAGE_SIZE, sorted.length)}
-        </p>
+      <div className="px-4 py-3 border-b border-surface-100 flex items-center justify-between">
+        <div>
+          <h3 className="text-sm font-semibold text-surface-900">Recent Leads</h3>
+          <p className="text-xs text-surface-500 mt-0.5">
+            {sorted.length} captured leads &middot; Showing {(currentPage - 1) * PAGE_SIZE + 1}&ndash;{Math.min(currentPage * PAGE_SIZE, sorted.length)}
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleExportCSV}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-surface-700 bg-white border border-surface-300 rounded-lg hover:bg-surface-50 transition-colors"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+            </svg>
+            Export CSV
+          </button>
+          {connectedCrm ? (
+            <button
+              onClick={onManageCrm}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-green-700 bg-green-50 border border-green-200 rounded-lg hover:bg-green-100 transition-colors"
+            >
+              <div className="w-2 h-2 rounded-full bg-green-500" />
+              Connected to {connectedCrm.name}
+            </button>
+          ) : (
+            <button
+              onClick={onConnectCrm}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" />
+              </svg>
+              Connect CRM
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="overflow-x-auto">
@@ -89,6 +138,11 @@ export function RecentLeadsTable({ leads }: RecentLeadsTableProps) {
                   </span>
                 </th>
               ))}
+              {connectedCrm && (
+                <th className="px-3 py-2 text-xs font-medium text-surface-500 uppercase tracking-wider text-left">
+                  CRM Status
+                </th>
+              )}
             </tr>
           </thead>
           <tbody className="divide-y divide-surface-200">
@@ -108,6 +162,16 @@ export function RecentLeadsTable({ leads }: RecentLeadsTableProps) {
                   <StatusBadge status={row.status as LeadStatus} />
                 </td>
                 <td className="px-3 py-2 text-sm text-surface-500 whitespace-nowrap">{formatDate(row.createdAt)}</td>
+                {connectedCrm && (
+                  <td className="px-3 py-2">
+                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-medium rounded bg-green-50 text-green-700">
+                      <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                      </svg>
+                      Sent to {connectedCrm.name}
+                    </span>
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>

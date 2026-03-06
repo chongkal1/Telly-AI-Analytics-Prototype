@@ -240,7 +240,7 @@ export function getCtaFunnelData(startDate?: string, endDate?: string) {
   const organicVisits = filterTraffic(startDate, endDate).reduce((s, d) => s + d.clicks, 0);
   const ctaData = filterCtaClicksByDate(dailyCtaClicks, startDate, endDate);
   const ctaClicks = ctaData.reduce((s, d) => s + d.totalClicks, 0);
-  const totalLeads = leads.filter((l) => l.status !== 'lost').length;
+  const totalLeads = leads.length;
 
   const ctaRate = organicVisits > 0 ? ctaClicks / organicVisits : 0;
   const leadConvRate = ctaClicks > 0 ? totalLeads / ctaClicks : 0;
