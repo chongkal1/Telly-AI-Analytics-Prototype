@@ -67,8 +67,8 @@ export function RecentLeadsTable({ leads, connectedCrm, onConnectCrm, onManageCr
     setCurrentPage(1);
   };
 
-  const industries = useMemo(() => [...new Set(leads.map((l) => l.industry))].sort(), [leads]);
-  const statuses = useMemo(() => [...new Set(leads.map((l) => l.status))].sort(), [leads]);
+  const industries = useMemo(() => Array.from(new Set(leads.map((l) => l.industry))).sort(), [leads]);
+  const statuses = useMemo(() => Array.from(new Set(leads.map((l) => l.status))).sort(), [leads]);
 
   const filtered = useMemo(() => {
     let result = leads;

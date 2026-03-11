@@ -305,7 +305,7 @@ function StageArticleTable({ articles, stage }: { articles: ArticleRow[]; stage:
     setCurrentPage(1);
   };
 
-  const categories = useMemo(() => [...new Set(articles.map((a) => a.category))].sort(), [articles]);
+  const categories = useMemo(() => Array.from(new Set(articles.map((a) => a.category))).sort(), [articles]);
 
   const hasActiveFilters = search || Object.values(colFilters).some(v => v) || Object.values(rangeFilters).some(r => r?.from || r?.to);
 

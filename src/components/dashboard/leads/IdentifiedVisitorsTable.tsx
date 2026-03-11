@@ -107,7 +107,7 @@ export function IdentifiedVisitorsTable({ visitors, connectedCrm, onConnectCrm, 
     return counts;
   }, [visitors]);
 
-  const industries = useMemo(() => [...new Set(visitors.map((v) => v.industry))].sort(), [visitors]);
+  const industries = useMemo(() => Array.from(new Set(visitors.map((v) => v.industry))).sort(), [visitors]);
 
   const filtered = useMemo(() => {
     let result = visitors;

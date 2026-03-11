@@ -5,6 +5,7 @@ import { PageOverviewData } from '@/data/chart-data';
 import { TrendIndicator } from '@/components/shared/TrendIndicator';
 
 const PAGE_SIZE_OPTIONS = [10, 50, 100, 200, 500];
+const PERCENT_KEYS = new Set(['ctr']);
 
 type SortDirection = 'asc' | 'desc';
 
@@ -46,7 +47,6 @@ export function TopPages({ pages, onPageClick }: TopPagesProps) {
     setCurrentPage(1);
   };
 
-  const PERCENT_KEYS = new Set(['ctr']);
   const NUMERIC_KEYS = new Set(['impressions', 'clicks', 'clicksChange', 'ctr', 'leads', 'ctaClicks']);
 
   const hasActiveFilters = search || Object.values(colFilters).some(v => v) || Object.values(rangeFilters).some(r => r?.from || r?.to);
@@ -68,7 +68,7 @@ export function TopPages({ pages, onPageClick }: TopPagesProps) {
     setCurrentPage(1);
   };
 
-  const categories = useMemo(() => [...new Set(pages.map((p) => p.category))].sort(), [pages]);
+  const categories = useMemo(() => Array.from(new Set(pages.map((p) => p.category))).sort(), [pages]);
 
   const filtered = useMemo(() => {
     let result = pages;
