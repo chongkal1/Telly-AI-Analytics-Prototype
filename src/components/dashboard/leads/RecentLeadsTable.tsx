@@ -6,7 +6,7 @@ import { StatusBadge } from '@/components/shared/StatusBadge';
 import { formatDate } from '@/lib/utils';
 import { CrmInfo } from './CrmIntegrationModal';
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE_OPTIONS = [10, 50, 100, 200, 500];
 
 type SortDirection = 'asc' | 'desc';
 
@@ -32,8 +32,30 @@ interface RecentLeadsTableProps {
 
 export function RecentLeadsTable({ leads, connectedCrm, onConnectCrm, onManageCrm }: RecentLeadsTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [search, setSearch] = useState('');
   const [sortKey, setSortKey] = useState<string>('createdAt');
   const [sortDir, setSortDir] = useState<SortDirection>('desc');
+
+  const [showFilters, setShowFilters] = useState(false);
+  const [colFilters, setColFilters] = useState<Record<string, string>>({});
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
+
+  const updateColFilter = (key: string, value: string) => {
+    setColFilters((prev) => ({ ...prev, [key]: value }));
+    setCurrentPage(1);
+  };
+
+  const hasActiveFilters = search || Object.values(colFilters).some(v => v) || dateFrom || dateTo;
+
+  const clearAllFilters = () => {
+    setSearch('');
+    setColFilters({});
+    setDateFrom('');
+    setDateTo('');
+    setCurrentPage(1);
+  };
 
   const toggleSort = (key: string) => {
     if (sortKey === key) {
@@ -45,8 +67,36 @@ export function RecentLeadsTable({ leads, connectedCrm, onConnectCrm, onManageCr
     setCurrentPage(1);
   };
 
+  const industries = useMemo(() => [...new Set(leads.map((l) => l.industry))].sort(), [leads]);
+  const statuses = useMemo(() => [...new Set(leads.map((l) => l.status))].sort(), [leads]);
+
+  const filtered = useMemo(() => {
+    let result = leads;
+    if (search) {
+      const q = search.toLowerCase();
+      result = result.filter((l) => l.name.toLowerCase().includes(q) || l.email.toLowerCase().includes(q) || l.company.toLowerCase().includes(q) || l.industry.toLowerCase().includes(q));
+    }
+    Object.entries(colFilters).forEach(([key, val]) => {
+      if (!val) return;
+      const q = val.toLowerCase();
+      result = result.filter((l) => {
+        const field = (l as unknown as Record<string, unknown>)[key];
+        if (typeof field === 'string') return field.toLowerCase().includes(q);
+        return true;
+      });
+    });
+    // Date range filter
+    if (dateFrom) {
+      result = result.filter((l) => l.createdAt >= dateFrom);
+    }
+    if (dateTo) {
+      result = result.filter((l) => l.createdAt <= dateTo + 'T23:59:59');
+    }
+    return result;
+  }, [leads, search, colFilters, dateFrom, dateTo]);
+
   const sorted = useMemo(() => {
-    return [...leads].sort((a, b) => {
+    return [...filtered].sort((a, b) => {
       const aVal = (a as unknown as Record<string, unknown>)[sortKey];
       const bVal = (b as unknown as Record<string, unknown>)[sortKey];
       let cmp = 0;
@@ -54,10 +104,10 @@ export function RecentLeadsTable({ leads, connectedCrm, onConnectCrm, onManageCr
       else if (typeof aVal === 'number' && typeof bVal === 'number') cmp = aVal - bVal;
       return sortDir === 'asc' ? cmp : -cmp;
     });
-  }, [leads, sortKey, sortDir]);
+  }, [filtered, sortKey, sortDir]);
 
-  const totalPages = Math.ceil(sorted.length / PAGE_SIZE);
-  const paginated = sorted.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+  const totalPages = Math.ceil(sorted.length / pageSize);
+  const paginated = sorted.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   const columns: { key: string; label: string; align: 'left' | 'right' }[] = [
     { key: 'name', label: 'Name', align: 'left' },
@@ -87,10 +137,29 @@ export function RecentLeadsTable({ leads, connectedCrm, onConnectCrm, onManageCr
         <div>
           <h3 className="text-sm font-semibold text-surface-900">Recent Leads</h3>
           <p className="text-xs text-surface-500 mt-0.5">
-            {sorted.length} captured leads &middot; Showing {(currentPage - 1) * PAGE_SIZE + 1}&ndash;{Math.min(currentPage * PAGE_SIZE, sorted.length)}
+            {sorted.length} captured leads &middot; Showing {(currentPage - 1) * pageSize + 1}&ndash;{Math.min(currentPage * pageSize, sorted.length)}
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <button onClick={() => setShowFilters(!showFilters)} className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors ${showFilters ? 'text-[#00C5DF] border-[#00C5DF]/30 bg-[#00C5DF]/5' : 'text-surface-600 border-surface-200 bg-white hover:bg-surface-50'}`}>
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z" /></svg>
+            Filters
+          </button>
+          {hasActiveFilters && (
+            <button onClick={clearAllFilters} className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#00C5DF] bg-white border border-[#00C5DF]/30 rounded-lg hover:bg-[#00C5DF]/5 transition-colors">
+              Clear
+            </button>
+          )}
+          <div className="relative">
+            <svg className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-surface-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
+              placeholder="Search leads..."
+              className="pl-7 pr-3 py-1.5 text-xs border border-surface-200 rounded-lg bg-white text-surface-700 placeholder:text-surface-400 focus:outline-none focus:ring-1 focus:ring-indigo-300 w-44"
+            />
+          </div>
           <button
             onClick={handleExportCSV}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-surface-700 bg-white border border-surface-300 rounded-lg hover:bg-surface-50 transition-colors"
@@ -144,6 +213,46 @@ export function RecentLeadsTable({ leads, connectedCrm, onConnectCrm, onManageCr
                 </th>
               )}
             </tr>
+            {/* Column filter row */}
+            {showFilters && <tr className="bg-surface-50/50">
+              {columns.map((col) => (
+                <th key={`filter-${col.key}`} className="px-2 py-1.5">
+                  {col.key === 'industry' ? (
+                    <select
+                      value={colFilters[col.key] || ''}
+                      onChange={(e) => updateColFilter(col.key, e.target.value)}
+                      className="w-full text-xs border border-surface-200 rounded px-1.5 py-1 text-surface-700 bg-white focus:outline-none focus:ring-1 focus:ring-indigo-300"
+                    >
+                      <option value="">All</option>
+                      {industries.map((ind) => (<option key={ind} value={ind}>{ind}</option>))}
+                    </select>
+                  ) : col.key === 'status' ? (
+                    <select
+                      value={colFilters[col.key] || ''}
+                      onChange={(e) => updateColFilter(col.key, e.target.value)}
+                      className="w-full text-xs border border-surface-200 rounded px-1.5 py-1 text-surface-700 bg-white focus:outline-none focus:ring-1 focus:ring-indigo-300"
+                    >
+                      <option value="">All</option>
+                      {statuses.map((s) => (<option key={s} value={s}>{s}</option>))}
+                    </select>
+                  ) : col.key === 'createdAt' ? (
+                    <div className="flex gap-1">
+                      <input type="date" value={dateFrom} onChange={(e) => { setDateFrom(e.target.value); setCurrentPage(1); }} className="w-1/2 text-xs border border-surface-200 rounded px-1 py-1 text-surface-700 bg-white focus:outline-none focus:ring-1 focus:ring-indigo-300" />
+                      <input type="date" value={dateTo} onChange={(e) => { setDateTo(e.target.value); setCurrentPage(1); }} className="w-1/2 text-xs border border-surface-200 rounded px-1 py-1 text-surface-700 bg-white focus:outline-none focus:ring-1 focus:ring-indigo-300" />
+                    </div>
+                  ) : (
+                    <input
+                      type="text"
+                      value={colFilters[col.key] || ''}
+                      onChange={(e) => updateColFilter(col.key, e.target.value)}
+                      placeholder="Filter..."
+                      className="w-full text-xs border border-surface-200 rounded px-1.5 py-1 text-surface-700 bg-white placeholder:text-surface-300 focus:outline-none focus:ring-1 focus:ring-indigo-300"
+                    />
+                  )}
+                </th>
+              ))}
+              {connectedCrm && <th className="px-2 py-1.5" />}
+            </tr>}
           </thead>
           <tbody className="divide-y divide-surface-200">
             {paginated.map((row) => (
@@ -178,40 +287,26 @@ export function RecentLeadsTable({ leads, connectedCrm, onConnectCrm, onManageCr
         </table>
       </div>
 
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between px-4 py-3 border-t border-surface-200">
-          <span className="text-xs text-surface-500">
-            Page {currentPage} of {totalPages}
-          </span>
-          <div className="flex items-center gap-1">
-            <button
-              onClick={() => setCurrentPage(currentPage - 1)}
-              disabled={currentPage <= 1}
-              className="px-2 py-1 text-xs font-medium text-surface-600 hover:bg-surface-100 rounded disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              &larr; Prev
-            </button>
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-              <button
-                key={p}
-                onClick={() => setCurrentPage(p)}
-                className={`w-7 h-7 text-xs font-medium rounded ${
-                  p === currentPage ? 'bg-indigo-600 text-white' : 'text-surface-600 hover:bg-surface-100'
-                }`}
-              >
-                {p}
-              </button>
-            ))}
-            <button
-              onClick={() => setCurrentPage(currentPage + 1)}
-              disabled={currentPage >= totalPages}
-              className="px-2 py-1 text-xs font-medium text-surface-600 hover:bg-surface-100 rounded disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              Next &rarr;
-            </button>
+      <div className="flex items-center justify-between px-4 py-3 border-t border-surface-200">
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-surface-500">Page {currentPage} of {totalPages}</span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs text-surface-400">Show</span>
+              <select value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setCurrentPage(1); }} className="text-xs border border-surface-200 rounded px-1.5 py-0.5 text-surface-700 bg-white focus:outline-none focus:ring-1 focus:ring-indigo-300">
+                {PAGE_SIZE_OPTIONS.map((s) => (<option key={s} value={s}>{s}</option>))}
+              </select>
+            </div>
           </div>
+          {totalPages > 1 && (
+          <div className="flex items-center gap-1">
+            <button onClick={() => setCurrentPage(currentPage - 1)} disabled={currentPage <= 1} className="px-2 py-1 text-xs font-medium text-surface-600 hover:bg-surface-100 rounded disabled:opacity-40 disabled:cursor-not-allowed">&larr; Prev</button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+              <button key={p} onClick={() => setCurrentPage(p)} className={`w-7 h-7 text-xs font-medium rounded ${p === currentPage ? 'bg-indigo-600 text-white' : 'text-surface-600 hover:bg-surface-100'}`}>{p}</button>
+            ))}
+            <button onClick={() => setCurrentPage(currentPage + 1)} disabled={currentPage >= totalPages} className="px-2 py-1 text-xs font-medium text-surface-600 hover:bg-surface-100 rounded disabled:opacity-40 disabled:cursor-not-allowed">Next &rarr;</button>
+          </div>
+          )}
         </div>
-      )}
     </div>
   );
 }

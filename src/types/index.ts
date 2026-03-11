@@ -88,6 +88,8 @@ export interface MonthlyReportSnapshot {
     status: string;
   }[];
   aiEngineBreakdown: { name: string; value: number }[];
+  trafficBySource: { name: string; clicks: number; change: number; color: string }[];
+  clusterActions: { category: string; action: 'Publish & Monitor' | 'Scale Production' | 'Update Content' | 'Delete & Merge'; status: string; summary: string }[];
 }
 
 export interface MonthlyReportComparison {
@@ -105,10 +107,9 @@ export interface MonthlyReportComparison {
 export interface MonthlyReportNarrative {
   executiveSummary: string;
   trafficAnalysis: string;
-  aiVisibilityAnalysis: string;
+  trafficBySourceAnalysis: string;
   clusterAnalysis: string;
   leadsAnalysis: string;
-  recommendations: string[];
 }
 
 export interface MonthlyReport {

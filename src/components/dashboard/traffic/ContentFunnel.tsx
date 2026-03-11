@@ -283,27 +283,96 @@ const ARTICLE_STAGE_COLUMNS: Record<string, { columns: ArticleColumnDef[]; defau
   },
 };
 
-const ARTICLE_PAGE_SIZE = 10;
+const ARTICLE_PAGE_SIZE_OPTIONS = [10, 50, 100, 200, 500];
 
 function StageArticleTable({ articles, stage }: { articles: ArticleRow[]; stage: string }) {
   const config = ARTICLE_STAGE_COLUMNS[stage] ?? ARTICLE_STAGE_COLUMNS['Impressions'];
   const { sorted, sortKey, sortDir, toggle } = useSort(articles, config.defaultSort);
   const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [search, setSearch] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
+  const [colFilters, setColFilters] = useState<Record<string, string>>({});
+  const [rangeFilters, setRangeFilters] = useState<Record<string, { from: string; to: string }>>({});
 
-  // Reset page when stage or data changes
-  const totalPages = Math.ceil(sorted.length / ARTICLE_PAGE_SIZE);
+  const updateColFilter = (key: string, value: string) => {
+    setColFilters((prev) => ({ ...prev, [key]: value }));
+    setCurrentPage(1);
+  };
+
+  const updateRangeFilter = (key: string, bound: 'from' | 'to', value: string) => {
+    setRangeFilters((prev) => ({ ...prev, [key]: { ...prev[key], [bound]: value } }));
+    setCurrentPage(1);
+  };
+
+  const categories = useMemo(() => [...new Set(articles.map((a) => a.category))].sort(), [articles]);
+
+  const hasActiveFilters = search || Object.values(colFilters).some(v => v) || Object.values(rangeFilters).some(r => r?.from || r?.to);
+
+  const clearAllFilters = () => {
+    setSearch('');
+    setColFilters({});
+    setRangeFilters({});
+    setCurrentPage(1);
+  };
+
+  const filtered = useMemo(() => {
+    let result = sorted;
+    if (search) {
+      const q = search.toLowerCase();
+      result = result.filter((a) => a.title.toLowerCase().includes(q) || a.category.toLowerCase().includes(q));
+    }
+    Object.entries(colFilters).forEach(([key, val]) => {
+      if (!val) return;
+      const q = val.toLowerCase();
+      result = result.filter((a) => {
+        const field = (a as unknown as Record<string, unknown>)[key];
+        if (typeof field === 'string') return field.toLowerCase().includes(q);
+        return true;
+      });
+    });
+    // Range filters
+    Object.entries(rangeFilters).forEach(([key, range]) => {
+      if (!range?.from && !range?.to) return;
+      result = result.filter((a) => {
+        const val = (a as unknown as Record<string, unknown>)[key];
+        if (typeof val !== 'number') return true;
+        if (range.from && val < Number(range.from)) return false;
+        if (range.to && val > Number(range.to)) return false;
+        return true;
+      });
+    });
+    return result;
+  }, [sorted, search, colFilters, rangeFilters]);
+
+  const totalPages = Math.ceil(filtered.length / pageSize);
   const safePage = Math.min(currentPage, totalPages || 1);
-  const paginated = sorted.slice((safePage - 1) * ARTICLE_PAGE_SIZE, safePage * ARTICLE_PAGE_SIZE);
+  const paginated = filtered.slice((safePage - 1) * pageSize, safePage * pageSize);
 
   // Reset to page 1 when stage changes
-  React.useEffect(() => { setCurrentPage(1); }, [stage]);
+  React.useEffect(() => { setCurrentPage(1); setSearch(''); setColFilters({}); setRangeFilters({}); setShowFilters(false); }, [stage]);
 
   return (
     <div className="overflow-x-auto">
       <div className="flex items-center justify-between px-3 py-2">
         <span className="text-xs text-surface-500">
-          {sorted.length} articles &middot; Showing {(safePage - 1) * ARTICLE_PAGE_SIZE + 1}&ndash;{Math.min(safePage * ARTICLE_PAGE_SIZE, sorted.length)}
+          {filtered.length} articles &middot; Showing {(safePage - 1) * pageSize + 1}&ndash;{Math.min(safePage * pageSize, filtered.length)}
         </span>
+        <div className="flex items-center gap-2">
+          <button onClick={() => setShowFilters(!showFilters)} className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors ${showFilters ? 'text-[#00C5DF] border-[#00C5DF]/30 bg-[#00C5DF]/5' : 'text-surface-600 border-surface-200 bg-white hover:bg-surface-50'}`}>
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z" /></svg>
+            Filters
+          </button>
+          {hasActiveFilters && (
+            <button onClick={clearAllFilters} className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#00C5DF] bg-white border border-[#00C5DF]/30 rounded-lg hover:bg-[#00C5DF]/5 transition-colors">
+              Clear
+            </button>
+          )}
+          <div className="relative">
+            <svg className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-surface-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
+            <input type="text" value={search} onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }} placeholder="Search articles..." className="pl-7 pr-3 py-1.5 text-xs border border-surface-200 rounded-lg bg-white text-surface-700 placeholder:text-surface-400 focus:outline-none focus:ring-1 focus:ring-indigo-300 w-44" />
+          </div>
+        </div>
       </div>
       <table className="min-w-full divide-y divide-surface-200">
         <thead className="bg-surface-50">
@@ -320,6 +389,38 @@ function StageArticleTable({ articles, stage }: { articles: ArticleRow[]; stage:
               />
             ))}
           </tr>
+          {/* Column filter row */}
+          {showFilters && <tr className="bg-surface-50/50">
+            {config.columns.map((col) => (
+              <th key={`filter-${col.colKey}`} className="px-2 py-1.5">
+                {col.colKey === 'category' ? (
+                  <select
+                    value={colFilters[col.colKey] || ''}
+                    onChange={(e) => updateColFilter(col.colKey, e.target.value)}
+                    className="w-full text-xs border border-surface-200 rounded px-1.5 py-1 text-surface-700 bg-white focus:outline-none focus:ring-1 focus:ring-indigo-300"
+                  >
+                    <option value="">All</option>
+                    {categories.map((c) => (<option key={c} value={c}>{c}</option>))}
+                  </select>
+                ) : col.colKey === 'title' ? (
+                  <input
+                    type="text"
+                    value={colFilters[col.colKey] || ''}
+                    onChange={(e) => updateColFilter(col.colKey, e.target.value)}
+                    placeholder="Filter..."
+                    className="w-full text-xs border border-surface-200 rounded px-1.5 py-1 text-surface-700 bg-white placeholder:text-surface-300 focus:outline-none focus:ring-1 focus:ring-indigo-300"
+                  />
+                ) : col.align === 'right' ? (
+                  <div className="flex gap-1">
+                    <input type="number" value={rangeFilters[col.colKey]?.from || ''} onChange={(e) => updateRangeFilter(col.colKey, 'from', e.target.value)} placeholder="from" className="w-1/2 text-xs border border-surface-200 rounded px-1.5 py-1 text-surface-700 bg-white placeholder:text-surface-300 focus:outline-none focus:ring-1 focus:ring-indigo-300" />
+                    <input type="number" value={rangeFilters[col.colKey]?.to || ''} onChange={(e) => updateRangeFilter(col.colKey, 'to', e.target.value)} placeholder="to" className="w-1/2 text-xs border border-surface-200 rounded px-1.5 py-1 text-surface-700 bg-white placeholder:text-surface-300 focus:outline-none focus:ring-1 focus:ring-indigo-300" />
+                  </div>
+                ) : (
+                  <span />
+                )}
+              </th>
+            ))}
+          </tr>}
         </thead>
         <tbody className="divide-y divide-surface-200">
           {paginated.map((row) => (
@@ -341,40 +442,26 @@ function StageArticleTable({ articles, stage }: { articles: ArticleRow[]; stage:
         </tbody>
       </table>
 
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between px-4 py-3 border-t border-surface-200">
-          <span className="text-xs text-surface-500">
-            Page {safePage} of {totalPages}
-          </span>
-          <div className="flex items-center gap-1">
-            <button
-              onClick={() => setCurrentPage(safePage - 1)}
-              disabled={safePage <= 1}
-              className="px-2 py-1 text-xs font-medium text-surface-600 hover:bg-surface-100 rounded disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              &larr; Prev
-            </button>
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-              <button
-                key={p}
-                onClick={() => setCurrentPage(p)}
-                className={`w-7 h-7 text-xs font-medium rounded ${
-                  p === safePage ? 'bg-[#00C5DF] text-white' : 'text-surface-600 hover:bg-surface-100'
-                }`}
-              >
-                {p}
-              </button>
-            ))}
-            <button
-              onClick={() => setCurrentPage(safePage + 1)}
-              disabled={safePage >= totalPages}
-              className="px-2 py-1 text-xs font-medium text-surface-600 hover:bg-surface-100 rounded disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              Next &rarr;
-            </button>
+      <div className="flex items-center justify-between px-4 py-3 border-t border-surface-200">
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-surface-500">Page {safePage} of {totalPages}</span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs text-surface-400">Show</span>
+              <select value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setCurrentPage(1); }} className="text-xs border border-surface-200 rounded px-1.5 py-0.5 text-surface-700 bg-white focus:outline-none focus:ring-1 focus:ring-indigo-300">
+                {ARTICLE_PAGE_SIZE_OPTIONS.map((s) => (<option key={s} value={s}>{s}</option>))}
+              </select>
+            </div>
           </div>
+          {totalPages > 1 && (
+          <div className="flex items-center gap-1">
+            <button onClick={() => setCurrentPage(safePage - 1)} disabled={safePage <= 1} className="px-2 py-1 text-xs font-medium text-surface-600 hover:bg-surface-100 rounded disabled:opacity-40 disabled:cursor-not-allowed">&larr; Prev</button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+              <button key={p} onClick={() => setCurrentPage(p)} className={`w-7 h-7 text-xs font-medium rounded ${p === safePage ? 'bg-[#00C5DF] text-white' : 'text-surface-600 hover:bg-surface-100'}`}>{p}</button>
+            ))}
+            <button onClick={() => setCurrentPage(safePage + 1)} disabled={safePage >= totalPages} className="px-2 py-1 text-xs font-medium text-surface-600 hover:bg-surface-100 rounded disabled:opacity-40 disabled:cursor-not-allowed">Next &rarr;</button>
+          </div>
+          )}
         </div>
-      )}
     </div>
   );
 }

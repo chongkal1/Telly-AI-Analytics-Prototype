@@ -26,7 +26,6 @@ export function ReportList({ reports, onSelect }: ReportListProps) {
             <th className="text-right py-3 px-3 text-[10px] font-semibold text-surface-400 uppercase tracking-wider">Leads</th>
             <th className="text-right py-3 px-3 text-[10px] font-semibold text-surface-400 uppercase tracking-wider">Pipeline</th>
             <th className="text-right py-3 px-3 text-[10px] font-semibold text-surface-400 uppercase tracking-wider">ROAS</th>
-            <th className="text-right py-3 px-3 text-[10px] font-semibold text-surface-400 uppercase tracking-wider">AI Citations</th>
             <th className="py-3 px-3" />
           </tr>
         </thead>
@@ -70,10 +69,6 @@ export function ReportList({ reports, onSelect }: ReportListProps) {
               <td className="py-3 px-3 text-right">
                 <span className="font-mono text-surface-900">{report.snapshot.roas}x</span>
                 <div className="mt-0.5"><TrendIndicator change={report.comparison.roas} /></div>
-              </td>
-              <td className="py-3 px-3 text-right">
-                <span className="font-mono text-surface-600">{fmt(report.snapshot.aiCitations)}</span>
-                <div className="mt-0.5"><TrendIndicator change={report.comparison.aiCitations} /></div>
               </td>
               <td className="py-3 px-3 text-right">
                 <svg className="w-4 h-4 text-surface-300 group-hover:text-indigo-400 transition-colors inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

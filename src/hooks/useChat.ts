@@ -381,9 +381,9 @@ function handleReport(): MockResponse {
 
 function handleReportRecommendations(): MockResponse {
   const report = getLatestReport();
-  const recs = report.narrative.recommendations.map((r, i) => `${i + 1}. ${r}`).join('\n');
+  const actions = report.snapshot.clusterActions.map((ca, i) => `${i + 1}. **${ca.category}** — ${ca.action}: ${ca.summary}`).join('\n');
   return {
-    content: `**Strategic Recommendations** (${report.periodLabel})\n\n${recs}`,
+    content: `**Agent Actions** (${report.periodLabel})\n\n${actions}`,
     actions: [
       { label: 'View full report', message: 'Navigate to Reports tab' },
       { label: 'View report summary', message: '/report' },

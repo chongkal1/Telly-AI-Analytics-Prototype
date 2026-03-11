@@ -5,7 +5,7 @@ import { Lead, LeadStatus } from '@/types';
 import { formatDate } from '@/lib/utils';
 import { CrmInfo } from './CrmIntegrationModal';
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE_OPTIONS = [10, 50, 100, 200, 500];
 
 type SortDirection = 'asc' | 'desc';
 type StatusFilter = 'all' | 'identified' | 'contacted' | 'captured';
@@ -64,9 +64,31 @@ interface IdentifiedVisitorsTableProps {
 
 export function IdentifiedVisitorsTable({ visitors, connectedCrm, onConnectCrm, onManageCrm, onOpenConversation }: IdentifiedVisitorsTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [search, setSearch] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
+  const [colFilters, setColFilters] = useState<Record<string, string>>({});
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
   const [sortKey, setSortKey] = useState<string>('createdAt');
   const [sortDir, setSortDir] = useState<SortDirection>('desc');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+
+  const updateColFilter = (key: string, value: string) => {
+    setColFilters((prev) => ({ ...prev, [key]: value }));
+    setCurrentPage(1);
+  };
+
+  const hasActiveFilters = search || Object.values(colFilters).some(v => v) || statusFilter !== 'all' || dateFrom || dateTo;
+
+  const clearAllFilters = () => {
+    setSearch('');
+    setColFilters({});
+    setStatusFilter('all');
+    setDateFrom('');
+    setDateTo('');
+    setCurrentPage(1);
+  };
 
   const toggleSort = (key: string) => {
     if (sortKey === key) {
@@ -85,10 +107,43 @@ export function IdentifiedVisitorsTable({ visitors, connectedCrm, onConnectCrm, 
     return counts;
   }, [visitors]);
 
+  const industries = useMemo(() => [...new Set(visitors.map((v) => v.industry))].sort(), [visitors]);
+
   const filtered = useMemo(() => {
-    if (statusFilter === 'all') return visitors;
-    return visitors.filter((v) => getDisplayStatus(v.status) === statusFilter);
-  }, [visitors, statusFilter]);
+    let result = visitors;
+    if (statusFilter !== 'all') {
+      result = result.filter((v) => getDisplayStatus(v.status) === statusFilter);
+    }
+    if (search) {
+      const q = search.toLowerCase();
+      result = result.filter((v) => v.name.toLowerCase().includes(q) || v.email.toLowerCase().includes(q) || v.company.toLowerCase().includes(q) || v.industry.toLowerCase().includes(q) || v.title.toLowerCase().includes(q));
+    }
+    // Column-level filters
+    Object.entries(colFilters).forEach(([key, val]) => {
+      if (!val) return;
+      if (key === 'conversation') {
+        result = result.filter((v) => {
+          const hasConv = getDisplayStatus(v.status) === 'contacted' || getDisplayStatus(v.status) === 'captured';
+          return val === 'has' ? hasConv : !hasConv;
+        });
+        return;
+      }
+      const q = val.toLowerCase();
+      result = result.filter((v) => {
+        const field = (v as unknown as Record<string, unknown>)[key];
+        if (typeof field === 'string') return field.toLowerCase().includes(q);
+        return true;
+      });
+    });
+    // Date range filter
+    if (dateFrom) {
+      result = result.filter((v) => v.createdAt >= dateFrom);
+    }
+    if (dateTo) {
+      result = result.filter((v) => v.createdAt <= dateTo + 'T23:59:59');
+    }
+    return result;
+  }, [visitors, statusFilter, search, colFilters, dateFrom, dateTo]);
 
   const sorted = useMemo(() => {
     return [...filtered].sort((a, b) => {
@@ -101,8 +156,8 @@ export function IdentifiedVisitorsTable({ visitors, connectedCrm, onConnectCrm, 
     });
   }, [filtered, sortKey, sortDir]);
 
-  const totalPages = Math.ceil(sorted.length / PAGE_SIZE);
-  const paginated = sorted.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+  const totalPages = Math.ceil(sorted.length / pageSize);
+  const paginated = sorted.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   const columns: { key: string; label: string; align: 'left' | 'right' }[] = [
     { key: 'name', label: 'Name', align: 'left' },
@@ -113,6 +168,7 @@ export function IdentifiedVisitorsTable({ visitors, connectedCrm, onConnectCrm, 
     { key: 'title', label: 'Title', align: 'left' },
     { key: 'sourceUrl', label: 'Source Page', align: 'left' },
     { key: 'status', label: 'Status', align: 'left' },
+    { key: 'conversation', label: 'Conversation', align: 'left' },
     { key: 'createdAt', label: 'Date', align: 'left' },
   ];
 
@@ -142,10 +198,29 @@ export function IdentifiedVisitorsTable({ visitors, connectedCrm, onConnectCrm, 
         <div>
           <h3 className="text-sm font-semibold text-surface-900">Organic Leads</h3>
           <p className="text-xs text-surface-500 mt-0.5">
-            {sorted.length} leads &middot; Showing {sorted.length > 0 ? (currentPage - 1) * PAGE_SIZE + 1 : 0}&ndash;{Math.min(currentPage * PAGE_SIZE, sorted.length)}
+            {sorted.length} leads &middot; Showing {sorted.length > 0 ? (currentPage - 1) * pageSize + 1 : 0}&ndash;{Math.min(currentPage * pageSize, sorted.length)}
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <button onClick={() => setShowFilters(!showFilters)} className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors ${showFilters ? 'text-[#00C5DF] border-[#00C5DF]/30 bg-[#00C5DF]/5' : 'text-surface-600 border-surface-200 bg-white hover:bg-surface-50'}`}>
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z" /></svg>
+            Filters
+          </button>
+          {hasActiveFilters && (
+            <button onClick={clearAllFilters} className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#00C5DF] bg-white border border-[#00C5DF]/30 rounded-lg hover:bg-[#00C5DF]/5 transition-colors">
+              Clear
+            </button>
+          )}
+          <div className="relative">
+            <svg className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-surface-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
+              placeholder="Search leads..."
+              className="pl-7 pr-3 py-1.5 text-xs border border-surface-200 rounded-lg bg-white text-surface-700 placeholder:text-surface-400 focus:outline-none focus:ring-1 focus:ring-indigo-300 w-44"
+            />
+          </div>
           <button
             onClick={handleExportCSV}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-surface-700 bg-white border border-surface-300 rounded-lg hover:bg-surface-50 transition-colors"
@@ -221,6 +296,60 @@ export function IdentifiedVisitorsTable({ visitors, connectedCrm, onConnectCrm, 
                 </th>
               )}
             </tr>
+            {/* Column filter row */}
+            {showFilters && <tr className="bg-surface-50/50">
+              {columns.map((col) => (
+                <th key={`filter-${col.key}`} className="px-2 py-1.5">
+                  {col.key === 'industry' ? (
+                    <select
+                      value={colFilters[col.key] || ''}
+                      onChange={(e) => updateColFilter(col.key, e.target.value)}
+                      className="w-full text-xs border border-surface-200 rounded px-1.5 py-1 text-surface-700 bg-white focus:outline-none focus:ring-1 focus:ring-indigo-300"
+                    >
+                      <option value="">All</option>
+                      {industries.map((ind) => (<option key={ind} value={ind}>{ind}</option>))}
+                    </select>
+                  ) : col.key === 'status' ? (
+                    <select
+                      value={colFilters[col.key] || ''}
+                      onChange={(e) => updateColFilter(col.key, e.target.value)}
+                      className="w-full text-xs border border-surface-200 rounded px-1.5 py-1 text-surface-700 bg-white focus:outline-none focus:ring-1 focus:ring-indigo-300"
+                    >
+                      <option value="">All</option>
+                      <option value="identified">Identified</option>
+                      <option value="contacted">Contacted</option>
+                      <option value="captured">Captured</option>
+                    </select>
+                  ) : col.key === 'conversation' ? (
+                    <select
+                      value={colFilters[col.key] || ''}
+                      onChange={(e) => updateColFilter(col.key, e.target.value)}
+                      className="w-full text-xs border border-surface-200 rounded px-1.5 py-1 text-surface-700 bg-white focus:outline-none focus:ring-1 focus:ring-indigo-300"
+                    >
+                      <option value="">All</option>
+                      <option value="has">Has Conversation</option>
+                      <option value="no">No Conversation</option>
+                    </select>
+                  ) : col.key === 'createdAt' ? (
+                    <div className="flex gap-1">
+                      <input type="date" value={dateFrom} onChange={(e) => { setDateFrom(e.target.value); setCurrentPage(1); }} className="w-1/2 text-xs border border-surface-200 rounded px-1 py-1 text-surface-700 bg-white focus:outline-none focus:ring-1 focus:ring-indigo-300" />
+                      <input type="date" value={dateTo} onChange={(e) => { setDateTo(e.target.value); setCurrentPage(1); }} className="w-1/2 text-xs border border-surface-200 rounded px-1 py-1 text-surface-700 bg-white focus:outline-none focus:ring-1 focus:ring-indigo-300" />
+                    </div>
+                  ) : col.key === 'linkedinUrl' ? (
+                    <span />
+                  ) : (
+                    <input
+                      type="text"
+                      value={colFilters[col.key] || ''}
+                      onChange={(e) => updateColFilter(col.key, e.target.value)}
+                      placeholder="Filter..."
+                      className="w-full text-xs border border-surface-200 rounded px-1.5 py-1 text-surface-700 bg-white placeholder:text-surface-300 focus:outline-none focus:ring-1 focus:ring-indigo-300"
+                    />
+                  )}
+                </th>
+              ))}
+              {connectedCrm && <th className="px-2 py-1.5" />}
+            </tr>}
           </thead>
           <tbody className="divide-y divide-surface-200">
             {paginated.map((row) => (
@@ -264,20 +393,22 @@ export function IdentifiedVisitorsTable({ visitors, connectedCrm, onConnectCrm, 
                 <td className="px-3 py-2 text-sm text-surface-700 max-w-[180px] truncate">{row.title}</td>
                 <td className="px-3 py-2 text-sm text-surface-500 max-w-[200px] truncate font-mono text-xs">{row.sourceUrl}</td>
                 <td className="px-3 py-2">
-                  <div className="flex items-center gap-1.5">
-                    <StatusBadgeInline status={getDisplayStatus(row.status)} />
-                    {(getDisplayStatus(row.status) === 'contacted' || getDisplayStatus(row.status) === 'captured') && (
-                      <button
-                        onClick={() => onOpenConversation?.(row)}
-                        className="p-0.5 rounded hover:bg-surface-100 text-surface-400 hover:text-indigo-600 transition-colors"
-                        title="View conversation"
-                      >
-                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
-                        </svg>
-                      </button>
-                    )}
-                  </div>
+                  <StatusBadgeInline status={getDisplayStatus(row.status)} />
+                </td>
+                <td className="px-3 py-2">
+                  {(getDisplayStatus(row.status) === 'contacted' || getDisplayStatus(row.status) === 'captured') ? (
+                    <button
+                      onClick={() => onOpenConversation?.(row)}
+                      className="inline-flex items-center gap-1.5 px-2 py-1 text-xs font-medium text-indigo-600 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors"
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
+                      </svg>
+                      View Chat
+                    </button>
+                  ) : (
+                    <span className="text-xs text-surface-300">&mdash;</span>
+                  )}
                 </td>
                 <td className="px-3 py-2 text-sm text-surface-500 whitespace-nowrap">{formatDate(row.createdAt)}</td>
                 {connectedCrm && (
@@ -296,11 +427,25 @@ export function IdentifiedVisitorsTable({ visitors, connectedCrm, onConnectCrm, 
         </table>
       </div>
 
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between px-4 py-3 border-t border-surface-200">
-          <span className="text-xs text-surface-500">
-            Page {currentPage} of {totalPages}
-          </span>
+      <div className="flex items-center justify-between px-4 py-3 border-t border-surface-200">
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-surface-500">
+              Page {currentPage} of {totalPages}
+            </span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs text-surface-400">Show</span>
+              <select
+                value={pageSize}
+                onChange={(e) => { setPageSize(Number(e.target.value)); setCurrentPage(1); }}
+                className="text-xs border border-surface-200 rounded px-1.5 py-0.5 text-surface-700 bg-white focus:outline-none focus:ring-1 focus:ring-indigo-300"
+              >
+                {PAGE_SIZE_OPTIONS.map((s) => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+          {totalPages > 1 && (
           <div className="flex items-center gap-1">
             <button
               onClick={() => setCurrentPage(currentPage - 1)}
@@ -328,8 +473,8 @@ export function IdentifiedVisitorsTable({ visitors, connectedCrm, onConnectCrm, 
               Next &rarr;
             </button>
           </div>
+          )}
         </div>
-      )}
     </div>
   );
 }

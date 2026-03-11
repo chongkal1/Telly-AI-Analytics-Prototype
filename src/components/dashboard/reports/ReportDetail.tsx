@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { AreaChart, Area, ResponsiveContainer, XAxis, YAxis, Tooltip, PieChart, Pie, Cell } from 'recharts';
+import { AreaChart, Area, BarChart, Bar, Cell, ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts';
 import { MonthlyReport } from '@/types';
 import { TrendIndicator } from '@/components/shared/TrendIndicator';
-import { CHART_COLOR_ARRAY } from '@/lib/constants';
+
 import { ReportSection } from './ReportSection';
 import { ReportNarrative } from './ReportNarrative';
 import { ReportEmailTemplate } from './ReportEmailTemplate';
@@ -130,41 +130,45 @@ export function ReportDetail({ report, onBack }: ReportDetailProps) {
           <ReportNarrative text={n.trafficAnalysis} />
         </ReportSection>
 
-        {/* 3. AI Visibility */}
-        <ReportSection title="AI Visibility">
-          <div className="grid grid-cols-4 gap-3 mb-5">
-            <KpiCard label="Citations" value={fmt(s.aiCitations)} change={c.aiCitations} />
-            <KpiCard label="Appearances" value={fmt(s.aiAppearances)} />
-            <KpiCard label="Visibility" value={`${s.aiVisibilityScore}%`} change={c.aiVisibility} />
-            <KpiCard label="Sentiment" value={`${s.aiSentiment}/100`} />
+        {/* 3. Traffic by Source */}
+        <ReportSection title="Traffic by Source">
+          <div className="h-56 mb-5">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={s.trafficBySource} layout="vertical" margin={{ left: 10 }}>
+                <XAxis type="number" tick={{ fontSize: 10, fill: '#9ca3af' }} axisLine={false} tickLine={false} tickFormatter={(v) => fmt(v)} />
+                <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: '#6b7280' }} axisLine={false} tickLine={false} width={90} />
+                <Tooltip
+                  contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #e5e7eb' }}
+                  formatter={(v: number | undefined) => [fmt(v ?? 0), 'Clicks']}
+                />
+                <Bar dataKey="clicks" radius={[0, 4, 4, 0]}>
+                  {s.trafficBySource.map((entry, i) => (
+                    <Cell key={i} fill={entry.color} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
           </div>
 
-          <div className="flex items-center justify-center mb-5">
-            <div className="w-56 h-56">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={s.aiEngineBreakdown}
-                    dataKey="value"
-                    nameKey="name"
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={80}
-                    innerRadius={40}
-                    paddingAngle={2}
-                    label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
-                  >
-                    {s.aiEngineBreakdown.map((_, i) => (
-                      <Cell key={i} fill={CHART_COLOR_ARRAY[i % CHART_COLOR_ARRAY.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(v: number | undefined) => [fmt(v ?? 0), 'Citations']} />
-                </PieChart>
-              </ResponsiveContainer>
+          {/* Source change table */}
+          <div className="mb-5">
+            <div className="grid grid-cols-2 gap-x-6 gap-y-1.5">
+              {s.trafficBySource.map((src) => (
+                <div key={src.name} className="flex items-center justify-between py-1.5 border-b border-surface-50">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: src.color }} />
+                    <span className="text-sm text-surface-700">{src.name}</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm font-mono text-surface-900">{fmt(src.clicks)}</span>
+                    <TrendIndicator change={src.change} />
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 
-          <ReportNarrative text={n.aiVisibilityAnalysis} />
+          <ReportNarrative text={n.trafficBySourceAnalysis} />
         </ReportSection>
 
         {/* 4. Topical Cluster Performance */}
@@ -330,18 +334,40 @@ export function ReportDetail({ report, onBack }: ReportDetailProps) {
           </div>
         </ReportSection>
 
-        {/* 7. Strategic Recommendations */}
-        <ReportSection title="Strategic Recommendations">
-          <ul className="space-y-3">
-            {n.recommendations.map((rec, i) => (
-              <li key={i} className="flex gap-3 text-sm text-surface-700">
-                <span className="shrink-0 w-5 h-5 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-[10px] font-bold mt-0.5">
-                  {i + 1}
-                </span>
-                <span className="leading-relaxed">{rec}</span>
-              </li>
-            ))}
-          </ul>
+        {/* 7. Agent Actions */}
+        <ReportSection title="Agent Actions">
+          <p className="text-xs text-surface-400 mb-4">Cluster actions determined by Agent Mission Control based on this period&apos;s analysis.</p>
+          <div className="grid grid-cols-2 gap-3">
+            {s.clusterActions.map((ca) => {
+              const actionColors: Record<string, { bg: string; text: string; border: string }> = {
+                'Scale Production': { bg: 'bg-cyan-50', text: 'text-cyan-700', border: 'border-cyan-200' },
+                'Update Content': { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200' },
+                'Delete & Merge': { bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200' },
+                'Publish & Monitor': { bg: 'bg-surface-50', text: 'text-surface-600', border: 'border-surface-200' },
+              };
+              const colors = actionColors[ca.action] || actionColors['Publish & Monitor'];
+              const statusColors: Record<string, string> = {
+                Working: 'bg-green-400',
+                Queued: 'bg-amber-400',
+                Monitoring: 'bg-blue-400',
+              };
+              return (
+                <div key={ca.category} className={`rounded-lg border ${colors.border} p-3`}>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-sm font-semibold text-surface-900">{ca.category}</span>
+                    <span className={`inline-flex items-center gap-1.5 text-[10px] font-medium px-2 py-0.5 rounded-full ${colors.bg} ${colors.text}`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${statusColors[ca.status] || 'bg-surface-400'}`} />
+                      {ca.status}
+                    </span>
+                  </div>
+                  <span className={`inline-block text-[10px] font-medium px-1.5 py-0.5 rounded ${colors.bg} ${colors.text} mb-1.5`}>
+                    {ca.action}
+                  </span>
+                  <p className="text-xs text-surface-500 leading-relaxed">{ca.summary}</p>
+                </div>
+              );
+            })}
+          </div>
         </ReportSection>
       </div>
 

@@ -162,41 +162,44 @@ export function ReportEmailTemplate({ report }: ReportEmailTemplateProps) {
         </tbody>
       </table>
 
-      {/* Recommendations */}
+      {/* Agent Actions */}
       <table width="100%" cellPadding={0} cellSpacing={0} style={{ margin: '24px 0' }}>
         <tbody>
           <tr>
             <td>
               <h2 style={{ fontSize: 14, fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 12px', borderBottom: '1px solid #f3f4f6', paddingBottom: 8 }}>
-                Strategic Recommendations
+                Agent Actions
               </h2>
               <table width="100%" cellPadding={0} cellSpacing={0}>
                 <tbody>
-                  {n.recommendations.map((rec, i) => (
-                    <tr key={i}>
-                      <td style={{ padding: '8px 0', verticalAlign: 'top', width: 28 }}>
-                        <div style={{
-                          width: 20,
-                          height: 20,
-                          borderRadius: '50%',
-                          background: '#eef2ff',
-                          color: '#4f46e5',
-                          fontSize: 10,
-                          fontWeight: 700,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          textAlign: 'center' as const,
-                          lineHeight: '20px',
-                        }}>
-                          {i + 1}
-                        </div>
-                      </td>
-                      <td style={{ padding: '8px 0 8px 8px', fontSize: 13, color: '#374151', lineHeight: 1.5 }}>
-                        {rec}
-                      </td>
-                    </tr>
-                  ))}
+                  {s.clusterActions.map((ca, i) => {
+                    const actionColor: Record<string, string> = {
+                      'Scale Production': '#00C5DF',
+                      'Update Content': '#d97706',
+                      'Delete & Merge': '#ef4444',
+                      'Publish & Monitor': '#9ca3af',
+                    };
+                    return (
+                      <tr key={i}>
+                        <td style={{ padding: '8px 0', verticalAlign: 'top', width: 28 }}>
+                          <div style={{
+                            width: 8,
+                            height: 8,
+                            borderRadius: '50%',
+                            background: actionColor[ca.action] || '#9ca3af',
+                            marginTop: 5,
+                          }} />
+                        </td>
+                        <td style={{ padding: '8px 0 8px 4px', fontSize: 13, color: '#374151', lineHeight: 1.5 }}>
+                          <strong>{ca.category}</strong>
+                          <span style={{ color: '#9ca3af', margin: '0 6px' }}>|</span>
+                          <span style={{ color: actionColor[ca.action] || '#6b7280', fontSize: 11, fontWeight: 600 }}>{ca.action}</span>
+                          <br />
+                          <span style={{ color: '#6b7280', fontSize: 12 }}>{ca.summary}</span>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </td>
