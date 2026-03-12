@@ -141,8 +141,6 @@ function PipelineValueCard({ leadsCount }: { leadsCount: number }) {
   );
 }
 
-const CAPTURED_STATUSES = new Set(['contacted', 'qualified', 'converted']);
-
 type GroupMode = 'industry' | 'cluster';
 
 // Map sourceUrl → topical cluster (category)
@@ -220,17 +218,10 @@ export function LeadsDashboard({ onOpenConversation }: { onOpenConversation?: (l
 
   const allLeadsByCluster = useMemo(() => groupByCluster(leads), []);
 
-  const capturedByIndustry = useMemo(
-    () => getChartData('capturedLeadsByIndustry', startDate, endDate) as { name: string; value: number }[],
-    [startDate, endDate],
-  );
-
   const capturedLeads = useMemo(
-    () => leads.filter((l) => CAPTURED_STATUSES.has(l.status)),
+    () => leads.filter((l) => ['contacted', 'qualified', 'converted'].includes(l.status)),
     [],
   );
-
-  const capturedByCluster = useMemo(() => groupByCluster(capturedLeads), [capturedLeads]);
 
   const leadsData = leadsGroupMode === 'industry' ? allLeadsByIndustry : allLeadsByCluster;
   const leadsLabel = leadsGroupMode === 'industry' ? 'Leads by Industry' : 'Leads by Topic';

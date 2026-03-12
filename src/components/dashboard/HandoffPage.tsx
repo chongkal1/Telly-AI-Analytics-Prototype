@@ -146,7 +146,6 @@ function LiveLeadsPie() {
   const byTopic = (() => {
     const counts: Record<string, number> = {};
     leads.forEach(l => {
-      const page = (getChartData('pages') as { url: string; category: string }[] | null);
       // simple fallback: use industry if pages unavailable
       counts[l.industry] = (counts[l.industry] || 0) + 1;
     });
@@ -228,7 +227,7 @@ const LIVE_COMPONENTS: Record<string, React.ReactNode> = {
     );
   })(),
   'leads-by-industry': <LiveLeadsPie />,
-  'leads-table': <IdentifiedVisitorsTable visitors={leads} />,
+  'leads-table': <IdentifiedVisitorsTable visitors={leads} connectedCrm={null} onConnectCrm={() => {}} onManageCrm={() => {}} />,
   'conversation-thread': (() => {
     const sampleLead = leads.find(l => l.status === 'captured') || leads[0];
     return (
