@@ -80,7 +80,7 @@ function generateConversation(lead: Lead): Message[] {
 
 /* ── Left panel: Agent Rules Assistant ── */
 
-function AgentRulesPanel({ lead }: { lead: Lead }) {
+export function AgentRulesPanel({ lead }: { lead: Lead }) {
   const [messages, setMessages] = useState<RuleMessage[]>([
     {
       id: 'welcome',
@@ -226,7 +226,7 @@ function ConversationThread({ messages }: { messages: Message[] }) {
 
 /* ── Right: Lead Info Card ── */
 
-function LeadInfoPanel({ lead }: { lead: Lead }) {
+export function LeadInfoPanel({ lead }: { lead: Lead }) {
   const displayStatus = getDisplayStatus(lead.status);
   const style = STATUS_STYLES[displayStatus];
 

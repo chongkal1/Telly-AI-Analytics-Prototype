@@ -13,6 +13,33 @@ function getTrend(change: number | null, invert?: boolean): TrendType {
   return 'stable';
 }
 
+/* Mini sparkline — deterministic points based on change value */
+function MiniSparkline({ change, trend }: { change: number; trend: TrendType }) {
+  const color = trend === 'up' ? '#16a34a' : trend === 'down' ? '#dc2626' : '#6b7280';
+  const abs = Math.abs(change);
+
+  // Generate 7 points that trend up or down
+  const seed = abs * 7 + 3;
+  const points: number[] = [];
+  for (let i = 0; i < 7; i++) {
+    const base = trend === 'up'
+      ? 12 - (i / 6) * 8  // trending up: high→low in y (SVG y is inverted)
+      : 4 + (i / 6) * 8;  // trending down: low→high in y
+    const jitter = ((seed * (i + 1) * 13) % 7) - 3; // small deterministic noise
+    points.push(Math.max(1, Math.min(15, base + jitter * 0.4)));
+  }
+
+  const pathData = points
+    .map((y, i) => `${i === 0 ? 'M' : 'L'}${i * 5},${y}`)
+    .join(' ');
+
+  return (
+    <svg width="30" height="16" viewBox="0 0 30 16" className="shrink-0">
+      <path d={pathData} fill="none" stroke={color} strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 const trendConfig: Record<TrendType, { icon: React.ReactNode; className: string }> = {
   up: {
     icon: (
@@ -48,7 +75,8 @@ export function TrendIndicator({ change, invertChange }: TrendIndicatorProps) {
   if (change === null) return <span className="text-xs text-surface-400">—</span>;
 
   return (
-    <span className={`inline-flex items-center gap-0.5 text-xs font-medium ${config.className}`}>
+    <span className={`inline-flex items-center gap-1 text-xs font-medium ${config.className}`}>
+      <MiniSparkline change={change} trend={trend} />
       {config.icon}
       {Math.abs(change)}%
     </span>

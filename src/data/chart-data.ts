@@ -334,6 +334,10 @@ export function getMetricValue(
 
     case 'identifiedVisitors':
       return { value: leads.length.toString(), change: 34, previousValue: '90' };
+    case 'leadsContacted': {
+      const contactedCount = leads.filter((l) => l.status === 'contacted' || l.status === 'qualified' || l.status === 'captured' || l.status === 'converted').length;
+      return { value: contactedCount.toString(), change: 31, previousValue: Math.round(contactedCount * 0.76).toString() };
+    }
     case 'organicLeadsCaptured': {
       const capturedCount = leads.filter((l) => l.status === 'contacted' || l.status === 'qualified' || l.status === 'converted').length;
       return { value: capturedCount.toString(), change: 28, previousValue: Math.round(capturedCount * 0.78).toString() };

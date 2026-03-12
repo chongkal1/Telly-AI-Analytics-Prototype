@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 
-export type PresetKey = '7d' | '28d' | '3m' | 'custom';
+export type PresetKey = '7d' | '28d' | '3m' | '6m' | '1y' | 'custom';
 
 export interface DateRange {
   startDate: string; // YYYY-MM-DD
@@ -45,6 +45,12 @@ function computePresetRange(key: PresetKey): { startDate: string; endDate: strin
     case '3m':
       start.setDate(end.getDate() - 89);
       break;
+    case '6m':
+      start.setDate(end.getDate() - 179);
+      break;
+    case '1y':
+      start.setDate(end.getDate() - 364);
+      break;
     default:
       start.setDate(end.getDate() - 27);
   }
@@ -73,6 +79,8 @@ const PRESET_LABELS: Record<PresetKey, string> = {
   '7d': 'Last 7 days',
   '28d': 'Last 28 days',
   '3m': 'Last 3 months',
+  '6m': 'Last 6 months',
+  '1y': 'Last year',
   custom: 'Custom',
 };
 

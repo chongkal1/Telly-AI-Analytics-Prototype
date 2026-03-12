@@ -17,6 +17,7 @@ import { MaturityStageProvider } from '@/hooks/useMaturityStage';
 import { DealSizeProvider } from '@/hooks/useDealSize';
 import { MaturityStageSwitcher } from '@/components/dashboard/MaturityStageSwitcher';
 import { ConversationPage } from '@/components/dashboard/leads/ConversationPage';
+import { HandoffPage } from '@/components/dashboard/HandoffPage';
 import { Lead } from '@/types';
 
 const tabs = [
@@ -25,6 +26,7 @@ const tabs = [
   { id: 'clusters', label: 'Topics' },
   { id: 'leads', label: 'Leads' },
   { id: 'reports', label: 'Reports' },
+  { id: 'handoff', label: 'Handoff' },
 ];
 
 const tabTitles: Record<string, string> = {
@@ -33,6 +35,7 @@ const tabTitles: Record<string, string> = {
   clusters: 'Topics',
   leads: 'Leads',
   reports: 'Reports',
+  handoff: 'Handoff',
 };
 
 
@@ -84,7 +87,7 @@ export default function Home() {
                   <div className="flex items-center justify-between mb-4">
                     <h1 className="text-lg font-semibold text-surface-900">{tabTitles[activeTab]}</h1>
                     <div className="flex items-center gap-4">
-                      {activeTab !== 'reports' && <DateRangePicker />}
+                      {activeTab !== 'reports' && activeTab !== 'handoff' && <DateRangePicker />}
                     </div>
                   </div>
                   <DashboardTabs activeTab={activeTab} onTabChange={setActiveTab} tabs={tabs} />
@@ -98,6 +101,8 @@ export default function Home() {
                     <LeadsDashboard onOpenConversation={setConversationLead} />
                   ) : activeTab === 'reports' ? (
                     <ReportsDashboard />
+                  ) : activeTab === 'handoff' ? (
+                    <HandoffPage />
                   ) : null}
                 </div>
               )}

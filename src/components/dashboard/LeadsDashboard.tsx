@@ -13,8 +13,9 @@ import { TrendIndicator } from '@/components/shared/TrendIndicator';
 import { CrmConnectModal, CrmManageModal, CrmInfo } from './leads/CrmIntegrationModal';
 
 const LEAD_METRICS: { title: string; dataKey: string }[] = [
-  { title: 'Identified Visitors', dataKey: 'identifiedVisitors' },
-  { title: 'Organic Leads Captured', dataKey: 'organicLeadsCaptured' },
+  { title: 'Leads Identified', dataKey: 'identifiedVisitors' },
+  { title: 'Leads Contacted', dataKey: 'leadsContacted' },
+  { title: 'Leads Captured', dataKey: 'organicLeadsCaptured' },
 ];
 
 import { useDealSize } from '@/hooks/useDealSize';
@@ -188,7 +189,6 @@ function SegmentedToggle({ value, onChange }: { value: GroupMode; onChange: (v: 
 
 export function LeadsDashboard({ onOpenConversation }: { onOpenConversation?: (lead: Lead) => void }) {
   const { startDate, endDate, compareEnabled, compareStartDate, compareEndDate } = useDateRange();
-  const [visitorsGroupMode, setVisitorsGroupMode] = useState<GroupMode>('industry');
   const [leadsGroupMode, setLeadsGroupMode] = useState<GroupMode>('industry');
 
   // CRM integration state
@@ -213,12 +213,12 @@ export function LeadsDashboard({ onOpenConversation }: { onOpenConversation?: (l
     setShowManageModal(false);
   };
 
-  const visitorsByIndustry = useMemo(
+  const allLeadsByIndustry = useMemo(
     () => getChartData('leadsByIndustry', startDate, endDate) as { name: string; value: number }[],
     [startDate, endDate],
   );
 
-  const visitorsByCluster = useMemo(() => groupByCluster(leads), []);
+  const allLeadsByCluster = useMemo(() => groupByCluster(leads), []);
 
   const capturedByIndustry = useMemo(
     () => getChartData('capturedLeadsByIndustry', startDate, endDate) as { name: string; value: number }[],
@@ -232,9 +232,7 @@ export function LeadsDashboard({ onOpenConversation }: { onOpenConversation?: (l
 
   const capturedByCluster = useMemo(() => groupByCluster(capturedLeads), [capturedLeads]);
 
-  const visitorsData = visitorsGroupMode === 'industry' ? visitorsByIndustry : visitorsByCluster;
-  const leadsData = leadsGroupMode === 'industry' ? capturedByIndustry : capturedByCluster;
-  const visitorsLabel = visitorsGroupMode === 'industry' ? 'Visitors by Industry' : 'Visitors by Topic';
+  const leadsData = leadsGroupMode === 'industry' ? allLeadsByIndustry : allLeadsByCluster;
   const leadsLabel = leadsGroupMode === 'industry' ? 'Leads by Industry' : 'Leads by Topic';
 
   return (
@@ -244,7 +242,7 @@ export function LeadsDashboard({ onOpenConversation }: { onOpenConversation?: (l
         className="gap-4"
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+          gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
         }}
       >
         {LEAD_METRICS.map((m) => {
@@ -269,28 +267,13 @@ export function LeadsDashboard({ onOpenConversation }: { onOpenConversation?: (l
         <PipelineValueCard leadsCount={capturedLeads.length} />
       </div>
 
-      {/* Row 2: 2 pie charts with toggles */}
-      <div
-        className="gap-4"
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-        }}
-      >
-        <div className="bg-white rounded-[14px] border border-surface-200 shadow-card p-4">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-semibold text-surface-900">{visitorsLabel}</h3>
-            <SegmentedToggle value={visitorsGroupMode} onChange={setVisitorsGroupMode} />
-          </div>
-          <PieChartWidget data={visitorsData} height={240} />
+      {/* Row 2: Leads breakdown pie chart */}
+      <div className="bg-white rounded-[14px] border border-surface-200 shadow-card p-4">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-semibold text-surface-900">{leadsLabel}</h3>
+          <SegmentedToggle value={leadsGroupMode} onChange={setLeadsGroupMode} />
         </div>
-        <div className="bg-white rounded-[14px] border border-surface-200 shadow-card p-4">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-semibold text-surface-900">{leadsLabel}</h3>
-            <SegmentedToggle value={leadsGroupMode} onChange={setLeadsGroupMode} />
-          </div>
-          <PieChartWidget data={leadsData} height={240} />
-        </div>
+        <PieChartWidget data={leadsData} height={260} />
       </div>
 
       {/* Unified leads table */}

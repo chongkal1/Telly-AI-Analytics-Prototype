@@ -8,6 +8,8 @@ const PRESETS: { key: PresetKey; label: string }[] = [
   { key: '7d', label: 'Last 7 days' },
   { key: '28d', label: 'Last 28 days' },
   { key: '3m', label: 'Last 3 months' },
+  { key: '6m', label: 'Last 6 months' },
+  { key: '1y', label: 'Last year' },
 ];
 
 export function DateRangePicker() {
@@ -72,16 +74,16 @@ export function DateRangePicker() {
 
       {/* Dropdown */}
       {open && (
-        <div className="absolute z-50 mt-2 left-0 w-72 bg-white rounded-lg shadow-lg border border-surface-200 p-4">
+        <div className="absolute z-50 mt-2 left-0 w-[340px] bg-white rounded-lg shadow-lg border border-surface-200 p-4">
           {/* Presets */}
           <div className="mb-3">
             <p className="text-xs font-semibold text-surface-400 uppercase tracking-wide mb-2">Period</p>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-1.5">
               {PRESETS.map((p) => (
                 <button
                   key={p.key}
                   onClick={() => { setPreset(p.key); setOpen(false); }}
-                  className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors ${
+                  className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors whitespace-nowrap ${
                     preset === p.key
                       ? 'bg-indigo-600 text-white'
                       : 'bg-surface-100 text-surface-600 hover:bg-surface-200'
