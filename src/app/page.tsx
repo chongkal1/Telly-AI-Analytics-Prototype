@@ -1,7 +1,8 @@
 // Telly AI Analytics Prototype
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { useLastUpdatedProvider, LastUpdatedContext } from '@/hooks/useLastUpdated';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { ChatPanel } from '@/components/chat/ChatPanel';
 import { DateRangePicker } from '@/components/dashboard/DateRangePicker';
@@ -44,6 +45,10 @@ export default function Home() {
   const [selectedArticleId, setSelectedArticleId] = useState<string | null>(null);
   const [conversationLead, setConversationLead] = useState<Lead | null>(null);
   const [fullPage, setFullPage] = useState(false);
+  const { lastUpdatedText, syncing, refresh, Provider: LastUpdatedProvider } = useLastUpdatedProvider();
+  const lastUpdatedValue = useMemo(() => ({ lastUpdatedText, syncing, refresh }), [lastUpdatedText, syncing, refresh]);
+
+  const showSyncRow = ['dashboard', 'traffic', 'clusters', 'leads'].includes(activeTab);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -87,23 +92,44 @@ export default function Home() {
                   <div className="flex items-center justify-between mb-4">
                     <h1 className="text-lg font-semibold text-surface-900">{tabTitles[activeTab]}</h1>
                     <div className="flex items-center gap-4">
+                      {showSyncRow && (
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs text-surface-400">Updated {lastUpdatedText}</span>
+                          <span className="text-xs text-surface-300">&middot;</span>
+                          <button
+                            onClick={refresh}
+                            disabled={syncing}
+                            className="text-xs text-indigo-500 hover:text-indigo-600 font-medium cursor-pointer disabled:opacity-50 flex items-center gap-1"
+                          >
+                            {syncing && (
+                              <svg className="w-3 h-3 animate-spin" viewBox="0 0 24 24" fill="none">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                              </svg>
+                            )}
+                            Sync now
+                          </button>
+                        </div>
+                      )}
                       {activeTab !== 'reports' && activeTab !== 'handoff' && <DateRangePicker />}
                     </div>
                   </div>
                   <DashboardTabs activeTab={activeTab} onTabChange={setActiveTab} tabs={tabs} />
-                  {activeTab === 'dashboard' ? (
-                    <DashboardSummary onNavigate={setActiveTab} />
-                  ) : activeTab === 'traffic' ? (
-                    <TrafficDashboard onPageClick={setSelectedArticleId} />
-                  ) : activeTab === 'clusters' ? (
-                    <TopicalClusters />
-                  ) : activeTab === 'leads' ? (
-                    <LeadsDashboard onOpenConversation={setConversationLead} />
-                  ) : activeTab === 'reports' ? (
-                    <ReportsDashboard />
-                  ) : activeTab === 'handoff' ? (
-                    <HandoffPage />
-                  ) : null}
+                  <LastUpdatedProvider value={lastUpdatedValue}>
+                    {activeTab === 'dashboard' ? (
+                      <DashboardSummary onNavigate={setActiveTab} />
+                    ) : activeTab === 'traffic' ? (
+                      <TrafficDashboard onPageClick={setSelectedArticleId} />
+                    ) : activeTab === 'clusters' ? (
+                      <TopicalClusters />
+                    ) : activeTab === 'leads' ? (
+                      <LeadsDashboard onOpenConversation={setConversationLead} />
+                    ) : activeTab === 'reports' ? (
+                      <ReportsDashboard />
+                    ) : activeTab === 'handoff' ? (
+                      <HandoffPage />
+                    ) : null}
+                  </LastUpdatedProvider>
                 </div>
               )}
             </div>

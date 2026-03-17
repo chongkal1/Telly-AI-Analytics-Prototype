@@ -1,4 +1,5 @@
 import { TrendIndicator } from './TrendIndicator';
+import { useLastUpdated } from '@/hooks/useLastUpdated';
 
 interface MetricCardProps {
   label: string;
@@ -12,6 +13,7 @@ interface MetricCardProps {
 }
 
 export function MetricCard({ label, value, change, invertChange, previousValue, showComparison, accent, size = 'default' }: MetricCardProps) {
+  const { lastUpdatedText } = useLastUpdated();
   const isHero = size === 'hero';
 
   return (
@@ -27,6 +29,9 @@ export function MetricCard({ label, value, change, invertChange, previousValue, 
             <span className="text-xs text-surface-400">vs prev period</span>
           )}
         </div>
+      )}
+      {lastUpdatedText && (
+        <p className="text-[10px] text-surface-300 mt-2">Last updated {lastUpdatedText}</p>
       )}
     </div>
   );

@@ -6,6 +6,7 @@ import { useMaturityStage } from '@/hooks/useMaturityStage';
 import { useDealSize } from '@/hooks/useDealSize';
 import { getMetricValue, getClusterData, getContentProductionInsights, getContentFunnelData, getAllPagesOverview, getAgentGoalData } from '@/data/chart-data';
 import { TrendIndicator } from '@/components/shared/TrendIndicator';
+import { useLastUpdated } from '@/hooks/useLastUpdated';
 import { AgentMissionControl } from './AgentMissionControl';
 import { ContentFunnel } from './traffic/ContentFunnel';
 import { VisitorIndustrySummary } from './VisitorIndustrySummary';
@@ -231,6 +232,7 @@ function PrimaryCard({ label, value, change, previousValue, subtitle, accentColo
   tabLabel?: string;
   zeroState?: { title: string; subtitle: string; accentColor: string };
 }) {
+  const { lastUpdatedText } = useLastUpdated();
   return (
     <div
       className={`group relative bg-white rounded-[14px] border border-surface-200 shadow-card overflow-hidden transition-all duration-200 ${
@@ -282,6 +284,13 @@ function PrimaryCard({ label, value, change, previousValue, subtitle, accentColo
       {!zeroState && chartContent && (
         <div className="px-5 pb-4">
           {chartContent}
+        </div>
+      )}
+
+      {/* Last updated */}
+      {lastUpdatedText && (
+        <div className="px-5 pb-3">
+          <p className="text-[10px] text-surface-300">Last updated {lastUpdatedText}</p>
         </div>
       )}
     </div>
