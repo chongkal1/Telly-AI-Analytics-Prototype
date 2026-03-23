@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { useLastUpdatedProvider, LastUpdatedContext } from '@/hooks/useLastUpdated';
+import { useLastUpdatedProvider } from '@/hooks/useLastUpdated';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { ChatPanel } from '@/components/chat/ChatPanel';
 import { DateRangePicker } from '@/components/dashboard/DateRangePicker';
