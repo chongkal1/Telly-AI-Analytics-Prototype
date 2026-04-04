@@ -29,7 +29,10 @@ export type LeadStatus = 'new' | 'identified' | 'contacted' | 'qualified' | 'cap
 export type LeadIndustry =
   | 'SaaS' | 'FinTech' | 'Healthcare' | 'E-Commerce'
   | 'MarTech' | 'DevTools' | 'Cybersecurity' | 'HR Tech'
-  | 'Consulting' | 'EdTech' | 'Real Estate';
+  | 'Consulting' | 'EdTech' | 'Real Estate'
+  | 'Education' | 'Energy' | 'Government' | 'Manufacturing'
+  | 'Non-Profit' | 'Telecom' | 'Media' | 'Construction'
+  | 'Logistics' | 'Hospitality' | 'Automotive';
 
 export interface Lead {
   id: string;

@@ -447,31 +447,25 @@ export function IdentifiedVisitorsTable({ visitors, connectedCrm, onConnectCrm, 
           </div>
           {totalPages > 1 && (
           <div className="flex items-center gap-1">
-            <button
-              onClick={() => setCurrentPage(currentPage - 1)}
-              disabled={currentPage <= 1}
-              className="px-2 py-1 text-xs font-medium text-surface-600 hover:bg-surface-100 rounded disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              &larr; Prev
-            </button>
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-              <button
-                key={p}
-                onClick={() => setCurrentPage(p)}
-                className={`w-7 h-7 text-xs font-medium rounded ${
-                  p === currentPage ? 'bg-indigo-600 text-white' : 'text-surface-600 hover:bg-surface-100'
-                }`}
-              >
-                {p}
-              </button>
-            ))}
-            <button
-              onClick={() => setCurrentPage(currentPage + 1)}
-              disabled={currentPage >= totalPages}
-              className="px-2 py-1 text-xs font-medium text-surface-600 hover:bg-surface-100 rounded disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              Next &rarr;
-            </button>
+            <button onClick={() => setCurrentPage(currentPage - 1)} disabled={currentPage <= 1} className="px-2 py-1 text-xs font-medium text-surface-600 hover:bg-surface-100 rounded disabled:opacity-40 disabled:cursor-not-allowed">&larr; Prev</button>
+            {(() => {
+              const pages: (number | string)[] = [];
+              if (totalPages <= 7) {
+                for (let i = 1; i <= totalPages; i++) pages.push(i);
+              } else {
+                pages.push(1);
+                if (currentPage > 3) pages.push('...');
+                for (let i = Math.max(2, currentPage - 1); i <= Math.min(totalPages - 1, currentPage + 1); i++) pages.push(i);
+                if (currentPage < totalPages - 2) pages.push('...');
+                pages.push(totalPages);
+              }
+              return pages.map((p, idx) =>
+                typeof p === 'string'
+                  ? <span key={`e${idx}`} className="w-7 h-7 flex items-center justify-center text-xs text-surface-400">...</span>
+                  : <button key={p} onClick={() => setCurrentPage(p)} className={`w-7 h-7 text-xs font-medium rounded ${p === currentPage ? 'bg-indigo-600 text-white' : 'text-surface-600 hover:bg-surface-100'}`}>{p}</button>
+              );
+            })()}
+            <button onClick={() => setCurrentPage(currentPage + 1)} disabled={currentPage >= totalPages} className="px-2 py-1 text-xs font-medium text-surface-600 hover:bg-surface-100 rounded disabled:opacity-40 disabled:cursor-not-allowed">Next &rarr;</button>
           </div>
           )}
         </div>

@@ -211,16 +211,14 @@ export function TopPages({ pages, onPageClick }: TopPagesProps) {
             {paginated.map((row) => (
               <tr key={row.id} className="hover:bg-surface-50">
                 <td className="px-3 py-2 text-sm font-medium text-surface-900 max-w-xs truncate">
-                      {onPageClick ? (
-                        <button
-                          onClick={() => onPageClick(row.id)}
-                          className="text-left hover:text-indigo-600 hover:underline transition-colors"
-                        >
-                          {row.title}
-                        </button>
-                      ) : (
-                        row.title
-                      )}
+                      <a
+                        href={`https://tely.ai${row.url}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-left hover:text-indigo-600 hover:underline transition-colors"
+                      >
+                        {row.title}
+                      </a>
                     </td>
                 <td className="px-3 py-2">
                   <span className="inline-flex items-center px-1.5 py-0.5 text-[10px] font-medium rounded bg-indigo-50 text-indigo-700">
@@ -258,9 +256,22 @@ export function TopPages({ pages, onPageClick }: TopPagesProps) {
           {totalPages > 1 && (
           <div className="flex items-center gap-1">
             <button onClick={() => setCurrentPage(currentPage - 1)} disabled={currentPage <= 1} className="px-2 py-1 text-xs font-medium text-surface-600 hover:bg-surface-100 rounded disabled:opacity-40 disabled:cursor-not-allowed">&larr; Prev</button>
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-              <button key={p} onClick={() => setCurrentPage(p)} className={`w-7 h-7 text-xs font-medium rounded ${p === currentPage ? 'bg-indigo-600 text-white' : 'text-surface-600 hover:bg-surface-100'}`}>{p}</button>
-            ))}
+            {(() => {
+              const pgs: (number | string)[] = [];
+              if (totalPages <= 7) { for (let i = 1; i <= totalPages; i++) pgs.push(i); }
+              else {
+                pgs.push(1);
+                if (currentPage > 3) pgs.push('...');
+                for (let i = Math.max(2, currentPage - 1); i <= Math.min(totalPages - 1, currentPage + 1); i++) pgs.push(i);
+                if (currentPage < totalPages - 2) pgs.push('...');
+                pgs.push(totalPages);
+              }
+              return pgs.map((p, idx) =>
+                typeof p === 'string'
+                  ? <span key={`e${idx}`} className="w-7 h-7 flex items-center justify-center text-xs text-surface-400">...</span>
+                  : <button key={p} onClick={() => setCurrentPage(p)} className={`w-7 h-7 text-xs font-medium rounded ${p === currentPage ? 'bg-indigo-600 text-white' : 'text-surface-600 hover:bg-surface-100'}`}>{p}</button>
+              );
+            })()}
             <button onClick={() => setCurrentPage(currentPage + 1)} disabled={currentPage >= totalPages} className="px-2 py-1 text-xs font-medium text-surface-600 hover:bg-surface-100 rounded disabled:opacity-40 disabled:cursor-not-allowed">Next &rarr;</button>
           </div>
           )}

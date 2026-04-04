@@ -455,9 +455,22 @@ function StageArticleTable({ articles, stage }: { articles: ArticleRow[]; stage:
           {totalPages > 1 && (
           <div className="flex items-center gap-1">
             <button onClick={() => setCurrentPage(safePage - 1)} disabled={safePage <= 1} className="px-2 py-1 text-xs font-medium text-surface-600 hover:bg-surface-100 rounded disabled:opacity-40 disabled:cursor-not-allowed">&larr; Prev</button>
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-              <button key={p} onClick={() => setCurrentPage(p)} className={`w-7 h-7 text-xs font-medium rounded ${p === safePage ? 'bg-[#00C5DF] text-white' : 'text-surface-600 hover:bg-surface-100'}`}>{p}</button>
-            ))}
+            {(() => {
+              const pgs: (number | string)[] = [];
+              if (totalPages <= 7) { for (let i = 1; i <= totalPages; i++) pgs.push(i); }
+              else {
+                pgs.push(1);
+                if (safePage > 3) pgs.push('...');
+                for (let i = Math.max(2, safePage - 1); i <= Math.min(totalPages - 1, safePage + 1); i++) pgs.push(i);
+                if (safePage < totalPages - 2) pgs.push('...');
+                pgs.push(totalPages);
+              }
+              return pgs.map((p, idx) =>
+                typeof p === 'string'
+                  ? <span key={`e${idx}`} className="w-7 h-7 flex items-center justify-center text-xs text-surface-400">...</span>
+                  : <button key={p} onClick={() => setCurrentPage(p as number)} className={`w-7 h-7 text-xs font-medium rounded ${p === safePage ? 'bg-[#00C5DF] text-white' : 'text-surface-600 hover:bg-surface-100'}`}>{p}</button>
+              );
+            })()}
             <button onClick={() => setCurrentPage(safePage + 1)} disabled={safePage >= totalPages} className="px-2 py-1 text-xs font-medium text-surface-600 hover:bg-surface-100 rounded disabled:opacity-40 disabled:cursor-not-allowed">Next &rarr;</button>
           </div>
           )}

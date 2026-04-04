@@ -1,4 +1,5 @@
 import { DailyTraffic, TrafficMetric } from '@/types';
+import { pages } from './pages';
 
 function generateDailyTraffic(days: number): DailyTraffic[] {
   const data: DailyTraffic[] = [];
@@ -8,16 +9,19 @@ function generateDailyTraffic(days: number): DailyTraffic[] {
     const date = new Date(now);
     date.setDate(date.getDate() - i);
 
-    // Simulate growth trend with some noise
+    // Growth from ~200 clicks/day (12mo ago) to ~1000 clicks/day (now)
+    // Based on real Cloudflare data: ~44K weekly referrals = ~6300/day total,
+    // organic clicks ~1000/day current week
     const dayIndex = days - i;
-    const baseClicks = 120 + (dayIndex * 2.5);
-    const noise = Math.sin(dayIndex * 0.5) * 30 + Math.cos(dayIndex * 0.3) * 15;
+    const progress = dayIndex / days; // 0 → 1
+    const baseClicks = 200 + 800 * Math.pow(progress, 1.3);
+    const noise = Math.sin(dayIndex * 0.5) * 40 + Math.cos(dayIndex * 0.3) * 20;
     const weekendDip = [0, 6].includes(date.getDay()) ? 0.6 : 1;
 
     const clicks = Math.round((baseClicks + noise) * weekendDip);
     const impressions = Math.round(clicks * (12 + Math.random() * 5));
     const ctr = clicks / impressions;
-    const position = 18 - (dayIndex * 0.08) + Math.random() * 3;
+    const position = 22 - (dayIndex * 0.03) + Math.random() * 3;
 
     data.push({
       date: date.toISOString().split('T')[0],
@@ -31,21 +35,42 @@ function generateDailyTraffic(days: number): DailyTraffic[] {
   return data;
 }
 
-function generatePageTraffic(pageId: string, days: number, multiplier: number): TrafficMetric[] {
+// Deterministic pseudo-random from page index — gives consistent results per page
+function seededRandom(seed: number): () => number {
+  let s = seed;
+  return () => {
+    s = (s * 16807 + 0) % 2147483647;
+    return (s - 1) / 2147483646;
+  };
+}
+
+// Compute a traffic multiplier for each page based on its index
+// Top pages get higher multipliers, long tail gets lower
+function getPageMultiplier(pageIndex: number, totalPages: number): number {
+  // Power-law distribution: few pages get lots of traffic, most get modest traffic
+  const rank = pageIndex + 1;
+  const base = Math.pow(totalPages / rank, 0.45); // power-law curve
+  // Normalize so top page ≈ 2.5, median ≈ 0.5, tail ≈ 0.15
+  return Math.max(0.1, base * 0.35);
+}
+
+function generatePageTraffic(pageId: string, days: number, multiplier: number, seed: number): TrafficMetric[] {
   const data: TrafficMetric[] = [];
   const now = new Date();
+  const rng = seededRandom(seed);
 
   for (let i = days - 1; i >= 0; i--) {
     const date = new Date(now);
     date.setDate(date.getDate() - i);
 
     const dayIndex = days - i;
-    const baseClicks = (8 + dayIndex * 0.3) * multiplier;
-    const noise = Math.sin(dayIndex * 0.7 + multiplier) * 5;
+    const progress = dayIndex / days;
+    const baseClicks = (5 + 20 * Math.pow(progress, 1.3)) * multiplier;
+    const noise = Math.sin(dayIndex * 0.7 + seed * 0.1) * 3 * multiplier;
     const weekendDip = [0, 6].includes(date.getDay()) ? 0.5 : 1;
 
     const clicks = Math.round(Math.max(0, (baseClicks + noise) * weekendDip));
-    const impressions = Math.round(clicks * (10 + Math.random() * 8));
+    const impressions = Math.round(clicks * (10 + rng() * 8));
 
     data.push({
       date: date.toISOString().split('T')[0],
@@ -53,41 +78,43 @@ function generatePageTraffic(pageId: string, days: number, multiplier: number): 
       clicks,
       impressions: Math.max(0, impressions),
       ctr: impressions > 0 ? Math.round((clicks / impressions) * 10000) / 10000 : 0,
-      position: Math.round((15 - multiplier * 2 + Math.random() * 4) * 10) / 10,
+      position: Math.round((18 - multiplier * 3 + rng() * 6) * 10) / 10,
     });
   }
 
   return data;
 }
 
-export const dailyTraffic: DailyTraffic[] = generateDailyTraffic(90);
+export const dailyTraffic: DailyTraffic[] = generateDailyTraffic(365);
 
-export const pageTraffic: Record<string, TrafficMetric[]> = {
-  p1: generatePageTraffic('p1', 90, 2.5),
-  p2: generatePageTraffic('p2', 90, 2.0),
-  p3: generatePageTraffic('p3', 90, 1.8),
-  p4: generatePageTraffic('p4', 90, 1.5),
-  p5: generatePageTraffic('p5', 90, 1.7),
-  p6: generatePageTraffic('p6', 90, 2.2),
-  p7: generatePageTraffic('p7', 90, 1.9),
-  p8: generatePageTraffic('p8', 90, 1.6),
-  p9: generatePageTraffic('p9', 90, 2.3),
-  p10: generatePageTraffic('p10', 90, 1.4),
-  p11: generatePageTraffic('p11', 90, 1.3),
-  p12: generatePageTraffic('p12', 90, 1.8),
-  p13: generatePageTraffic('p13', 90, 1.5),
-  p14: generatePageTraffic('p14', 90, 1.2),
-  p15: generatePageTraffic('p15', 90, 1.6),
-  p16: generatePageTraffic('p16', 90, 1.0),
-  p17: generatePageTraffic('p17', 90, 2.1),
-  p18: generatePageTraffic('p18', 90, 1.1),
-  p19: generatePageTraffic('p19', 90, 0.9),
-  p20: generatePageTraffic('p20', 90, 1.7),
-};
+// Lazy cache — generate traffic per page on demand instead of upfront for all 2800+ pages
+const _pageTrafficCache: Record<string, TrafficMetric[]> = {};
+
+function getOrGeneratePageTraffic(pageId: string): TrafficMetric[] {
+  if (_pageTrafficCache[pageId]) return _pageTrafficCache[pageId];
+
+  // Extract page index from id (e.g. 'p142' → 141)
+  const idx = parseInt(pageId.replace('p', ''), 10) - 1;
+  const mult = getPageMultiplier(idx, pages.length);
+  const data = generatePageTraffic(pageId, 365, mult, idx * 7 + 31);
+  _pageTrafficCache[pageId] = data;
+  return data;
+}
+
+// Proxy object that lazily generates traffic data per page
+export const pageTraffic: Record<string, TrafficMetric[]> = new Proxy({} as Record<string, TrafficMetric[]>, {
+  get(_target, prop: string) {
+    if (typeof prop !== 'string' || !prop.startsWith('p')) return undefined;
+    return getOrGeneratePageTraffic(prop);
+  },
+  has(_target, prop: string) {
+    return typeof prop === 'string' && prop.startsWith('p');
+  },
+});
 
 // Aggregated metrics for each page, with optional date range
 export function getPageMetrics(pageId: string, startDate?: string, endDate?: string) {
-  const traffic = pageTraffic[pageId] || [];
+  const traffic = getOrGeneratePageTraffic(pageId);
 
   const filterRange = (data: TrafficMetric[], s?: string, e?: string) =>
     s && e ? data.filter((d) => d.date >= s && d.date <= e) : data.slice(-30);

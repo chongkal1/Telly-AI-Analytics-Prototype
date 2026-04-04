@@ -1,4 +1,5 @@
 import { leads } from './leads';
+import { pages } from './pages';
 
 export interface DailyAITraffic {
   date: string;
@@ -58,17 +59,21 @@ function generateDailyAITraffic(days: number): DailyAITraffic[] {
 
     const dayIndex = days - i;
     // AI traffic growing faster than organic — exponential-ish growth
-    const growthFactor = 1 + (dayIndex / days) * 1.8;
+    // Real data: ChatGPT ~9,818/week (~1,400/day), total AI ~1,450/day
+    // For 365 days, grow from ~30/day total to ~200/day
+    const progress = dayIndex / days;
+    const growthFactor = 1 + Math.pow(progress, 1.5) * 5.5;
     const weekendDip = [0, 6].includes(date.getDay()) ? 0.7 : 1;
     const noise = Math.sin(dayIndex * 0.4) * 0.15 + Math.cos(dayIndex * 0.7) * 0.1;
 
-    // ChatGPT dominates, Perplexity second, rest follow
-    const baseChatGPT = Math.round((28 + dayIndex * 0.8) * growthFactor * weekendDip * (1 + noise));
-    const basePerplexity = Math.round((18 + dayIndex * 0.6) * growthFactor * weekendDip * (1 + noise * 0.8));
-    const baseGemini = Math.round((12 + dayIndex * 0.5) * growthFactor * weekendDip * (1 - noise * 0.5));
-    const baseClaude = Math.round((8 + dayIndex * 0.35) * growthFactor * weekendDip * (1 + noise * 0.6));
-    const baseCopilot = Math.round((6 + dayIndex * 0.25) * growthFactor * weekendDip * (1 - noise * 0.3));
-    const baseMetaAi = Math.round((4 + dayIndex * 0.2) * growthFactor * weekendDip * (1 + noise * 0.4));
+    // ChatGPT dominates (~72%), based on real Cloudflare referral data
+    // Real proportions: ChatGPT 96%+, but inflated others for demo visibility
+    const baseChatGPT = Math.round((8 + 140 * Math.pow(progress, 1.5)) * weekendDip * (1 + noise));
+    const basePerplexity = Math.round((2 + 24 * Math.pow(progress, 1.5)) * weekendDip * (1 + noise * 0.8));
+    const baseGemini = Math.round((1.5 + 16 * Math.pow(progress, 1.5)) * weekendDip * (1 - noise * 0.5));
+    const baseClaude = Math.round((1 + 8 * Math.pow(progress, 1.5)) * weekendDip * (1 + noise * 0.6));
+    const baseCopilot = Math.round((0.8 + 6 * Math.pow(progress, 1.5)) * weekendDip * (1 - noise * 0.3));
+    const baseMetaAi = Math.round((0.5 + 3 * Math.pow(progress, 1.5)) * weekendDip * (1 + noise * 0.4));
 
     const chatgpt = Math.max(0, baseChatGPT);
     const perplexity = Math.max(0, basePerplexity);
@@ -104,37 +109,22 @@ function generatePageCitations(): AIPageCitation[] {
     leadsPerUrl[l.sourceUrl] = (leadsPerUrl[l.sourceUrl] || 0) + 1;
   });
 
-  const pageData: { id: string; title: string; url: string; weight: number }[] = [
-    { id: 'p1', title: 'The Complete Guide to AI Content Marketing in 2024', url: '/blog/ai-content-marketing-guide', weight: 2.8 },
-    { id: 'p6', title: 'How AI is Transforming SEO Automation', url: '/blog/ai-seo-automation', weight: 2.5 },
-    { id: 'p12', title: 'Maintaining Content Quality with AI-Generated Articles', url: '/blog/ai-content-quality', weight: 2.3 },
-    { id: 'p20', title: 'Scaling Content Production with AI: Lessons from 500+ Articles', url: '/blog/ai-content-scaling', weight: 2.1 },
-    { id: 'p3', title: 'Technical SEO Checklist for B2B SaaS Companies', url: '/blog/technical-seo-checklist', weight: 1.9 },
-    { id: 'p8', title: 'Keyword Research for B2B: Finding High-Intent Keywords', url: '/blog/keyword-research-guide', weight: 1.7 },
-    { id: 'p2', title: 'How to Calculate SEO ROI: A Step-by-Step Framework', url: '/blog/seo-roi-calculator', weight: 1.5 },
-    { id: 'p9', title: 'Case Study: How TechCorp Grew Organic Traffic 340%', url: '/blog/case-study-saas-growth', weight: 1.4 },
-    { id: 'p7', title: 'B2B Content Strategy: From Zero to 100K Monthly Visitors', url: '/blog/b2b-content-strategy', weight: 1.3 },
-    { id: 'p13', title: 'Product-Led SEO: Turning Your Product into a Traffic Engine', url: '/blog/product-led-seo', weight: 1.1 },
-    { id: 'p5', title: 'Content Marketing Metrics Every CMO Should Track', url: '/blog/content-marketing-metrics', weight: 1.0 },
-    { id: 'p4', title: '10 Link Building Strategies That Actually Work', url: '/blog/link-building-strategies', weight: 0.9 },
-    { id: 'p11', title: 'SEO for Startups: Building Organic Growth from Day One', url: '/blog/seo-for-startups', weight: 0.85 },
-    { id: 'p17', title: 'Case Study: FinTech Startup Generates 200+ Leads with Content', url: '/blog/case-study-fintech-leads', weight: 0.8 },
-    { id: 'p15', title: 'Site Speed Optimization: Impact on Rankings and Conversions', url: '/blog/site-speed-optimization', weight: 0.7 },
-    { id: 'p10', title: 'Content Distribution: Getting Your Articles in Front of Decision Makers', url: '/blog/content-distribution', weight: 0.65 },
-    { id: 'p14', title: 'Competitor Analysis for Content Marketing Teams', url: '/blog/competitor-analysis', weight: 0.55 },
-    { id: 'p18', title: 'Internal Linking Strategy for Maximum SEO Impact', url: '/blog/internal-linking-strategy', weight: 0.45 },
-    { id: 'p19', title: 'Content Marketing Budget Guide: ROI-Based Allocation', url: '/blog/content-marketing-budget', weight: 0.35 },
-    { id: 'p16', title: 'Tely AI Product Update: Q2 2024 Features', url: '/blog/tely-product-update-q2', weight: 0.2 },
-  ];
+  // Generate citation data for all pages with power-law distribution
+  const pageData = pages.map((p, idx) => {
+    const rank = idx + 1;
+    const weight = Math.max(0.1, Math.pow(pages.length / rank, 0.4) * 0.3);
+    return { id: p.id, title: p.title, url: p.url, weight };
+  });
 
   return pageData.map((p) => {
     const base = Math.round(p.weight * 40);
-    // Distribute across engines: ChatGPT ~35%, Perplexity ~25%, Gemini ~18%, Claude ~10%, Copilot ~7%, Meta ~5%
-    const chatgpt = Math.round(base * (0.33 + Math.random() * 0.04));
-    const perplexity = Math.round(base * (0.23 + Math.random() * 0.04));
-    const gemini = Math.round(base * (0.16 + Math.random() * 0.04));
-    const claude = Math.round(base * (0.09 + Math.random() * 0.03));
-    const copilot = Math.round(base * (0.06 + Math.random() * 0.03));
+    // Distribute across engines: ChatGPT ~72%, Perplexity ~12%, Gemini ~8%, Claude ~4%, Copilot ~3%, Meta ~1%
+    // Based on real Cloudflare referral data showing ChatGPT dominance
+    const chatgpt = Math.round(base * (0.70 + Math.random() * 0.04));
+    const perplexity = Math.round(base * (0.11 + Math.random() * 0.03));
+    const gemini = Math.round(base * (0.07 + Math.random() * 0.03));
+    const claude = Math.round(base * (0.03 + Math.random() * 0.02));
+    const copilot = Math.round(base * (0.02 + Math.random() * 0.02));
     const metaAi = Math.max(0, base - chatgpt - perplexity - gemini - claude - copilot);
 
     const totalCitations = chatgpt + perplexity + gemini + claude + copilot + metaAi;
@@ -171,7 +161,7 @@ function generateCompetitorData(): AICompetitor[] {
   ];
 }
 
-export const dailyAITraffic: DailyAITraffic[] = generateDailyAITraffic(90);
+export const dailyAITraffic: DailyAITraffic[] = generateDailyAITraffic(365);
 export const aiPageCitations: AIPageCitation[] = generatePageCitations();
 export const aiCompetitors: AICompetitor[] = generateCompetitorData();
 
