@@ -218,9 +218,11 @@ export function LeadsDashboard({ onOpenConversation }: { onOpenConversation?: (l
 
   const allLeadsByCluster = useMemo(() => groupByCluster(leads), []);
 
-  const capturedLeads = useMemo(
-    () => leads.filter((l) => ['contacted', 'qualified', 'converted'].includes(l.status)),
-    [],
+  const pipelineLeads = useMemo(
+    () => startDate && endDate
+      ? leads.filter((l) => l.createdAt >= startDate && l.createdAt <= endDate)
+      : leads,
+    [startDate, endDate],
   );
 
   const leadsData = leadsGroupMode === 'industry' ? allLeadsByIndustry : allLeadsByCluster;
@@ -255,7 +257,7 @@ export function LeadsDashboard({ onOpenConversation }: { onOpenConversation?: (l
             />
           );
         })}
-        <PipelineValueCard leadsCount={capturedLeads.length} />
+        <PipelineValueCard leadsCount={pipelineLeads.length} />
       </div>
 
       {/* Row 2: Leads breakdown pie chart */}

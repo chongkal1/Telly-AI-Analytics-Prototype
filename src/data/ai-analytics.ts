@@ -1,5 +1,5 @@
-import { leads } from './leads';
 import { pages } from './pages';
+import { getLeadsPerPage } from './leads-distribution';
 
 export interface DailyAITraffic {
   date: string;
@@ -62,7 +62,6 @@ function generateDailyAITraffic(days: number): DailyAITraffic[] {
     // Real data: ChatGPT ~9,818/week (~1,400/day), total AI ~1,450/day
     // For 365 days, grow from ~30/day total to ~200/day
     const progress = dayIndex / days;
-    const growthFactor = 1 + Math.pow(progress, 1.5) * 5.5;
     const weekendDip = [0, 6].includes(date.getDay()) ? 0.7 : 1;
     const noise = Math.sin(dayIndex * 0.4) * 0.15 + Math.cos(dayIndex * 0.7) * 0.1;
 
@@ -103,11 +102,7 @@ function generateDailyAITraffic(days: number): DailyAITraffic[] {
 }
 
 function generatePageCitations(): AIPageCitation[] {
-  // Count leads per page URL
-  const leadsPerUrl: Record<string, number> = {};
-  leads.forEach((l) => {
-    leadsPerUrl[l.sourceUrl] = (leadsPerUrl[l.sourceUrl] || 0) + 1;
-  });
+  const leadsMap = getLeadsPerPage();
 
   // Generate citation data for all pages with power-law distribution
   const pageData = pages.map((p, idx) => {
@@ -144,7 +139,7 @@ function generatePageCitations(): AIPageCitation[] {
       sentiment: Math.round(65 + p.weight * 10 + Math.random() * 8),
       avgPosition: Math.round((1.5 + (1 / p.weight) * 0.8) * 10) / 10,
       aiClicks,
-      leads: leadsPerUrl[p.url] ?? 0,
+      leads: leadsMap[p.id] ?? 0,
       change: Math.round((p.weight > 1.5 ? 15 : -5) + (Math.random() * 20 - 10)),
     };
   });

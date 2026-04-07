@@ -163,7 +163,8 @@ const WorldMap = memo(function WorldMap({ data }: { data: GeoTrafficEntry[] }) {
           <p className="font-semibold">{hoveredEntry.country}</p>
           <p className="text-surface-300">{hoveredEntry.sessions.toLocaleString()} sessions</p>
           <p className="text-surface-300">{hoveredEntry.clicks.toLocaleString()} clicks</p>
-          <p className="text-surface-300">{hoveredEntry.leads} leads</p>
+          <p className="text-surface-300">{hoveredEntry.leads.toLocaleString()} leads</p>
+          <p className="text-surface-300">{hoveredEntry.conversions.toLocaleString()} conversions</p>
         </div>
       )}
 
@@ -212,7 +213,7 @@ export function GeographySection({ data }: GeographySectionProps) {
                 <Th label="Sessions" colKey="sessions" align="right" sortKey={sortKey} sortDir={sortDir} onSort={toggle} />
                 <Th label="Clicks" colKey="clicks" align="right" sortKey={sortKey} sortDir={sortDir} onSort={toggle} />
                 <Th label="Leads" colKey="leads" align="right" sortKey={sortKey} sortDir={sortDir} onSort={toggle} />
-                <Th label="Conv." colKey="conversionRate" align="right" sortKey={sortKey} sortDir={sortDir} onSort={toggle} />
+                <Th label="Conv." colKey="conversions" align="right" sortKey={sortKey} sortDir={sortDir} onSort={toggle} />
                 <Th label="%" colKey="percentageOfTotal" align="right" sortKey={sortKey} sortDir={sortDir} onSort={toggle} />
               </tr>
             </thead>
@@ -222,8 +223,8 @@ export function GeographySection({ data }: GeographySectionProps) {
                   <td className="px-3 py-2 text-sm font-medium text-surface-900 whitespace-nowrap">{entry.country}</td>
                   <td className="px-3 py-2 text-sm text-surface-700 text-right font-mono">{entry.sessions.toLocaleString()}</td>
                   <td className="px-3 py-2 text-sm text-surface-700 text-right font-mono">{entry.clicks.toLocaleString()}</td>
-                  <td className="px-3 py-2 text-sm text-surface-700 text-right font-mono">{entry.leads}</td>
-                  <td className="px-3 py-2 text-sm text-surface-700 text-right font-mono">{entry.conversionRate.toFixed(1)}%</td>
+                  <td className="px-3 py-2 text-sm text-surface-700 text-right font-mono">{entry.leads.toLocaleString()}</td>
+                  <td className="px-3 py-2 text-sm text-surface-700 text-right font-mono">{entry.conversions.toLocaleString()}</td>
                   <td className="px-3 py-2 text-sm text-surface-700 text-right font-mono">{entry.percentageOfTotal}%</td>
                 </tr>
               ))}

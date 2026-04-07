@@ -13,10 +13,12 @@ import {
   dailyCtaClicks,
   filterCtaClicksByDate,
   getCtaMetrics,
-  pageCtaClicks,
 } from './cta-clicks';
 
 import { STAGE_CONFIGS } from '@/hooks/useMaturityStage';
+import { getLeadsPerPage, getConversionsPerPage } from './leads-distribution';
+
+export { getLeadsPerPage, getConversionsPerPage };
 
 export function getCompetitorGapTopics(): CompetitorGapTopic[] {
   return [
@@ -87,6 +89,11 @@ function filterByDateRange(data: DailyTraffic[], startDate?: string, endDate?: s
   return data.filter((d) => d.date >= startDate && d.date <= endDate);
 }
 
+function filterLeadsByDate(allLeads: Lead[], startDate?: string, endDate?: string): Lead[] {
+  if (!startDate || !endDate) return allLeads;
+  return allLeads.filter((l) => l.createdAt >= startDate && l.createdAt <= endDate);
+}
+
 export function getChartData(dataKey: string, startDate?: string, endDate?: string) {
   switch (dataKey) {
     case 'dailyTraffic':
@@ -101,8 +108,9 @@ export function getChartData(dataKey: string, startDate?: string, endDate?: stri
     }
 
     case 'leadsByStatus': {
+      const filtered = filterLeadsByDate(leads, startDate, endDate);
       const counts: Record<string, number> = {};
-      leads.forEach((l) => { counts[l.status] = (counts[l.status] || 0) + 1; });
+      filtered.forEach((l) => { counts[l.status] = (counts[l.status] || 0) + 1; });
       return Object.entries(counts).map(([name, value]) => ({ name: name.charAt(0).toUpperCase() + name.slice(1), value }));
     }
 
@@ -182,8 +190,9 @@ export function getChartData(dataKey: string, startDate?: string, endDate?: stri
 
     case 'capturedLeadsByIndustry': {
       const capturedStatuses = new Set(['contacted', 'qualified', 'converted']);
+      const capturedFiltered = filterLeadsByDate(leads, startDate, endDate);
       const capturedIndustryCounts: Record<string, number> = {};
-      leads.filter((l) => capturedStatuses.has(l.status)).forEach((l) => {
+      capturedFiltered.filter((l) => capturedStatuses.has(l.status)).forEach((l) => {
         capturedIndustryCounts[l.industry] = (capturedIndustryCounts[l.industry] || 0) + 1;
       });
       return Object.entries(capturedIndustryCounts)
@@ -192,16 +201,18 @@ export function getChartData(dataKey: string, startDate?: string, endDate?: stri
     }
 
     case 'leadsByIndustry': {
+      const industryFiltered = filterLeadsByDate(leads, startDate, endDate);
       const industryCounts: Record<string, number> = {};
-      leads.forEach((l) => { industryCounts[l.industry] = (industryCounts[l.industry] || 0) + 1; });
+      industryFiltered.forEach((l) => { industryCounts[l.industry] = (industryCounts[l.industry] || 0) + 1; });
       return Object.entries(industryCounts)
         .map(([name, value]) => ({ name, value }))
         .sort((a, b) => b.value - a.value);
     }
 
     case 'industryByValue': {
+      const valueFiltered = filterLeadsByDate(leads, startDate, endDate);
       const industryValues: Record<string, number> = {};
-      leads.forEach((l) => { industryValues[l.industry] = (industryValues[l.industry] || 0) + l.value; });
+      valueFiltered.forEach((l) => { industryValues[l.industry] = (industryValues[l.industry] || 0) + l.value; });
       return Object.entries(industryValues)
         .map(([name, value]) => ({ name, value }))
         .sort((a, b) => b.value - a.value);
@@ -332,27 +343,89 @@ export function getMetricValue(
     case 'aiAvgPosition':
       return { value: '2.3', change: -8, previousValue: '2.5' };
 
-    case 'identifiedVisitors':
-      return { value: leads.length.toString(), change: 34, previousValue: '90' };
+    case 'identifiedVisitors': {
+      const curLeads = filterLeadsByDate(leads, startDate, endDate);
+      const prevLeads = (compareStartDate && compareEndDate)
+        ? filterLeadsByDate(leads, compareStartDate, compareEndDate)
+        : (() => {
+            if (startDate && endDate) {
+              const s = new Date(startDate); const e = new Date(endDate);
+              const days = Math.round((e.getTime() - s.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+              const pe = new Date(s); pe.setDate(pe.getDate() - 1);
+              const ps = new Date(pe); ps.setDate(ps.getDate() - days + 1);
+              return filterLeadsByDate(leads, ps.toISOString().split('T')[0], pe.toISOString().split('T')[0]);
+            }
+            return [];
+          })();
+      const curVal = curLeads.length;
+      const prevVal = prevLeads.length;
+      return { value: curVal.toString(), change: prevVal > 0 ? Math.round(((curVal - prevVal) / prevVal) * 100) : null, previousValue: prevVal.toString() };
+    }
     case 'leadsContacted': {
-      const contactedCount = leads.filter((l) => l.status === 'contacted' || l.status === 'qualified' || l.status === 'captured' || l.status === 'converted').length;
-      return { value: contactedCount.toString(), change: 31, previousValue: Math.round(contactedCount * 0.76).toString() };
+      const curLeads2 = filterLeadsByDate(leads, startDate, endDate);
+      const prevLeads2 = (compareStartDate && compareEndDate)
+        ? filterLeadsByDate(leads, compareStartDate, compareEndDate)
+        : (() => {
+            if (startDate && endDate) {
+              const s = new Date(startDate); const e = new Date(endDate);
+              const days = Math.round((e.getTime() - s.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+              const pe = new Date(s); pe.setDate(pe.getDate() - 1);
+              const ps = new Date(pe); ps.setDate(ps.getDate() - days + 1);
+              return filterLeadsByDate(leads, ps.toISOString().split('T')[0], pe.toISOString().split('T')[0]);
+            }
+            return [];
+          })();
+      const contactedCount = curLeads2.filter((l) => l.status === 'contacted' || l.status === 'qualified' || l.status === 'captured' || l.status === 'converted').length;
+      const prevContactedCount = prevLeads2.filter((l) => l.status === 'contacted' || l.status === 'qualified' || l.status === 'captured' || l.status === 'converted').length;
+      return { value: contactedCount.toString(), change: prevContactedCount > 0 ? Math.round(((contactedCount - prevContactedCount) / prevContactedCount) * 100) : null, previousValue: prevContactedCount.toString() };
     }
     case 'organicLeadsCaptured': {
-      const capturedCount = leads.filter((l) => l.status === 'contacted' || l.status === 'qualified' || l.status === 'converted').length;
-      return { value: capturedCount.toString(), change: 28, previousValue: Math.round(capturedCount * 0.78).toString() };
+      const curLeads3 = filterLeadsByDate(leads, startDate, endDate);
+      const prevLeads3 = (compareStartDate && compareEndDate)
+        ? filterLeadsByDate(leads, compareStartDate, compareEndDate)
+        : (() => {
+            if (startDate && endDate) {
+              const s = new Date(startDate); const e = new Date(endDate);
+              const days = Math.round((e.getTime() - s.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+              const pe = new Date(s); pe.setDate(pe.getDate() - 1);
+              const ps = new Date(pe); ps.setDate(ps.getDate() - days + 1);
+              return filterLeadsByDate(leads, ps.toISOString().split('T')[0], pe.toISOString().split('T')[0]);
+            }
+            return [];
+          })();
+      const capturedCount = curLeads3.filter((l) => l.status === 'contacted' || l.status === 'qualified' || l.status === 'converted').length;
+      const prevCapturedCount = prevLeads3.filter((l) => l.status === 'contacted' || l.status === 'qualified' || l.status === 'converted').length;
+      return { value: capturedCount.toString(), change: prevCapturedCount > 0 ? Math.round(((capturedCount - prevCapturedCount) / prevCapturedCount) * 100) : null, previousValue: prevCapturedCount.toString() };
     }
     case 'totalPipelineValue': {
-      const totalValue = leads.reduce((s, l) => s + l.value, 0);
-      return { value: new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(totalValue), change: 22, previousValue: new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(Math.round(totalValue * 0.82)) };
+      const curLeads4 = filterLeadsByDate(leads, startDate, endDate);
+      const prevLeads4 = (compareStartDate && compareEndDate)
+        ? filterLeadsByDate(leads, compareStartDate, compareEndDate)
+        : (() => {
+            if (startDate && endDate) {
+              const s = new Date(startDate); const e = new Date(endDate);
+              const days = Math.round((e.getTime() - s.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+              const pe = new Date(s); pe.setDate(pe.getDate() - 1);
+              const ps = new Date(pe); ps.setDate(ps.getDate() - days + 1);
+              return filterLeadsByDate(leads, ps.toISOString().split('T')[0], pe.toISOString().split('T')[0]);
+            }
+            return [];
+          })();
+      const fmt = (v: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(v);
+      const dealSize = 500;
+      const totalValue = curLeads4.length * dealSize;
+      const prevValue = prevLeads4.length * dealSize;
+      return { value: fmt(totalValue), change: prevValue > 0 ? Math.round(((totalValue - prevValue) / prevValue) * 100) : null, previousValue: fmt(prevValue) };
     }
     case 'industryCount': {
-      const industries = new Set(leads.map((l) => l.industry));
+      const indFiltered = filterLeadsByDate(leads, startDate, endDate);
+      const industries = new Set(indFiltered.map((l) => l.industry));
       return { value: industries.size.toString(), change: null };
     }
     case 'topIndustry': {
+      const topFiltered = filterLeadsByDate(leads, startDate, endDate);
       const ic: Record<string, number> = {};
-      leads.forEach((l) => { ic[l.industry] = (ic[l.industry] || 0) + 1; });
+      topFiltered.forEach((l) => { ic[l.industry] = (ic[l.industry] || 0) + 1; });
       const top = Object.entries(ic).sort((a, b) => b[1] - a[1])[0];
       return { value: top ? top[0] : '—', change: null };
     }
@@ -428,14 +501,16 @@ export function getClusterData(startDate?: string, endDate?: string): ClusterSum
   const urlToCategory: Record<string, string> = {};
   pages.forEach((p) => { urlToCategory[p.url] = p.category; });
 
-  // Count leads per category
+  // Aggregate leads per category from the per-page distribution
+  const leadsMap = getLeadsPerPage();
   const leadsPerCategory: Record<string, { total: number; converted: number }> = {};
-  leads.forEach((l) => {
-    const cat = urlToCategory[l.sourceUrl];
-    if (!cat) return;
-    if (!leadsPerCategory[cat]) leadsPerCategory[cat] = { total: 0, converted: 0 };
-    leadsPerCategory[cat].total += 1;
-    if (l.status === 'converted') leadsPerCategory[cat].converted += 1;
+  pages.forEach((p) => {
+    const pageLeads = leadsMap[p.id] ?? 0;
+    if (pageLeads <= 0) return;
+    if (!leadsPerCategory[p.category]) leadsPerCategory[p.category] = { total: 0, converted: 0 };
+    leadsPerCategory[p.category].total += pageLeads;
+    // ~15% of leads are converted (deterministic ratio)
+    leadsPerCategory[p.category].converted += Math.round(pageLeads * 0.15);
   });
 
   // Group pages by category and aggregate traffic
@@ -471,11 +546,7 @@ export function getClusterPages(category: string, startDate?: string, endDate?: 
   const urlToCategory: Record<string, string> = {};
   pages.forEach((p) => { urlToCategory[p.url] = p.category; });
 
-  // Count leads per page URL
-  const leadsPerUrl: Record<string, number> = {};
-  leads.forEach((l) => {
-    leadsPerUrl[l.sourceUrl] = (leadsPerUrl[l.sourceUrl] || 0) + 1;
-  });
+  const leadsMap = getLeadsPerPage();
 
   const pagesInCategory = pages
     .filter((p) => p.category === category)
@@ -496,7 +567,7 @@ export function getClusterPages(category: string, startDate?: string, endDate?: 
         impressions: m.current.impressions,
         ctr: m.current.avgCtr,
         position: m.current.avgPosition,
-        leads: leadsPerUrl[p.url] ?? 0,
+        leads: leadsMap[p.id] ?? 0,
         prevClicks: m.previous.clicks,
         prevImpressions: m.previous.impressions,
         clicksChange,
@@ -1062,11 +1133,8 @@ export function getContentFunnelData(startDate?: string, endDate?: string, produ
     });
   }
 
-  // Count leads per page URL
-  const leadsPerUrl: Record<string, number> = {};
-  leads.forEach((l) => {
-    leadsPerUrl[l.sourceUrl] = (leadsPerUrl[l.sourceUrl] || 0) + 1;
-  });
+  const leadsMap = getLeadsPerPage();
+  const conversionsMap = getConversionsPerPage();
 
   // Compute previous period date range (same length as current)
   let prevStartDate: string | undefined;
@@ -1086,26 +1154,24 @@ export function getContentFunnelData(startDate?: string, endDate?: string, produ
   // Compute metrics for each page (including CTA clicks)
   const pageData = pages.map((p) => {
     const m = getPageMetrics(p.id, startDate, endDate);
-    const ctaData = pageCtaClicks[p.id];
     return {
       ...p,
       clicks: m.current.clicks,
       impressions: m.current.impressions,
-      ctaClicks: ctaData?.totalCtaClicks ?? 0,
-      leads: leadsPerUrl[p.url] ?? 0,
+      ctaClicks: conversionsMap[p.id] ?? 0,
+      leads: leadsMap[p.id] ?? 0,
     };
   });
 
   // Compute previous period metrics
   const prevPageData = pages.map((p) => {
     const m = getPageMetrics(p.id, prevStartDate, prevEndDate);
-    const ctaData = pageCtaClicks[p.id];
-    const ctaBase = ctaData?.totalCtaClicks ?? 0;
-    const leadsBase = leadsPerUrl[p.url] ?? 0;
+    const convBase = conversionsMap[p.id] ?? 0;
+    const leadsBase = leadsMap[p.id] ?? 0;
     return {
       clicks: m.current.clicks,
       impressions: m.current.impressions,
-      ctaClicks: Math.round(ctaBase * 0.82),
+      ctaClicks: Math.round(convBase * 0.82),
       leads: Math.round(leadsBase * 0.78),
     };
   });
@@ -1233,16 +1299,12 @@ export function getAllPagesOverview(startDate?: string, endDate?: string): PageO
   const categories = Array.from(new Set(pages.map((p) => p.category)));
   const allPages: PageOverviewData[] = [];
 
-  // Count leads per page URL
-  const leadsPerUrl: Record<string, number> = {};
-  leads.forEach((l) => {
-    leadsPerUrl[l.sourceUrl] = (leadsPerUrl[l.sourceUrl] || 0) + 1;
-  });
+  const leadsMap = getLeadsPerPage();
+  const conversionsMap = getConversionsPerPage();
 
   categories.forEach((cat) => {
     const clusterPagesData = getClusterPages(cat, startDate, endDate);
     clusterPagesData.forEach((p) => {
-      const ctaData = pageCtaClicks[p.id];
       allPages.push({
         id: p.id,
         title: p.title,
@@ -1252,8 +1314,8 @@ export function getAllPagesOverview(startDate?: string, endDate?: string): PageO
         clicks: p.clicks,
         clicksChange: p.clicksChange,
         ctr: p.ctr,
-        leads: leadsPerUrl[p.url] ?? 0,
-        ctaClicks: ctaData?.totalCtaClicks ?? 0,
+        leads: leadsMap[p.id] ?? 0,
+        ctaClicks: conversionsMap[p.id] ?? 0,
       });
     });
   });

@@ -27,7 +27,7 @@ interface TopPagesProps {
   onPageClick?: (pageId: string) => void;
 }
 
-export function TopPages({ pages, onPageClick }: TopPagesProps) {
+export function TopPages({ pages }: TopPagesProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [search, setSearch] = useState('');
